@@ -64,29 +64,54 @@
     }
 
     /* ── CURSOR ── */
+    /* ── CURSOR: minimal crosshair ── */
     .cursor-dot {
-      width: 7px; height: 7px;
-      background: var(--accent);
-      border-radius: 50%;
       position: fixed;
       pointer-events: none;
       z-index: 9999;
-      transform: translate(-50%,-50%);
+      transform: translate(-50%, -50%);
+      width: 16px; height: 16px;
+      transition: opacity 0.2s, transform 0.15s ease;
     }
-    .cursor-ring {
-      width: 34px; height: 34px;
-      border: 1px solid rgba(79,142,247,0.45);
-      border-radius: 50%;
+    /* Four tick marks forming a crosshair with a gap in the center */
+    .cursor-dot::before,
+    .cursor-dot::after {
+      content: '';
+      position: absolute;
+      background: rgba(79,142,247,0.75);
+    }
+    /* Horizontal bar */
+    .cursor-dot::before {
+      width: 6px; height: 1px;
+      top: 50%; left: 0;
+      transform: translateY(-50%);
+      box-shadow: 10px 0 0 rgba(79,142,247,0.75);
+    }
+    /* Vertical bar */
+    .cursor-dot::after {
+      width: 1px; height: 6px;
+      left: 50%; top: 0;
+      transform: translateX(-50%);
+      box-shadow: 0 10px 0 rgba(79,142,247,0.75);
+    }
+    /* Center dot */
+    .cursor-center {
       position: fixed;
       pointer-events: none;
-      z-index: 9998;
-      transform: translate(-50%,-50%);
-      transition: width 0.2s, height 0.2s, border-color 0.2s, background 0.2s;
+      z-index: 10000;
+      transform: translate(-50%, -50%);
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.9;
+      transition: transform 0.15s ease, opacity 0.2s;
     }
-    .cursor-ring.hovered {
-      width: 52px; height: 52px;
-      border-color: rgba(79,142,247,0.9);
-      background: rgba(79,142,247,0.06);
+    .cursor-dot.hovered {
+      transform: translate(-50%, -50%) scale(1.8);
+      opacity: 0.5;
+    }
+    .cursor-center.hovered {
+      transform: translate(-50%, -50%) scale(2.5);
     }
 
     /* ── GRAIN ── */
@@ -156,19 +181,37 @@
       display: grid;
       grid-template-columns: 1fr 320px;
       gap: 0;
-      align-items: center;
+      align-items: flex-end;
       width: 100%;
     }
     .hero-text-col {
       display: flex;
       flex-direction: column;
+      position: relative;
+      z-index: 2;
+    }
+    /* Frosted blur panel sits behind text, kills grid line interference */
+    .hero-text-col::before {
+      content: '';
+      position: absolute;
+      inset: -2rem -1.5rem;
+      background: rgba(7,9,15,0.45);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border-radius: 4px;
+      z-index: -1;
+      /* fade out toward right so it doesn't create a hard edge */
+      mask-image: linear-gradient(to right, black 55%, transparent 100%);
     }
     .hero-photo-col {
       position: relative;
       display: flex;
       justify-content: flex-start;
-      align-items: center;
+      align-items: flex-end;
       margin-left: -5rem;
+      /* Push photo bottom up to align with the CTA buttons row.
+         hero-stats height ~120px + its margin-top 3.25rem ≈ 172px total below buttons */
+      padding-bottom: 10.5rem;
     }
     .hero-photo-col::before {
       content: '';
@@ -225,10 +268,14 @@
       content: '';
       position: absolute; inset: 0;
       background-image:
-        linear-gradient(rgba(79,142,247,0.07) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79,142,247,0.07) 1px, transparent 1px);
+        linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
       background-size: 64px 64px;
-      mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 70%, transparent 100%);
+      /* Only show grid on the right half where there's no text */
+      mask-image: linear-gradient(to right, transparent 0%, transparent 40%, black 65%, black 100%),
+                  linear-gradient(to bottom, transparent 0%, black 20%, black 70%, transparent 100%);
+      mask-composite: intersect;
+      -webkit-mask-composite: source-in;
     }
     /* Orb glows */
     .hero-bg::after {
@@ -373,12 +420,30 @@
       font-family: var(--mono); font-size: 12px; font-weight: 400;
       letter-spacing: 0.09em; text-transform: uppercase;
       text-decoration: none; padding: 0.8rem 1.65rem;
-      border-radius: 2px; transition: all 0.25s ease; cursor: none;
+      border-radius: 2px;
+      transition: all 0.22s ease;
+      cursor: none;
+      transform: scale(1);
     }
-    .btn-primary { background: var(--accent); color: #07090f; border: 1px solid var(--accent); }
-    .btn-primary:hover { background: transparent; color: var(--accent); }
-    .btn-ghost { background: transparent; color: var(--muted2); border: 1px solid var(--line2); }
-    .btn-ghost:hover { color: var(--text); border-color: var(--muted2); }
+    .btn:hover { transform: scale(1.06); }
+    .btn-primary {
+      background: var(--accent); color: #07090f; border: 1px solid var(--accent);
+    }
+    .btn-primary:hover {
+      background: var(--accent2);
+      border-color: var(--accent2);
+      color: #07090f;
+      box-shadow: 0 0 18px rgba(79,142,247,0.45), 0 0 6px rgba(79,142,247,0.3);
+    }
+    .btn-ghost {
+      background: transparent; color: var(--muted2); border: 1px solid var(--line2);
+    }
+    .btn-ghost:hover {
+      color: var(--accent2);
+      border-color: var(--accent);
+      background: rgba(79,142,247,0.08);
+      box-shadow: 0 0 14px rgba(79,142,247,0.2), 0 0 4px rgba(79,142,247,0.15);
+    }
 
     .scroll-hint {
       position: absolute; bottom: 2rem; right: 3rem;
@@ -700,9 +765,18 @@
       font-family: var(--sans); font-size: 14px; font-weight: 400;
       color: var(--muted2); background: rgba(255,255,255,0.03);
       border: 1px solid var(--line); padding: 0.35rem 0.85rem;
-      border-radius: 2px; transition: all 0.2s;
+      border-radius: 2px;
+      transition: all 0.22s ease;
+      transform: scale(1);
+      cursor: default;
     }
-    .skill-item:hover { color: var(--text); border-color: var(--accent); }
+    .skill-item:hover {
+      color: var(--accent2);
+      border-color: var(--accent);
+      background: rgba(79,142,247,0.08);
+      box-shadow: 0 0 12px rgba(79,142,247,0.18), 0 0 4px rgba(79,142,247,0.12);
+      transform: scale(1.06);
+    }
 
     /* ── ABOUT ── */
     .about-grid { display: grid; grid-template-columns: 1fr 320px; gap: 4.5rem; align-items: start; }
@@ -820,7 +894,7 @@
     /* ── MOBILE (max 768px) ── */
     @media (max-width: 768px) {
       body { cursor: auto; font-size: 16px; }
-      .cursor-dot, .cursor-ring { display: none; }
+      .cursor-dot, .cursor-center { display: none; }
 
       /* Nav */
       .nav-links { display: none; }
@@ -906,7 +980,7 @@
 <body>
 
 <div class="cursor-dot" id="cursorDot"></div>
-<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-center" id="cursorCenter"></div>
 
 <!-- MOBILE DRAWER -->
 <div class="nav-drawer" id="navDrawer">
@@ -1329,20 +1403,18 @@
 </footer>
 
 <script>
-  // Cursor
+  // Cursor — minimal crosshair
   const dot = document.getElementById('cursorDot');
-  const ring = document.getElementById('cursorRing');
-  let mx=0,my=0,rx=0,ry=0;
-  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
-  (function anim(){
-    rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
-    dot.style.left=mx+'px'; dot.style.top=my+'px';
-    ring.style.left=rx+'px'; ring.style.top=ry+'px';
-    requestAnimationFrame(anim);
-  })();
-  document.querySelectorAll('a,button,.project-header,.skill-item,.interest-tag,.skill-pill,.btn').forEach(el=>{
-    el.addEventListener('mouseenter',()=>ring.classList.add('hovered'));
-    el.addEventListener('mouseleave',()=>ring.classList.remove('hovered'));
+  const center = document.getElementById('cursorCenter');
+  document.addEventListener('mousemove', e => {
+    dot.style.left = e.clientX + 'px';
+    dot.style.top  = e.clientY + 'px';
+    center.style.left = e.clientX + 'px';
+    center.style.top  = e.clientY + 'px';
+  });
+  document.querySelectorAll('a,button,.project-header,.skill-item,.interest-tag,.skill-pill,.btn').forEach(el => {
+    el.addEventListener('mouseenter', () => { dot.classList.add('hovered'); center.classList.add('hovered'); });
+    el.addEventListener('mouseleave', () => { dot.classList.remove('hovered'); center.classList.remove('hovered'); });
   });
 
   // Hero blur on scroll
@@ -1400,7 +1472,7 @@
   window.addEventListener('resize',()=>{if(window.innerWidth>768)closeDrawer();});
   if('ontouchstart' in window){
     document.getElementById('cursorDot').style.display='none';
-    document.getElementById('cursorRing').style.display='none';
+    document.getElementById('cursorCenter').style.display='none';
     document.body.style.cursor='auto';
   }
 </script>
