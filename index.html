@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daniel Cournane — Finance & Fintech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #07090f;
+      --bg2:       #0d1018;
+      --bg3:       #131620;
+      --line:      rgba(255,255,255,0.08);
+      --line2:     rgba(255,255,255,0.15);
+      --text:      #e8eaf0;
+      --muted:     #606880;
+      --muted2:    #9099b0;
+      --accent:    #4f8ef7;
+      --accent2:   #7eb8ff;
+      --accentdim: rgba(79,142,247,0.15);
+      --accentglow:rgba(79,142,247,0.08);
+      --serif:     'Playfair Display', Georgia, serif;
+      --sans:      'Outfit', sans-serif;
+      --mono:      'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── CURSOR ── */
+    .cursor-dot {
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%,-50%);
+    }
+    .cursor-ring {
+      width: 34px; height: 34px;
+      border: 1px solid rgba(79,142,247,0.45);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: width 0.2s, height 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .cursor-ring.hovered {
+      width: 52px; height: 52px;
+      border-color: rgba(79,142,247,0.9);
+      background: rgba(79,142,247,0.06);
+    }
+
+    /* ── GRAIN ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1000; opacity: 0.28;
+    }
+
+    /* ── NAV ── */
+    nav {
+      border-bottom: 1px solid var(--line);
+      padding: 1.25rem 0;
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(7,9,15,0.88);
+      backdrop-filter: blur(18px);
+      z-index: 500;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .nav-logo .dot { color: var(--accent); font-size: 20px; line-height: 1; }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 12px; font-weight: 300;
+      letter-spacing: 0.1em;
+      color: var(--muted); text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -3px; left: 0; right: 0;
+      height: 1px; background: var(--accent);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      position: relative;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding-bottom: 5rem;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        linear-gradient(to bottom, rgba(7,9,15,0.2) 0%, rgba(7,9,15,0.55) 55%, rgba(7,9,15,1) 100%),
+        radial-gradient(ellipse 80% 70% at 50% 20%, #0a1a3a 0%, #07090f 65%);
+      transition: filter 0.04s linear;
+    }
+    .hero-bg::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(79,142,247,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.05) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 65%, transparent 100%);
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 55% 55% at 15% 45%, rgba(79,142,247,0.1) 0%, transparent 65%),
+        radial-gradient(ellipse 45% 50% at 80% 25%, rgba(126,184,255,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 40% at 60% 70%, rgba(79,142,247,0.05) 0%, transparent 55%);
+      animation: orbFloat 9s ease-in-out infinite alternate;
+    }
+    @keyframes orbFloat {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(18px,-14px) scale(1.04); }
+    }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 3rem;
+      width: 100%;
+    }
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 12px; font-weight: 300;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.75rem;
+      display: flex; align-items: center; gap: 1rem;
+      opacity: 0; animation: slideUp 0.8s 0.2s ease forwards;
+      min-height: 20px;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block; width: 36px; height: 1px; background: var(--accent);
+    }
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(4.5rem, 10vw, 9rem);
+      font-weight: 400; line-height: 0.9;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      opacity: 0; animation: slideUp 0.9s 0.35s ease forwards;
+    }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero h1 .line2 { display: block; padding-left: 3rem; }
+    .hero-descriptor {
+      margin-top: 2rem;
+      opacity: 0; animation: slideUp 0.8s 0.55s ease forwards;
+    }
+    .hero-descriptor p {
+      font-size: 17px; color: var(--muted2);
+      max-width: 560px; line-height: 1.8; font-weight: 400;
+    }
+    .hero-ctas {
+      margin-top: 2.5rem;
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      opacity: 0; animation: slideUp 0.8s 0.7s ease forwards;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: var(--mono); font-size: 12px; font-weight: 400;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      text-decoration: none; padding: 0.8rem 1.65rem;
+      border-radius: 2px; transition: all 0.25s ease; cursor: none;
+    }
+    .btn-primary { background: var(--accent); color: #07090f; border: 1px solid var(--accent); }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--muted2); border: 1px solid var(--line2); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted2); }
+
+    .scroll-hint {
+      position: absolute; bottom: 2rem; right: 3rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      opacity: 0; animation: fadeIn 1s 1.3s ease forwards; z-index: 2;
+    }
+    .scroll-hint span {
+      font-family: var(--mono); font-size: 9px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted); writing-mode: vertical-rl;
+    }
+    .scroll-line {
+      width: 1px; height: 50px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      animation: scrollPulse 2.2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%,100% { opacity: 0.3; } 50% { opacity: 1; }
+    }
+
+    .hero-stats {
+      margin-top: 3.25rem;
+      display: flex; gap: 0;
+      border-top: 1px solid var(--line);
+      padding-top: 2.25rem;
+      opacity: 0; animation: slideUp 0.8s 0.88s ease forwards;
+    }
+    .stat { flex: 1; padding-right: 2.5rem; border-right: 1px solid var(--line); margin-right: 2.5rem; }
+    .stat:last-child { border-right: none; margin-right: 0; }
+    .stat-num {
+      font-family: var(--serif); font-size: 2.4rem; font-weight: 400;
+      color: var(--accent); line-height: 1; margin-bottom: 0.3rem;
+    }
+    .stat-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); }
+
+    /* ── LAYOUT ── */
+    .wrapper { max-width: 1200px; margin: 0 auto; padding: 0 3rem; }
+
+    /* ── SECTIONS ── */
+    .section { padding: 6rem 0; border-bottom: 1px solid var(--line); }
+    .section:last-of-type { border-bottom: none; }
+    .section-header {
+      display: flex; align-items: baseline; gap: 1.5rem;
+      margin-bottom: 3.75rem;
+    }
+    .section-num { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--accent); opacity: 0.7; }
+    .section-title { font-family: var(--serif); font-size: 2.8rem; font-weight: 400; color: var(--text); letter-spacing: -0.01em; }
+    .section-line { flex: 1; height: 1px; background: var(--line); }
+
+    /* ── PROJECTS (UNTOUCHED) ── */
+    .project-list { display: flex; flex-direction: column; }
+    .project-item { border-top: 1px solid var(--line); overflow: hidden; }
+    .project-item:last-child { border-bottom: 1px solid var(--line); }
+    .project-header {
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: start; gap: 1rem; padding: 1.75rem 0;
+      cursor: none; user-select: none; transition: opacity 0.15s;
+    }
+    .project-header:hover { opacity: 0.8; }
+    .project-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .project-num { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
+    .tag {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.07em;
+      text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 2px;
+      background: var(--accentdim); color: var(--accent2);
+    }
+    .tag.green { background: rgba(100,200,140,0.1); color: #7dd6a0; }
+    .tag.gray { background: rgba(255,255,255,0.05); color: var(--muted); }
+    .project-title { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; color: var(--text); line-height: 1.2; }
+    .project-blurb { font-size: 15px; color: var(--muted2); margin-top: 0.35rem; max-width: 640px; }
+    .project-toggle {
+      width: 30px; height: 30px; border: 1px solid var(--line2); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 0.3rem; transition: border-color 0.2s, background 0.2s;
+    }
+    .project-header:hover .project-toggle { border-color: var(--muted); }
+    .project-item.open .project-toggle { background: var(--accent); border-color: var(--accent); }
+    .toggle-icon {
+      font-size: 15px; color: var(--muted); line-height: 1;
+      transition: transform 0.3s ease, color 0.2s; display: block;
+    }
+    .project-item.open .toggle-icon { transform: rotate(45deg); color: #07090f; }
+    .project-body { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1); }
+    .project-item.open .project-body { max-height: 1000px; }
+    .project-inner { padding: 0 0 2rem; display: grid; grid-template-columns: 1fr 240px; gap: 2.5rem; }
+    .project-reflection h4 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem; }
+    .project-reflection p { font-size: 15px; color: var(--muted2); line-height: 1.75; margin-bottom: 1rem; }
+    .project-reflection p:last-child { margin-bottom: 0; }
+    .sidebar-block { margin-bottom: 1.5rem; }
+    .sidebar-block h5 { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .tech-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .chip { font-family: var(--mono); font-size: 11px; padding: 0.2rem 0.6rem; border: 1px solid var(--line2); border-radius: 2px; color: var(--muted); }
+    .project-links { display: flex; flex-direction: column; gap: 0.5rem; }
+    .proj-link { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-size: 12px; color: var(--accent); text-decoration: none; letter-spacing: 0.05em; transition: opacity 0.15s; }
+    .proj-link:hover { opacity: 0.7; }
+    .proj-link.disabled { color: var(--muted); pointer-events: none; opacity: 0.5; }
+    .coming-soon-note { font-family: var(--mono); font-size: 12px; color: var(--muted); font-style: italic; padding: 1rem 0 1.5rem; opacity: 0.6; }
+
+    /* ── EXPERIENCE TIMELINE ── */
+    .exp-timeline { position: relative; display: flex; flex-direction: column; }
+
+    /* The vertical line sits at 180px from left */
+    .exp-timeline::before {
+      content: '';
+      position: absolute;
+      left: 180px; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, var(--line) 8%, var(--line) 92%, transparent);
+    }
+
+    .exp-item {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 0 3rem;
+      position: relative;
+      padding: 0 0 3.5rem;
+      opacity: 0; transform: translateY(22px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .exp-item.visible { opacity: 1; transform: translateY(0); }
+
+    /* dot on the timeline line */
+    .exp-item::before {
+      content: '';
+      position: absolute;
+      left: 173px; top: 8px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--bg2);
+      box-shadow: 0 0 0 1px var(--muted);
+      z-index: 1;
+      transition: box-shadow 0.3s, background 0.3s;
+    }
+    .exp-item:hover::before {
+      background: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(79,142,247,0.4);
+    }
+
+    .exp-date {
+      font-family: var(--mono);
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.05em; line-height: 1.55;
+      padding-top: 0.1rem;
+      text-align: right;
+      padding-right: 2.5rem;
+    }
+    .exp-date .year { display: block; font-size: 14px; color: var(--muted2); font-weight: 400; margin-bottom: 0.1rem; }
+
+    .exp-body {}
+    .exp-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.5rem; gap: 1rem; }
+    .exp-role { font-family: var(--serif); font-size: 1.45rem; font-weight: 400; color: var(--text); line-height: 1.2; }
+    .exp-company { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 0.75rem; margin-top: 0.25rem; }
+    .exp-type {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 0.25rem 0.65rem;
+      border: 1px solid var(--line2); color: var(--muted); border-radius: 2px; white-space: nowrap;
+    }
+    .exp-finance-tag {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #7dd6a0; background: rgba(100,200,140,0.08);
+      border: 1px solid rgba(100,200,140,0.22);
+      padding: 0.25rem 0.7rem; border-radius: 2px; margin-bottom: 0.85rem;
+    }
+    .exp-finance-tag::before { content: '◆'; font-size: 7px; }
+    .exp-desc { font-size: 15px; color: var(--muted2); line-height: 1.8; margin-bottom: 0.85rem; font-weight: 400; }
+    .exp-bullets { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 1rem; }
+    .exp-bullets li { font-size: 14px; color: var(--muted2); line-height: 1.75; padding-left: 1.2rem; position: relative; }
+    .exp-bullets li::before { content: '—'; position: absolute; left: -0.1rem; color: var(--accent); opacity: 0.45; font-size: 12px; }
+    .exp-skills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.85rem; }
+    .skill-pill {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em;
+      padding: 0.25rem 0.7rem; border: 1px solid var(--line);
+      color: var(--muted); border-radius: 2px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .skill-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+    .exp-highlight {
+      margin-top: 1.1rem; padding: 1rem 1.35rem;
+      border-left: 2px solid var(--accent);
+      background: var(--accentglow);
+      border-radius: 0 3px 3px 0;
+    }
+    .exp-highlight p { font-size: 14px; color: var(--muted2); line-height: 1.75; }
+    .exp-highlight strong { color: var(--accent2); font-weight: 500; }
+
+    /* ── SKILLS ── */
+    .skills-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 1.5px; background: var(--line); border: 1px solid var(--line);
+    }
+    .skill-block { background: var(--bg); padding: 2.25rem; transition: background 0.3s; }
+    .skill-block:hover { background: var(--bg3); }
+    .skill-block h4 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.1rem; }
+    .skill-items { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .skill-item {
+      font-family: var(--sans); font-size: 14px; font-weight: 400;
+      color: var(--muted2); background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line); padding: 0.35rem 0.85rem;
+      border-radius: 2px; transition: all 0.2s;
+    }
+    .skill-item:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── ABOUT ── */
+    .about-grid { display: grid; grid-template-columns: 1fr 320px; gap: 4.5rem; align-items: start; }
+    .about-text p { font-size: 16px; color: var(--muted2); line-height: 1.9; margin-bottom: 1.25rem; }
+    .about-text p:last-child { margin-bottom: 0; }
+    .about-text p strong { color: var(--text); font-weight: 500; }
+    .about-interests { margin-top: 1.75rem; padding-top: 1.75rem; border-top: 1px solid var(--line); }
+    .about-interests h5 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.85rem; }
+    .interest-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .interest-tag {
+      font-family: var(--mono); font-size: 11px; padding: 0.25rem 0.7rem;
+      border: 1px solid var(--line); color: var(--muted); border-radius: 2px; transition: all 0.2s;
+    }
+    .interest-tag:hover { color: var(--accent2); border-color: rgba(79,142,247,0.3); }
+
+    .contact-card { border: 1px solid var(--line); background: var(--bg2); padding: 2.25rem; position: sticky; top: 90px; }
+    .contact-card h4 { font-family: var(--serif); font-size: 1.25rem; font-weight: 400; color: var(--text); margin-bottom: 1.5rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--line); }
+    .contact-row { display: flex; flex-direction: column; gap: 1.1rem; }
+    .contact-item { display: flex; flex-direction: column; gap: 0.2rem; }
+    .contact-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .contact-item a, .contact-item span { font-size: 14px; color: var(--muted2); text-decoration: none; transition: color 0.2s; }
+    .contact-item a:hover { color: var(--accent); }
+    .contact-ctas { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 0.6rem; }
+
+    /* ── FOOTER ── */
+    footer { padding: 2rem 0; border-top: 1px solid var(--line); }
+    footer .wrapper { display: flex; align-items: center; justify-content: space-between; }
+    .footer-note { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.06em; }
+    .footer-note span { color: var(--accent); }
+
+    /* ── REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+
+    /* ── KEYFRAMES ── */
+    @keyframes slideUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 800px) {
+      .hero h1 { font-size: 3.75rem; }
+      .hero h1 .line2 { padding-left: 1.25rem; }
+      .exp-timeline::before { display: none; }
+      .exp-item { grid-template-columns: 1fr; gap: 0.3rem; }
+      .exp-item::before { display: none; }
+      .about-grid { grid-template-columns: 1fr; }
+      .skills-grid { grid-template-columns: 1fr; }
+      .project-inner { grid-template-columns: 1fr; }
+      .hero-stats { flex-direction: column; gap: 1.5rem; }
+      .stat { border-right: none; padding-right: 0; margin-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 1.5rem; }
+      .stat:last-child { border-bottom: none; }
+      .nav-links { gap: 1.5rem; }
+      .nav-inner, .wrapper, .hero-content { padding-left: 1.5rem; padding-right: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo"><span class="dot">·</span> danielcournane</a>
+    <ul class="nav-links">
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="https://github.com/dancourn" target="_blank">GitHub ↗</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow" id="heroEyebrow"></p>
+    <h1>Daniel<span class="line2"><em>Cournane</em></span></h1>
+    <div class="hero-descriptor">
+      <p>Finance graduate and equity analyst combining rigorous valuation fundamentals with hands-on skills in Python, automation, and applied AI — building the tools that make modern finance faster.</p>
+    </div>
+    <div class="hero-ctas">
+      <a href="#projects" class="btn btn-primary">View Projects ↓</a>
+      <a href="mailto:danielcournane@gmail.com" class="btn btn-ghost">Get In Touch</a>
+      <a href="https://www.linkedin.com/in/danielcournane" target="_blank" class="btn btn-ghost">LinkedIn ↗</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">~15%</div><div class="stat-label">NBIS Upside Called</div></div>
+      <div class="stat"><div class="stat-num">5+</div><div class="stat-label">Financial Models Built</div></div>
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">Investment Theses</div></div>
+      <div class="stat"><div class="stat-num">2 yrs</div><div class="stat-label">AI Model Evaluation</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</header>
+
+<!-- PROJECTS -->
+<section class="section" id="projects">
+  <div class="wrapper">
+    <div class="section-header reveal">
+      <span class="section-num">01 —</span>
+      <h2 class="section-title">Selected Projects</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="project-list">
+
+      <div class="project-item" id="proj-earnings">
+        <div class="project-header" onclick="toggleProject('proj-earnings')">
+          <div>
+            <div class="project-meta"><span class="project-num">001</span><span class="tag">Python</span><span class="tag green">LLM / AI</span><span class="tag gray">Coming Soon</span></div>
+            <div class="project-title">Earnings Call Sentiment Analyzer</div>
+            <div class="project-blurb">Pulls earnings transcripts and runs structured LLM analysis — sentiment scoring, key themes, and quarter-over-quarter tone shifts.</div>
+          </div>
+          <div class="project-toggle"><span class="toggle-icon">+</span></div>
+        </div>
+        <div class="project-body"><div class="project-inner">
+          <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
+          <div class="project-sidebar">
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">Python</span><span class="chip">Anthropic API</span><span class="chip">BeautifulSoup</span><span class="chip">Pandas</span></div></div>
+            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="project-item" id="proj-fpa">
+        <div class="project-header" onclick="toggleProject('proj-fpa')">
+          <div>
+            <div class="project-meta"><span class="project-num">002</span><span class="tag">Python</span><span class="tag">Excel / VBA</span><span class="tag gray">Coming Soon</span></div>
+            <div class="project-title">FP&amp;A Budget vs. Actuals Dashboard</div>
+            <div class="project-blurb">Automated variance analysis tool that ingests budget templates and actuals, then generates clean reporting with visualizations — the monthly close, automated.</div>
+          </div>
+          <div class="project-toggle"><span class="toggle-icon">+</span></div>
+        </div>
+        <div class="project-body"><div class="project-inner">
+          <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
+          <div class="project-sidebar">
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">Python</span><span class="chip">Pandas</span><span class="chip">Streamlit</span><span class="chip">Plotly</span></div></div>
+            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="project-item" id="proj-dcf">
+        <div class="project-header" onclick="toggleProject('proj-dcf')">
+          <div>
+            <div class="project-meta"><span class="project-num">003</span><span class="tag green">Interactive</span><span class="tag">Finance</span><span class="tag gray">Coming Soon</span></div>
+            <div class="project-title">DCF Sensitivity Web App</div>
+            <div class="project-blurb">A live, interactive DCF model — drag WACC, growth rate, and margin assumptions and watch the valuation update in real time. Built from my Chipotle analysis.</div>
+          </div>
+          <div class="project-toggle"><span class="toggle-icon">+</span></div>
+        </div>
+        <div class="project-body"><div class="project-inner">
+          <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
+          <div class="project-sidebar">
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">React</span><span class="chip">Recharts</span><span class="chip">JavaScript</span></div></div>
+            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="project-item" id="proj-sec">
+        <div class="project-header" onclick="toggleProject('proj-sec')">
+          <div>
+            <div class="project-meta"><span class="project-num">004</span><span class="tag">Python</span><span class="tag green">LLM / AI</span><span class="tag gray">Coming Soon</span></div>
+            <div class="project-title">SEC 10-K Parser &amp; Snapshot Generator</div>
+            <div class="project-blurb">Feeds a ticker into the SEC EDGAR API, extracts key financials via LLM, and generates a formatted one-page investment snapshot — automating hours of manual analyst work.</div>
+          </div>
+          <div class="project-toggle"><span class="toggle-icon">+</span></div>
+        </div>
+        <div class="project-body"><div class="project-inner">
+          <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
+          <div class="project-sidebar">
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">Python</span><span class="chip">SEC EDGAR API</span><span class="chip">Anthropic API</span><span class="chip">ReportLab</span></div></div>
+            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="project-item" id="proj-ai">
+        <div class="project-header" onclick="toggleProject('proj-ai')">
+          <div>
+            <div class="project-meta"><span class="project-num">005</span><span class="tag green">LLM / AI</span><span class="tag">Python</span></div>
+            <div class="project-title">Personal AI Research Assistant</div>
+            <div class="project-blurb">Built a personal AI assistant to automate recurring research workflows and apply LLMs to financial document analysis and synthesis.</div>
+          </div>
+          <div class="project-toggle"><span class="toggle-icon">+</span></div>
+        </div>
+        <div class="project-body"><div class="project-inner">
+          <div class="project-reflection">
+            <h4>Reflection</h4>
+            <p>This project started as an experiment with prompt engineering and grew into a genuine productivity tool. I wanted to understand not just how to call an LLM API, but how to structure prompts so the outputs were actually useful for financial workflows — summarizing 10-Ks, drafting research memos, pulling signal from noise.</p>
+            <p>The biggest lesson: model behavior is highly sensitive to how you frame the task. Simple changes to instruction structure could take a mediocre summary and make it analyst-quality. That hands-on understanding of how these models actually behave is something I bring directly into any AI-adjacent finance role.</p>
+          </div>
+          <div class="project-sidebar">
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">Python</span><span class="chip">Anthropic API</span><span class="chip">Prompt Engineering</span></div></div>
+            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a href="https://github.com/dancourn" target="_blank" class="proj-link">⬡ GitHub ↗</a></div></div>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="section" id="experience">
+  <div class="wrapper">
+    <div class="section-header reveal">
+      <span class="section-num">02 —</span>
+      <h2 class="section-title">Experience</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="exp-timeline">
+
+      <!-- ROMERO -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2025</span>Jun – Aug</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Private Equity Research Intern</div><div class="exp-company">Romero Capital · New York, Remote</div></div>
+            <span class="exp-type">Internship</span>
+          </div>
+          <div class="exp-finance-tag">Core Finance · Valuation · Equity Research</div>
+          <p class="exp-desc">Early-stage PE search fund focused on healthcare, technology, and education — a genuine front-office environment where model quality and investment judgment drive real decisions.</p>
+          <ul class="exp-bullets">
+            <li>Supported the managing partner's investment decision process through structured industry and company due diligence, synthesizing insights from earnings calls, SEC filings, and investor presentations.</li>
+            <li>Completed an intensive 6-week investment banking training program covering financial statement modeling, DCF analysis, comparable company valuation, and M&amp;A and LBO frameworks.</li>
+            <li>Built a 10-year dynamic three-statement model for HIMS — issued a Buy at $65.00 (EV/EBITDA 100.8x, P/E 81.8x on 2024 EPS) with a WACC of 10%–12%.</li>
+            <li>Built a separate 10-year model for NBIS (Nebius Group) with revenue growth schedules and CapEx projections — issued a Buy at $60.00 (~15.5% upside), price target subsequently reached.</li>
+          </ul>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> This role proves I can work at the pace and standard of a professional investment environment. Building models from scratch, defending assumptions, and issuing price targets that actually hit — that's the baseline I've set for myself going into any FP&amp;A or corporate finance role.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">3-Statement Modeling</span><span class="skill-pill">DCF Valuation</span><span class="skill-pill">Comps Analysis</span><span class="skill-pill">LBO Frameworks</span><span class="skill-pill">Equity Research</span><span class="skill-pill">SEC Filings</span><span class="skill-pill">Investment Memos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTLIER -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2024–Pres</span>Jun 2024+</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Remote AI Writing Evaluator (Tier 1)</div><div class="exp-company">Outlier · Freelance, Remote</div></div>
+            <span class="exp-type">Freelance · 2 yrs</span>
+          </div>
+          <div class="exp-finance-tag">Analytical Rigor · AI Fluency · Quality Assurance</div>
+          <p class="exp-desc">Evaluated written outputs across 20+ AI models against structured quality criteria at high volume and sustained pace — the same discipline finance teams rely on in recurring reporting cycles.</p>
+          <ul class="exp-bullets">
+            <li>Identified logical gaps, inconsistencies, and quality failures in AI-generated analytical outputs — directly translating to stress-testing financial assumptions and catching model errors.</li>
+            <li>Delivered structured written feedback reinforcing accuracy, defensible reasoning, and guideline adherence — the same standard expected in investment memos and variance reports.</li>
+            <li>Maintained throughput and precision across deadline-driven cycles, building habits that matter in fast-close FP&amp;A environments.</li>
+          </ul>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> Two years evaluating how AI models reason gives me a nuanced, hands-on understanding of where these tools succeed and fail — a rare edge for finance roles beginning to integrate AI into reporting and analysis workflows.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">Analytical Evaluation</span><span class="skill-pill">Quality Assurance</span><span class="skill-pill">LLM Understanding</span><span class="skill-pill">Structured Reasoning</span><span class="skill-pill">Deadline Management</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUCKED UP -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2023–2025</span>Nov '23 – Jun '25</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Brand Ambassador</div><div class="exp-company">Bucked Up · Contract</div></div>
+            <span class="exp-type">Contract · 1y 8mo</span>
+          </div>
+          <div class="exp-finance-tag">Business Development · Client Relations</div>
+          <p class="exp-desc">Represented a growing consumer brand in a performance-driven contract role — managing external relationships, maintaining accountability to pipeline targets, and operating with the self-direction expected in any client-facing finance context.</p>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> Sales and brand work teaches you how decisions get made before spreadsheets enter the room. Understanding what moves people — not just numbers — is what separates a finance professional from a financial calculator.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">Relationship Management</span><span class="skill-pill">Performance Accountability</span><span class="skill-pill">Business Development</span><span class="skill-pill">Self-Direction</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAE APPAREL -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2024–2025</span>Sep '24 – May '25</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Head Apparel Chair</div><div class="exp-company">Sigma Alpha Epsilon · University of Delaware</div></div>
+            <span class="exp-type">Leadership · Part-time</span>
+          </div>
+          <div class="exp-finance-tag">Applied Cost Modeling · Procurement · Vendor Management</div>
+          <p class="exp-desc">Managed end-to-end merchandise procurement — requiring real financial modeling, vendor negotiation, and cross-organizational coordination under budget constraints.</p>
+          <ul class="exp-bullets">
+            <li>Built a per-unit cost model in Excel forecasting pricing across order quantity tiers, enabling the chapter to minimize cost while meeting demand.</li>
+            <li>Coordinated with external vendors on timelines, order accuracy, and delivery — reinforcing procurement and vendor management skills relevant to FP&amp;A operations.</li>
+            <li>Partnered across organizations on co-branded philanthropy merchandise, managing multiple stakeholder priorities simultaneously.</li>
+          </ul>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> Procurement decisions are budget decisions. Building a cost model to optimize a real purchase — even at a small scale — demonstrates exactly the kind of applied financial thinking that FP&amp;A teams do daily.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">Excel Modeling</span><span class="skill-pill">Cost Analysis</span><span class="skill-pill">Vendor Management</span><span class="skill-pill">Budget Forecasting</span><span class="skill-pill">Stakeholder Coordination</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAE HOUSING -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2023–2024</span>Sep '23 – May '24</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Housing Chair</div><div class="exp-company">Sigma Alpha Epsilon · University of Delaware</div></div>
+            <span class="exp-type">Leadership · Part-time</span>
+          </div>
+          <div class="exp-finance-tag">Forecasting · Negotiation · Operations</div>
+          <p class="exp-desc">Managed housing logistics and financial planning across multiple chapter properties — modeling costs in Excel, negotiating with landlords, and coordinating lease signings across a group of stakeholders under tight academic timelines.</p>
+          <ul class="exp-bullets">
+            <li>Built Excel forecasts projecting rent and utility costs across available housing options, providing quantitative estimates to drive decision-making.</li>
+            <li>Negotiated directly with landlords to secure favorable terms — an early exercise in high-stakes, relationship-dependent negotiation.</li>
+            <li>Managed logistics across multiple properties simultaneously, demonstrating stakeholder coordination under operational pressure.</li>
+          </ul>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> Managing a housing budget for 40+ people under time pressure is an operations and finance problem. The forecasting, negotiation, and coordination skills here map directly to what FP&amp;A and corporate finance teams do at scale.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">Excel Forecasting</span><span class="skill-pill">Lease Negotiation</span><span class="skill-pill">Stakeholder Coordination</span><span class="skill-pill">Operations Management</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHIROPRACTIC -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2021–2022</span>Jun '21 – Aug '22</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Front Desk Receptionist</div><div class="exp-company">Lamboy Family Chiropractic · Farmingdale, NY</div></div>
+            <span class="exp-type">Part-time · 1y 3mo</span>
+          </div>
+          <div class="exp-finance-tag">Data Accuracy · Administrative Operations · Billing</div>
+          <p class="exp-desc">Managed patient insurance records, scheduling, and billing workflows — building early habits around data accuracy, confidentiality, and operational efficiency that carry into any finance or client-services environment.</p>
+          <ul class="exp-bullets">
+            <li>Collected and maintained patient insurance information with accuracy and discretion, supporting efficient administrative and billing workflows.</li>
+            <li>Coordinated patient scheduling and office logistics during high-volume periods, minimizing delays and keeping operations running smoothly.</li>
+          </ul>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> Every finance role requires handling sensitive data precisely and operating efficiently under volume. This was the first environment where I built those habits — accuracy, discretion, and keeping processes moving even when it's busy.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">Data Accuracy</span><span class="skill-pill">Billing Administration</span><span class="skill-pill">Client Communication</span><span class="skill-pill">Operational Efficiency</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="section" id="skills">
+  <div class="wrapper">
+    <div class="section-header reveal">
+      <span class="section-num">03 —</span>
+      <h2 class="section-title">Skills & Tools</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="skills-grid reveal">
+      <div class="skill-block">
+        <h4>Financial Analysis</h4>
+        <div class="skill-items">
+          <span class="skill-item">3-Statement Modeling</span><span class="skill-item">DCF Valuation</span><span class="skill-item">Comparable Company Analysis</span><span class="skill-item">LBO Modeling</span><span class="skill-item">Merger Modeling</span><span class="skill-item">Equity Research</span><span class="skill-item">FP&A</span><span class="skill-item">Variance Analysis</span><span class="skill-item">Budget Forecasting</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <h4>Technical</h4>
+        <div class="skill-items">
+          <span class="skill-item">Python</span><span class="skill-item">SQL</span><span class="skill-item">LLM APIs</span><span class="skill-item">Prompt Engineering</span><span class="skill-item">Excel / VBA</span><span class="skill-item">R-Studio</span><span class="skill-item">Tableau</span><span class="skill-item">SAP Hana</span><span class="skill-item">Git / GitHub</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <h4>Research & Data</h4>
+        <div class="skill-items">
+          <span class="skill-item">SEC EDGAR</span><span class="skill-item">Earnings Call Analysis</span><span class="skill-item">Financial Statement Analysis</span><span class="skill-item">Industry Due Diligence</span><span class="skill-item">Investment Memos</span><span class="skill-item">Regression Modeling</span><span class="skill-item">Pivot Analysis</span>
+        </div>
+      </div>
+      <div class="skill-block">
+        <h4>Currently Building</h4>
+        <div class="skill-items">
+          <span class="skill-item">Streamlit</span><span class="skill-item">Plotly</span><span class="skill-item">React</span><span class="skill-item">Financial Automation Pipelines</span><span class="skill-item">AI-Augmented Research Tools</span><span class="skill-item">Interactive Valuation Apps</span><span class="skill-item">Web Dashboards</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="wrapper">
+    <div class="section-header reveal">
+      <span class="section-num">04 —</span>
+      <h2 class="section-title">About</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p>Finance graduate from the <strong>University of Delaware's Lerner College of Business</strong>, with a minor in FinTech and a focus on where those two worlds meet.</p>
+        <p>Over the past four years, I've built a foundation in financial analysis, budgeting, forecasting, and performance evaluation — while also getting hands-on with the tools reshaping how finance teams operate: <strong>automation, data modeling, and machine learning applications</strong> that make reporting faster and decisions sharper.</p>
+        <p>What draws me most to FP&amp;A and corporate finance isn't just the numbers — it's the opportunity to translate them into something leadership can actually use. I'm interested in roles where <strong>finance sits at the table with operations and strategy</strong>, not just behind a spreadsheet.</p>
+        <p>I've applied this thinking in real environments — from private equity analysis at Romero Capital to AI-focused projects on GitHub. My long-term goal is to help <strong>modernize the finance function</strong>: building smarter systems, cleaner processes, and more forward-looking insight.</p>
+        <p>I built my first computer at 12 using only online resources. That instinct — to figure out how something works and then make it work better — is what connects the technical side to the finance side for me.</p>
+        <div class="about-interests">
+          <h5>Interests</h5>
+          <div class="interest-tags">
+            <span class="interest-tag">FP&A</span><span class="interest-tag">Budgeting & Forecasting</span><span class="interest-tag">Variance Analysis</span><span class="interest-tag">Financial Modeling</span><span class="interest-tag">Business Analytics</span><span class="interest-tag">AI in Finance</span><span class="interest-tag">Automation</span><span class="interest-tag">Data-Driven Decisions</span><span class="interest-tag">Options Markets</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="contact-card reveal reveal-delay-2">
+          <h4>Get in touch</h4>
+          <div class="contact-row">
+            <div class="contact-item"><span class="contact-label">Email</span><a href="mailto:danielcournane@gmail.com">danielcournane@gmail.com</a></div>
+            <div class="contact-item"><span class="contact-label">Phone</span><span>631-707-6584</span></div>
+            <div class="contact-item"><span class="contact-label">LinkedIn</span><a href="https://www.linkedin.com/in/danielcournane" target="_blank">linkedin.com/in/danielcournane ↗</a></div>
+            <div class="contact-item"><span class="contact-label">GitHub</span><a href="https://github.com/dancourn" target="_blank">github.com/dancourn ↗</a></div>
+            <div class="contact-item"><span class="contact-label">Location</span><span>Dix Hills, NY</span></div>
+            <div class="contact-item"><span class="contact-label">Education</span><span>B.S. Finance, Minor Fintech<br>University of Delaware, 2026</span></div>
+          </div>
+          <div class="contact-ctas">
+            <a href="mailto:danielcournane@gmail.com" class="btn btn-primary" style="justify-content:center;">Send Email ↗</a>
+            <a href="https://www.linkedin.com/in/danielcournane" target="_blank" class="btn btn-ghost" style="justify-content:center;">LinkedIn ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrapper">
+    <p class="footer-note">© 2026 <span>Daniel Cournane</span></p>
+    <p class="footer-note">Finance · Fintech · New York</p>
+  </div>
+</footer>
+
+<script>
+  // Cursor
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+  (function anim(){
+    rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+    dot.style.left=mx+'px'; dot.style.top=my+'px';
+    ring.style.left=rx+'px'; ring.style.top=ry+'px';
+    requestAnimationFrame(anim);
+  })();
+  document.querySelectorAll('a,button,.project-header,.skill-item,.interest-tag,.skill-pill,.btn').forEach(el=>{
+    el.addEventListener('mouseenter',()=>ring.classList.add('hovered'));
+    el.addEventListener('mouseleave',()=>ring.classList.remove('hovered'));
+  });
+
+  // Hero blur on scroll
+  const heroBg=document.getElementById('heroBg');
+  window.addEventListener('scroll',()=>{
+    const s=window.scrollY;
+    heroBg.style.filter=`blur(${Math.min(s/55,20)}px)`;
+    heroBg.style.opacity=Math.max(1-s/480,0.05);
+  },{passive:true});
+
+  // Typed eyebrow
+  const eyebrow=document.getElementById('heroEyebrow');
+  const txt='Finance · Fintech · New York';
+  let i=0;
+  setTimeout(()=>{
+    const t=()=>{if(i<txt.length){eyebrow.textContent+=txt[i++];setTimeout(t,36);}};t();
+  },500);
+
+  // Scroll reveal
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach((e,idx)=>{
+      if(e.isIntersecting){
+        setTimeout(()=>e.target.classList.add('visible'),idx*55);
+        observer.unobserve(e.target);
+      }
+    });
+  },{threshold:0.07});
+  document.querySelectorAll('.reveal,.exp-item').forEach(el=>observer.observe(el));
+
+  // Project toggle
+  function toggleProject(id){
+    const item=document.getElementById(id);
+    const open=item.classList.contains('open');
+    document.querySelectorAll('.project-item.open').forEach(el=>el.classList.remove('open'));
+    if(!open)item.classList.add('open');
+  }
+</script>
+</body>
+</html>
