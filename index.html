@@ -194,31 +194,112 @@
     .hero-bg {
       position: absolute; inset: 0; z-index: 0;
       background:
-        linear-gradient(to bottom, rgba(7,9,15,0.2) 0%, rgba(7,9,15,0.55) 55%, rgba(7,9,15,1) 100%),
-        radial-gradient(ellipse 80% 70% at 50% 20%, #0a1a3a 0%, #07090f 65%);
+        linear-gradient(to bottom, rgba(7,9,15,0.15) 0%, rgba(7,9,15,0.52) 55%, rgba(7,9,15,1) 100%),
+        radial-gradient(ellipse 80% 70% at 50% 20%, #091628 0%, #07090f 65%);
       transition: filter 0.04s linear;
     }
+    /* Center grid — denser, more visible */
     .hero-bg::before {
       content: '';
       position: absolute; inset: 0;
       background-image:
-        linear-gradient(rgba(79,142,247,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79,142,247,0.05) 1px, transparent 1px);
-      background-size: 72px 72px;
-      mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 65%, transparent 100%);
+        linear-gradient(rgba(79,142,247,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.07) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 70%, transparent 100%);
     }
+    /* Orb glows */
     .hero-bg::after {
       content: '';
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 55% 55% at 15% 45%, rgba(79,142,247,0.1) 0%, transparent 65%),
-        radial-gradient(ellipse 45% 50% at 80% 25%, rgba(126,184,255,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 30% 40% at 60% 70%, rgba(79,142,247,0.05) 0%, transparent 55%);
+        radial-gradient(ellipse 55% 55% at 15% 45%, rgba(79,142,247,0.11) 0%, transparent 65%),
+        radial-gradient(ellipse 45% 50% at 82% 28%, rgba(126,184,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 40% at 60% 72%, rgba(79,142,247,0.05) 0%, transparent 55%);
       animation: orbFloat 9s ease-in-out infinite alternate;
     }
     @keyframes orbFloat {
       from { transform: translate(0,0) scale(1); }
       to   { transform: translate(18px,-14px) scale(1.04); }
+    }
+    /* Left side decorative strip */
+    .hero-side-left {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 72px;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .hero-side-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        180deg,
+        transparent 0px,
+        transparent 18px,
+        rgba(79,142,247,0.07) 18px,
+        rgba(79,142,247,0.07) 19px
+      );
+      mask-image: linear-gradient(to bottom, transparent 5%, black 20%, black 75%, transparent 95%);
+    }
+    .hero-side-left::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(79,142,247,0.18) 30%, rgba(79,142,247,0.18) 70%, transparent);
+    }
+    /* Right side decorative strip */
+    .hero-side-right {
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 72px;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .hero-side-right::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        180deg,
+        transparent 0px,
+        transparent 18px,
+        rgba(79,142,247,0.07) 18px,
+        rgba(79,142,247,0.07) 19px
+      );
+      mask-image: linear-gradient(to bottom, transparent 5%, black 20%, black 75%, transparent 95%);
+    }
+    .hero-side-right::after {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(79,142,247,0.18) 30%, rgba(79,142,247,0.18) 70%, transparent);
+    }
+    /* Dot cluster accents — top-right and bottom-left corners */
+    .hero-dots-tr {
+      position: absolute;
+      top: 80px; right: 90px;
+      width: 120px; height: 120px;
+      z-index: 1; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(79,142,247,0.25) 1px, transparent 1px);
+      background-size: 14px 14px;
+      mask-image: radial-gradient(ellipse 80% 80% at 80% 20%, black 30%, transparent 75%);
+      opacity: 0.6;
+    }
+    .hero-dots-bl {
+      position: absolute;
+      bottom: 120px; left: 90px;
+      width: 100px; height: 100px;
+      z-index: 1; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(79,142,247,0.2) 1px, transparent 1px);
+      background-size: 12px 12px;
+      mask-image: radial-gradient(ellipse 80% 80% at 20% 80%, black 30%, transparent 75%);
+      opacity: 0.5;
     }
 
     .hero-content {
@@ -614,11 +695,11 @@
       .hero-descriptor p { font-size: 15px; }
       .hero-ctas { flex-direction: column; gap: 0.75rem; }
       .hero-ctas .btn { justify-content: center; padding: 1rem 1.5rem; font-size: 12px; }
-      .hero-stats { flex-direction: row; flex-wrap: wrap; gap: 0; border-top: 1px solid var(--line); padding-top: 1.75rem; margin-top: 2rem; }
-      .stat { flex: 1 1 45%; border-right: none; padding-right: 0; margin-right: 0; padding-bottom: 1.25rem; margin-bottom: 0; border-bottom: 1px solid var(--line); }
-      .stat:nth-child(odd) { border-right: 1px solid var(--line); padding-right: 1rem; }
+      .hero-stats { flex-direction: row; flex-wrap: wrap; gap: 0; border-top: 1px solid var(--line); padding-top: 1.75rem; margin-top: 2rem; width: 100%; box-sizing: border-box; }
+      .stat { flex: 0 0 50%; max-width: 50%; border-right: none; padding-right: 0.75rem; padding-left: 0; margin-right: 0; padding-bottom: 1.25rem; margin-bottom: 0; border-bottom: 1px solid var(--line); box-sizing: border-box; }
+      .stat:nth-child(even) { padding-left: 0.75rem; padding-right: 0; border-left: 1px solid var(--line); }
       .stat:nth-child(3), .stat:nth-child(4) { border-bottom: none; padding-top: 1.25rem; }
-      .stat-num { font-size: 1.85rem; }
+      .stat-num { font-size: 1.75rem; }
       .scroll-hint { display: none; }
 
       /* Sections */
@@ -672,10 +753,10 @@
     /* ── SMALL MOBILE (max 420px) ── */
     @media (max-width: 420px) {
       .hero h1 { font-size: clamp(2.6rem, 13vw, 3.5rem); }
-      .hero-stats { flex-direction: column; }
-      .stat { flex: 1 1 100%; border-right: none !important; padding-right: 0 !important; }
-      .stat:nth-child(3), .stat:nth-child(4) { border-bottom: 1px solid var(--line); }
-      .stat:last-child { border-bottom: none; }
+      .hero-stats { flex-direction: row; flex-wrap: wrap; }
+      .stat { flex: 0 0 50% !important; max-width: 50% !important; padding-right: 0.5rem !important; padding-left: 0 !important; }
+      .stat:nth-child(even) { padding-left: 0.5rem !important; border-left: 1px solid var(--line) !important; }
+      .stat:nth-child(3), .stat:nth-child(4) { border-bottom: none !important; }
       .nav-drawer a { font-size: 2rem; }
     }
   </style>
@@ -717,6 +798,10 @@
 <!-- HERO -->
 <header class="hero" id="hero">
   <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-side-left"></div>
+  <div class="hero-side-right"></div>
+  <div class="hero-dots-tr"></div>
+  <div class="hero-dots-bl"></div>
   <div class="hero-content">
     <div class="hero-split">
       <!-- LEFT: text -->
