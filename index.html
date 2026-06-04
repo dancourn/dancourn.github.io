@@ -1084,17 +1084,28 @@
       <div class="project-item" id="proj-fpa">
         <div class="project-header" onclick="toggleProject('proj-fpa')">
           <div>
-            <div class="project-meta"><span class="project-num">002</span><span class="tag">Python</span><span class="tag">Excel / VBA</span><span class="tag gray">Coming Soon</span></div>
+            <div class="project-meta"><span class="project-num">002</span><span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Plotly</span><span class="tag green">Live</span></div>
             <div class="project-title">FP&amp;A Budget vs. Actuals Dashboard</div>
-            <div class="project-blurb">Automated variance analysis tool that ingests budget templates and actuals, then generates clean reporting with visualizations — the monthly close, automated.</div>
+            <div class="project-blurb">Automated variance analysis tool that ingests budget templates and actuals, then generates a full reporting dashboard — the monthly close, automated.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
         <div class="project-body"><div class="project-inner">
-          <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
+          <div class="project-reflection">
+            <h4>What I Built</h4>
+            <p>A fully interactive FP&A dashboard that takes an Excel file with Budget and Actuals sheets and automatically generates variance analysis across all cost centers and quarters. The app produces a KPI summary, a color-coded variance table, auto-generated insight callouts, a bar chart, a quarter-by-quarter trend line, a waterfall chart, and a heatmap — all driven by a single file upload.</p>
+            <h4>What I Learned</h4>
+            <p>This project forced me to think like an FP&A analyst and a software engineer at the same time. On the finance side, I had to structure the variance logic correctly — actuals minus budget, signed the right way, aggregated both by category and by quarter. On the technical side, I learned how to build a real data pipeline: reading Excel with Pandas, transforming it in memory, and rendering it dynamically through a web interface with zero page reloads.</p>
+            <p>The biggest technical lesson was understanding Streamlit's rendering model — it re-executes the entire script on every interaction, which means every calculation, every chart, and every styled element has to be stateless and fast. Caching data with <code>@st.cache_data</code> was essential to keep the app responsive. I also learned how opinionated CSS injection works inside a sandboxed iframe, which required me to think carefully about which styling approaches Streamlit would actually honor.</p>
+            <h4>Real-World Application</h4>
+            <p>In practice, this is the tool that replaces the monthly Excel reconciliation an FP&A analyst spends 3–4 hours on during close week. A finance team would drop their actuals export from their ERP — SAP, NetSuite, Oracle — alongside the budget file, and have a fully formatted variance report in seconds. The waterfall chart alone is a standard deliverable in CFO presentations. Building this demonstrated that I understand not just how to model variance, but how to operationalize that analysis into something a team can actually use repeatedly.</p>
+          </div>
           <div class="project-sidebar">
-            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">Python</span><span class="chip">Pandas</span><span class="chip">Streamlit</span><span class="chip">Plotly</span></div></div>
-            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">Python</span><span class="chip">Pandas</span><span class="chip">Streamlit</span><span class="chip">Plotly</span><span class="chip">OpenPyXL</span></div></div>
+            <div class="sidebar-block"><h5>Links</h5><div class="project-links">
+              <a href="https://github.com/dancourn/fpa-dashboard" target="_blank" class="proj-link">⬡ GitHub ↗</a>
+              <a href="https://fpa-dashboard-33x2a7zeru2vlpzrpq7f9b.streamlit.app/" target="_blank" class="proj-link">↗ Live Demo ↗</a>
+            </div></div>
           </div>
         </div></div>
       </div>
