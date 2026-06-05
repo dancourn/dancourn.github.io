@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>history.scrollRestoration = 'manual'; window.scrollTo(0, 0);</script>
   <title>Daniel Cournane — Finance & Fintech</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -174,7 +175,8 @@
       min-height: 100vh;
       position: relative;
       display: flex; flex-direction: column; justify-content: flex-end;
-      padding-bottom: 5rem;
+      padding-top: 10rem;
+      padding-bottom: 2.5rem;
       overflow: hidden;
     }
     .hero-split {
@@ -209,9 +211,10 @@
       justify-content: flex-start;
       align-items: flex-end;
       margin-left: -5rem;
-      /* Push photo bottom up to align with the CTA buttons row.
-         hero-stats height ~120px + its margin-top 3.25rem ≈ 172px total below buttons */
-      padding-bottom: 10.5rem;
+      /* Align photo bottom with the "currently seeking" line:
+         CTAs (~3rem) + stats (~5rem) + their margins ≈ 8.5rem below that line */
+      padding-bottom: 14.5rem;
+      opacity: 0; animation: slideUp 1s 0.6s ease forwards;
     }
     .hero-photo-col::before {
       content: '';
@@ -262,6 +265,15 @@
         linear-gradient(to bottom, rgba(7,9,15,0.15) 0%, rgba(7,9,15,0.52) 55%, rgba(7,9,15,1) 100%),
         radial-gradient(ellipse 80% 70% at 50% 20%, #091628 0%, #07090f 65%);
       transition: filter 0.04s linear;
+    }
+
+    /* ── FINANCIAL MODEL CANVAS ── */
+    #fmCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.28;
     }
     /* Center grid — denser, more visible */
     .hero-bg::before {
@@ -465,10 +477,10 @@
     }
 
     .hero-stats {
-      margin-top: 3.25rem;
+      margin-top: 1.5rem;
       display: flex; gap: 0;
       border-top: 1px solid var(--line);
-      padding-top: 2.25rem;
+      padding-top: 1.5rem;
       opacity: 0; animation: slideUp 0.8s 0.88s ease forwards;
     }
     .stat { flex: 1; padding-right: 2.5rem; border-right: 1px solid var(--line); margin-right: 2.5rem; }
@@ -488,7 +500,44 @@
       border-bottom: 1px solid var(--line);
       position: relative;
     }
+    .section:first-of-type { padding-top: 3rem; }
     .section:last-of-type { border-bottom: none; }
+    #experience { padding-bottom: 2.5rem; }
+
+    /* ── PULSING LIVE BADGE ── */
+    .tag.live {
+      position: relative;
+      background: rgba(100,200,140,0.08);
+      color: #7dd6a0;
+      border: 1px solid rgba(100,200,140,0.2);
+      padding-left: 1.4rem;
+    }
+    .tag.live::before {
+      content: '';
+      position: absolute;
+      left: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #7dd6a0;
+    }
+    .tag.live::after {
+      content: '';
+      position: absolute;
+      left: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #7dd6a0;
+      animation: livePulse 1.8s ease-out infinite;
+    }
+    @keyframes livePulse {
+      0%   { transform: translateY(-50%) scale(1); opacity: 0.8; }
+      70%  { transform: translateY(-50%) scale(2.8); opacity: 0; }
+      100% { transform: translateY(-50%) scale(1); opacity: 0; }
+    }
 
     /* Faint side tick marks on section separators */
     .section::after {
@@ -976,10 +1025,67 @@
       .stat:nth-child(3), .stat:nth-child(4) { border-bottom: none !important; }
       .nav-drawer a { font-size: 2rem; }
     }
+
+    /* ── BLOOMBERG TICKER ── */
+    .ticker-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 32px;
+      background: rgba(7,9,15,0.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line);
+      z-index: 490;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+    .ticker-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-transform: uppercase;
+      padding: 0 1rem;
+      border-right: 1px solid var(--line);
+      white-space: nowrap;
+      flex-shrink: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .ticker-track {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      animation: tickerScroll 40s linear infinite;
+      gap: 0;
+    }
+    .ticker-bar:hover .ticker-track { animation-play-state: paused; }
+    @keyframes tickerScroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 1.75rem;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: var(--muted2);
+    }
+    .ticker-sym { color: var(--text); font-weight: 400; }
+    .ticker-val { color: var(--muted2); }
+    .ticker-chg.up   { color: #7dd6a0; }
+    .ticker-chg.down { color: #e07070; }
+    .ticker-arr { font-size: 9px; }
   </style>
 </head>
 <body>
 
+<canvas id="fmCanvas"></canvas>
 <div class="cursor-dot" id="cursorDot"></div>
 <div class="cursor-center" id="cursorCenter"></div>
 <!-- Particle canvases — left and right side strips -->
@@ -1033,7 +1139,7 @@
         <div class="hero-descriptor">
           <p>Finance grad from the University of Delaware with a minor in Fintech. I like the overlap between finance and technology more than I like keeping them separate. Right now I'm focused on building things that show what that looks like in practice.</p>
         </div>
-        <div style="margin-top:1rem;display:flex;align-items:center;gap:0.6rem;">
+        <div style="margin-top:1rem;display:flex;align-items:center;gap:0.6rem;opacity:0;animation:slideUp 0.8s 0.63s ease forwards;">
           <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#4fad72;box-shadow:0 0 8px rgba(79,173,114,0.6);animation:pulse 2s ease-in-out infinite;flex-shrink:0;"></span>
           <span style="font-family:var(--mono);font-size:11px;color:#9099b0;letter-spacing:0.06em;">Currently seeking FP&amp;A, corporate finance, and fintech roles</span>
         </div>
@@ -1044,10 +1150,10 @@
           <a href="https://dancourn.github.io/resume.pdf" target="_blank" class="btn btn-ghost">Resume ↓</a>
         </div>
         <div class="hero-stats">
-          <div class="stat"><div class="stat-num">3.3</div><div class="stat-label">GPA</div></div>
-          <div class="stat"><div class="stat-num">4×</div><div class="stat-label">Dean's List</div></div>
-          <div class="stat"><div class="stat-num">5+</div><div class="stat-label">Financial Models</div></div>
-          <div class="stat"><div class="stat-num">2 yrs</div><div class="stat-label">AI Evaluation</div></div>
+          <div class="stat"><div class="stat-num" data-target="3.3" data-decimals="1" data-suffix="">3.3</div><div class="stat-label">GPA</div></div>
+          <div class="stat"><div class="stat-num" data-target="4" data-decimals="0" data-suffix="×">4×</div><div class="stat-label">Dean's List</div></div>
+          <div class="stat"><div class="stat-num" data-target="5" data-decimals="0" data-suffix="+">5+</div><div class="stat-label">Financial Models</div></div>
+          <div class="stat"><div class="stat-num" data-target="2" data-decimals="0" data-suffix=" yrs">2 yrs</div><div class="stat-label">AI Evaluation</div></div>
         </div>
       </div>
       <!-- RIGHT: photo -->
@@ -1077,7 +1183,7 @@
       <div class="project-item" id="proj-fpa">
         <div class="project-header" onclick="toggleProject('proj-fpa')">
           <div>
-            <div class="project-meta"><span class="project-num">001</span><span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Plotly</span><span class="tag green">Live</span></div>
+            <div class="project-meta"><span class="project-num">001</span><span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Plotly</span><span class="tag live">Live</span></div>
             <div class="project-title">FP&amp;A Budget vs. Actuals Dashboard</div>
             <div class="project-blurb">Automated variance analysis tool that ingests budget templates and actuals, then generates a full reporting dashboard — the monthly close, automated.</div>
           </div>
@@ -1299,25 +1405,6 @@
         </div>
       </div>
 
-      <!-- BUCKED UP -->
-      <div class="exp-item">
-        <div class="exp-date"><span class="year">2023–2025</span>Nov '23 – Jun '25</div>
-        <div class="exp-body">
-          <div class="exp-top">
-            <div><div class="exp-role">Brand Ambassador</div><div class="exp-company">Bucked Up · Contract</div></div>
-            <span class="exp-type">Contract · 1y 8mo</span>
-          </div>
-          <div class="exp-finance-tag">Business Development · Client Relations</div>
-          <p class="exp-desc">Represented a growing consumer brand in a performance-driven contract role. Managed external relationships, stayed accountable to pipeline targets, and operated with the kind of self-direction you need in any client-facing context.</p>
-          <div class="exp-highlight">
-            <p><strong>Why it matters:</strong> Sales work taught me how decisions actually get made before a spreadsheet ever enters the room. Understanding what moves people, not just numbers, is something I think makes a real difference in finance.</p>
-          </div>
-          <div class="exp-skills">
-            <span class="skill-pill">Relationship Management</span><span class="skill-pill">Performance Accountability</span><span class="skill-pill">Business Development</span><span class="skill-pill">Self-Direction</span>
-          </div>
-        </div>
-      </div>
-
       <!-- SAE APPAREL -->
       <div class="exp-item">
         <div class="exp-date"><span class="year">2024–2025</span>Sep '24 – May '25</div>
@@ -1338,6 +1425,49 @@
           </div>
           <div class="exp-skills">
             <span class="skill-pill">Excel Modeling</span><span class="skill-pill">Cost Analysis</span><span class="skill-pill">Vendor Management</span><span class="skill-pill">Budget Forecasting</span><span class="skill-pill">Stakeholder Coordination</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLASSIC CONSTRUCTION -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2024</span>May – Aug</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Seasonal Laborer</div><div class="exp-company">Classic Construction of Brentwood · Long Island, NY</div></div>
+            <span class="exp-type">Seasonal · 4mo</span>
+          </div>
+          <div class="exp-finance-tag">Project Coordination · Operations · Resource Management</div>
+          <p class="exp-desc">Worked on active construction sites supporting skilled tradespeople across framing, wiring, and plumbing installations. Operated under real project timelines and daily operational pressure.</p>
+          <ul class="exp-bullets">
+            <li>Supported skilled tradespeople by assisting with framing, wiring, and plumbing installations, ensuring tasks were completed efficiently and in coordination with broader project timelines.</li>
+            <li>Prepared and maintained job sites by organizing materials, clearing debris, and setting up equipment, helping reduce downtime and keep daily operations running smoothly.</li>
+            <li>Handled the loading, unloading, and proper staging of heavy construction materials, reinforcing safety, organization, and timely availability of resources critical to on-site productivity.</li>
+          </ul>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> Construction sites run on logistics — materials in the right place, people not waiting on resources, timelines met. Keeping that moving taught me operational discipline that translates directly into any environment where execution matters.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">Project Coordination</span><span class="skill-pill">Operational Efficiency</span><span class="skill-pill">Resource Management</span><span class="skill-pill">Team Support</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUCKED UP -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2023–2025</span>Nov '23 – Jun '25</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Brand Ambassador</div><div class="exp-company">Bucked Up · Contract</div></div>
+            <span class="exp-type">Contract · 1y 8mo</span>
+          </div>
+          <div class="exp-finance-tag">Business Development · Client Relations</div>
+          <p class="exp-desc">Represented a growing consumer brand in a performance-driven contract role. Managed external relationships, stayed accountable to pipeline targets, and operated with the kind of self-direction you need in any client-facing context.</p>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> Sales work taught me how decisions actually get made before a spreadsheet ever enters the room. Understanding what moves people, not just numbers, is something I think makes a real difference in finance.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">Relationship Management</span><span class="skill-pill">Performance Accountability</span><span class="skill-pill">Business Development</span><span class="skill-pill">Self-Direction</span>
           </div>
         </div>
       </div>
@@ -1366,6 +1496,30 @@
         </div>
       </div>
 
+      <!-- SHOPRITE DELI -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2023</span>Jun – Aug</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Deli Associate</div><div class="exp-company">ShopRite · Plainview, NY</div></div>
+            <span class="exp-type">Seasonal · 3mo</span>
+          </div>
+          <div class="exp-finance-tag">Customer Service · Quality Control · Daily Operations</div>
+          <p class="exp-desc">Worked the deli counter in a high-volume retail environment. Managed customer orders, product prep, and shelf availability simultaneously in a fast-paced setting.</p>
+          <ul class="exp-bullets">
+            <li>Supported daily store operations by assisting customers with orders, ensuring accurate fulfillment and a positive customer experience in a fast-paced environment.</li>
+            <li>Prepared and portioned deli products according to standards, reinforcing attention to detail, consistency, and quality control.</li>
+            <li>Maintained fully stocked shelves and display cases, helping ensure product availability and smooth day-to-day operations.</li>
+          </ul>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> Working under volume with accuracy on the line — whether it's a customer's order or a financial report — builds habits around precision and composure that stick.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">Customer Service</span><span class="skill-pill">Attention to Detail</span><span class="skill-pill">Quality Control</span><span class="skill-pill">Inventory Management</span>
+          </div>
+        </div>
+      </div>
+
       <!-- CHIROPRACTIC -->
       <div class="exp-item">
         <div class="exp-date"><span class="year">2021–2022</span>Jun '21 – Aug '22</div>
@@ -1385,6 +1539,30 @@
           </div>
           <div class="exp-skills">
             <span class="skill-pill">Data Accuracy</span><span class="skill-pill">Billing Administration</span><span class="skill-pill">Client Communication</span><span class="skill-pill">Operational Efficiency</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARKSHORE DAY CAMP -->
+      <div class="exp-item">
+        <div class="exp-date"><span class="year">2021</span>Apr – Jun</div>
+        <div class="exp-body">
+          <div class="exp-top">
+            <div><div class="exp-role">Maintenance Assistant</div><div class="exp-company">ParkShore Day Camp · Dix Hills, NY</div></div>
+            <span class="exp-type">Full-time · 3mo</span>
+          </div>
+          <div class="exp-finance-tag">Facility Operations · Inventory · Team Coordination</div>
+          <p class="exp-desc">Maintained a fully operational day camp facility, managing both physical upkeep and supply logistics. Early experience working full-time in a structured operational environment.</p>
+          <ul class="exp-bullets">
+            <li>Supported daily facility operations by performing maintenance and cleaning tasks, helping ensure a safe, organized, and functional environment.</li>
+            <li>Inspected and maintained outdoor areas, including shrubbery, trees, and lawns, supporting consistent property standards and upkeep.</li>
+            <li>Managed stocking of food and beverage supplies, helping ensure availability and smooth day-to-day operations.</li>
+          </ul>
+          <div class="exp-highlight">
+            <p><strong>Why it matters:</strong> Keeping a facility running on schedule with limited resources is a coordination problem. It was an early lesson in taking ownership of a space and the operations inside it.</p>
+          </div>
+          <div class="exp-skills">
+            <span class="skill-pill">Facility Operations</span><span class="skill-pill">Supply Management</span><span class="skill-pill">Team Coordination</span><span class="skill-pill">Dependability</span>
           </div>
         </div>
       </div>
@@ -1581,12 +1759,20 @@
 </section>
 
 <!-- FOOTER -->
-<footer>
+<footer style="padding-bottom: 3rem;">
   <div class="wrapper">
     <p class="footer-note">© 2026 <span>Daniel Cournane</span></p>
     <p class="footer-note">Finance · Fintech · New York</p>
   </div>
 </footer>
+
+<!-- BLOOMBERG TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-label">Markets</div>
+  <div style="overflow:hidden;flex:1;">
+    <div class="ticker-track" id="tickerTrack"></div>
+  </div>
+</div>
 
 <script>
   // Cursor — minimal crosshair
@@ -1737,5 +1923,151 @@
       document.getElementById('particleLeft').style.display = 'none';
       document.getElementById('particleRight').style.display = 'none';
     }
+  })();
+
+  // ── COUNTER ANIMATION ────────────────────────────────────────────────────
+  (function() {
+    const counters = document.querySelectorAll('.stat-num[data-target]');
+    const duration = 1800; // ms
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function animateCounter(el) {
+      const target   = parseFloat(el.dataset.target);
+      const decimals = parseInt(el.dataset.decimals) || 0;
+      const suffix   = el.dataset.suffix || '';
+      const start    = performance.now();
+
+      function tick(now) {
+        const elapsed  = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased    = easeOutCubic(progress);
+        const value    = eased * target;
+        el.textContent = value.toFixed(decimals) + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = target.toFixed(decimals) + suffix;
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    // Fire when the stats row becomes visible
+    const statsRow = document.querySelector('.hero-stats');
+    if (statsRow) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            // Small delay so it lands after the fade-in animation
+            setTimeout(() => {
+              counters.forEach(animateCounter);
+            }, 600);
+            obs.unobserve(statsRow);
+          }
+        });
+      }, { threshold: 0.5 });
+      obs.observe(statsRow);
+    }
+  })();
+
+  // ── TICKER BUILD ─────────────────────────────────────────────────────────
+  (function() {
+    const stocks = [
+      { sym:'SPY',   val:'591.42',   chg:'+0.84%', up:true  },
+      { sym:'QQQ',   val:'512.17',   chg:'+1.12%', up:true  },
+      { sym:'AAPL',  val:'213.55',   chg:'+0.62%', up:true  },
+      { sym:'MSFT',  val:'461.20',   chg:'+0.38%', up:true  },
+      { sym:'NVDA',  val:'137.84',   chg:'+2.41%', up:true  },
+      { sym:'TSLA',  val:'248.30',   chg:'-1.82%', up:false },
+      { sym:'META',  val:'624.90',   chg:'+1.05%', up:true  },
+      { sym:'GOOG',  val:'182.74',   chg:'+0.77%', up:true  },
+      { sym:'AMZN',  val:'228.14',   chg:'+0.93%', up:true  },
+      { sym:'NFLX',  val:'1,284.60', chg:'+1.68%', up:true  },
+      { sym:'JPM',   val:'268.45',   chg:'+0.51%', up:true  },
+      { sym:'GS',    val:'582.10',   chg:'-0.29%', up:false },
+      { sym:'BRK.B', val:'484.22',   chg:'+0.14%', up:true  },
+      { sym:'AMD',   val:'164.33',   chg:'+3.12%', up:true  },
+      { sym:'PLTR',  val:'128.50',   chg:'+4.80%', up:true  },
+      { sym:'COIN',  val:'268.74',   chg:'+2.95%', up:true  },
+      { sym:'10Y',   val:'4.42%',    chg:'+3bps',  up:true  },
+      { sym:'VIX',   val:'13.84',    chg:'-0.62%', up:false },
+      { sym:'BTC',   val:'104,210',  chg:'+1.44%', up:true  },
+      { sym:'GLD',   val:'312.58',   chg:'-0.18%', up:false },
+      { sym:'DXY',   val:'104.32',   chg:'-0.21%', up:false },
+    ];
+    function buildItem(s) {
+      const dir = s.up ? 'up' : 'down';
+      const arr = s.up ? '▲' : '▼';
+      return `<span class="ticker-item"><span class="ticker-sym">${s.sym}</span><span class="ticker-val">${s.val}</span><span class="ticker-chg ${dir} ticker-arr">${arr}</span><span class="ticker-chg ${dir}">${s.chg}</span></span>`;
+    }
+    const track = document.getElementById('tickerTrack');
+    if (track) { const html = stocks.map(buildItem).join(''); track.innerHTML = html + html; }
+  })();
+
+  // ── FINANCIAL MODEL TYPING CANVAS ────────────────────────────────────────
+  (function() {
+    const canvas = document.getElementById('fmCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const LABELS   = ['Revenue','COGS','Gross Profit','EBITDA','EBIT','Net Income','FCF','CapEx','D&A','WACC','EV/EBITDA','P/E','EPS','Beta','IRR','MOIC','NTM Rev','ARR','Churn','NTM'];
+    const FORMULAS = ['=SUM(B4:B8)','=IF(D4>0,','=VLOOKUP(A2,','=NPV(0.10,','=IRR(C4:C14)','=OFFSET($B$4,','=INDEX(MATCH(','=XNPV(rate,','/$E$12','*1000)','B8-B9','C12/C4','D6*1.08','=(1+r)^n','FCF/WACC','*shares_out','LN(1+g)','EXP(beta)','SUMPRODUCT(','IFERROR(0,'];
+    const NUMBERS  = ['1,240','(482)','758','312.4','0.842','14.2x','18.5%','2,840','(1,200)','4.8%','88.6','3.3x','0.12','62.4','124,800','(38.2)','1.0x','7,200','0.94','22.1%'];
+
+    const ACCENT = 'rgba(79,142,247,';
+    const GREEN  = 'rgba(125,214,160,';
+    const MUTED  = 'rgba(144,153,176,';
+
+    let cols = [], W, H;
+
+    function randItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function rand(a, b)    { return a + Math.random() * (b - a); }
+
+    function makeCell() {
+      const r = Math.random();
+      if      (r < 0.35) return { text: randItem(NUMBERS),  color: GREEN,  speed: rand(0.3, 0.85) };
+      else if (r < 0.65) return { text: randItem(FORMULAS), color: ACCENT, speed: rand(0.2, 0.65) };
+      else               return { text: randItem(LABELS),   color: MUTED,  speed: rand(0.15, 0.5) };
+    }
+
+    function initCols() {
+      const colW = 118;
+      cols = [];
+      for (let i = 0; i < Math.ceil(W / colW) + 1; i++) {
+        const cells = Array.from({ length: Math.floor(H / 22) + 2 }, makeCell);
+        cols.push({ x: i * colW + rand(0, colW), y: rand(-H, 0), cells, opacity: rand(0.3, 0.85) });
+      }
+    }
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      initCols();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.font = '11px "JetBrains Mono", monospace';
+      cols.forEach(col => {
+        col.y += col.cells[0].speed;
+        if (col.y > H + 200) { col.y = -col.cells.length * 22; col.cells = col.cells.map(makeCell); }
+        col.cells.forEach((cell, i) => {
+          const y = col.y + i * 22;
+          if (y < -20 || y > H + 20) return;
+          const fadeT = Math.min(1, (y + 40) / 120);
+          const fadeB = Math.min(1, (H - y + 40) / 120);
+          const isLead = i === Math.floor(-col.y / 22);
+          const a = (isLead ? Math.min(col.opacity * 2, 0.95) : col.opacity * 0.5) * fadeT * fadeB;
+          ctx.fillStyle = cell.color + a.toFixed(3) + ')';
+          ctx.fillText(cell.text, col.x, y);
+        });
+      });
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
   })();
 </script>
