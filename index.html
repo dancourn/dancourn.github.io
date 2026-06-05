@@ -1101,7 +1101,7 @@
             </div></div>
           </div>
         </div></div>
-      
+      </div>
 
       <div class="project-item" id="proj-earnings">
         <div class="project-header" onclick="toggleProject('proj-earnings')">
@@ -1633,9 +1633,7 @@
   // Project toggle
   function toggleProject(id){
     const item=document.getElementById(id);
-    const open=item.classList.contains('open');
-    document.querySelectorAll('.project-item.open').forEach(el=>el.classList.remove('open'));
-    if(!open)item.classList.add('open');
+    item.classList.toggle('open');
   }
 
   // Mobile nav drawer
