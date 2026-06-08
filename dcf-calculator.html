@@ -930,8 +930,9 @@
       <div class="panel" style="animation-delay:0.1s">
         <div class="panel-header">
           <div class="panel-title"><span></span>10-Year FCF Projection</div>
-          <div id="scenario-label" style="font-family:var(--mono);font-size:11px;color:var(--muted)">BASE CASE</div>
+          <div id="scenario-label" style="font-family:var(--mono);font-size:11px;color:var(--muted)">—</div>
         </div>
+        <div id="fcf-warning" style="display:none;margin:0 1.5rem 0;padding:0.6rem 0.85rem;background:var(--reddim);border:1px solid rgba(240,112,112,0.25);border-radius:3px;font-family:var(--mono);font-size:11px;color:var(--red);margin-top:0.75rem;"></div>
         <div class="panel-body" style="padding:0 0 0.5rem">
           <div class="fcf-table-wrap">
             <table id="fcf-table">
@@ -1032,8 +1033,20 @@
         if (!isNaN(v) && isFinite(v)) document.getElementById(id).value = v;
       };
 
-      // ── Populate DCF inputs from API data ──
-      const notes = [];
+      // ── Invalid ticker detection ──
+      // If companyName equals the ticker, or exchange is N/A with no price, it's not a real ticker
+      const isInvalid = (
+        (!d.price || Number(d.price) === 0) &&
+        (!d.totalRevenue || Number(d.totalRevenue) === 0) &&
+        (!d.marketCap || Number(d.marketCap) === 0)
+      );
+      if (isInvalid) {
+        status.style.color = 'var(--red)';
+        status.textContent = `✗ "${ticker}" not found — check the ticker symbol and try again`;
+        card.style.display = 'none';
+        setBlankState();
+        return;
+      }
 
       // Revenue — raw dollars → millions
       const rev = Number(d.totalRevenue);
@@ -1197,6 +1210,7 @@
   // ── HELPERS ──
   // All model values are in $M — format accordingly
   const fmt = (n, dec=1) => {
+    if (!isFinite(n) || isNaN(n)) return '—';
     const abs = Math.abs(n);
     const sign = n < 0 ? '-' : '';
     if (abs >= 1e6)      return `${sign}$${(abs/1e6).toFixed(dec)}T`;
@@ -1269,19 +1283,49 @@
     const upside = ((ivPerShare - price) / price) * 100;
     const tvPct = (tvPV / ev) * 100;
 
+    // ── Check for negative FCF ──
+    const negativeFCFs = fcfs.filter(f => f < 0).length;
+
     // ── KPIs ──
     const ivEl = document.getElementById('kpi-iv');
-    ivEl.textContent = '$' + ivPerShare.toFixed(2);
-    ivEl.className = 'kpi-value ' + (ivPerShare > price ? 'up' : 'down');
-
     const upsideEl = document.getElementById('kpi-upside');
-    upsideEl.innerHTML = `<span class="margin-pill ${upside>=0?'up':'down'}">${fmtPct(upside)} vs $${price.toFixed(2)}</span>`;
 
-    document.getElementById('kpi-ev').textContent = fmt(ev);
-    document.getElementById('kpi-ev-sub').textContent = `Equity: ${fmt(equityVal)}`;
-    document.getElementById('kpi-tvpct').textContent = tvPct.toFixed(1) + '%';
+    if (equityVal < 0) {
+      // Negative equity — model breakdown warning
+      ivEl.textContent = 'N/M';
+      ivEl.className = 'kpi-value down';
+      upsideEl.innerHTML = `<span class="margin-pill down">⚠ Model not meaningful — high debt exceeds DCF value. Reduce CapEx % or increase margins.</span>`;
+    } else if (!shares || !price) {
+      ivEl.textContent = '—';
+      ivEl.className = 'kpi-value';
+      upsideEl.innerHTML = `<span style="color:var(--muted);font-family:var(--mono);font-size:11px;">Enter shares and price to calculate IV/share</span>`;
+    } else {
+      ivEl.textContent = '$' + ivPerShare.toFixed(2);
+      ivEl.className = 'kpi-value ' + (ivPerShare > price ? 'up' : 'down');
+      upsideEl.innerHTML = `<span class="margin-pill ${upside>=0?'up':'down'}">${fmtPct(upside)} vs $${price.toFixed(2)}</span>`;
+    }
 
-    // ── FCF TABLE ──
+    document.getElementById('kpi-ev').textContent = equityVal < 0 ? 'N/M' : fmt(ev);
+    document.getElementById('kpi-ev-sub').textContent = equityVal < 0
+      ? `⚠ Negative equity: ${fmt(equityVal)}`
+      : `Equity: ${fmt(equityVal)}`;
+    document.getElementById('kpi-ev-sub').style.color = equityVal < 0 ? 'var(--red)' : '';
+    document.getElementById('kpi-tvpct').textContent = isFinite(tvPct) ? tvPct.toFixed(1) + '%' : '—';
+
+    // ── Negative FCF warning banner ──
+    const warnEl = document.getElementById('fcf-warning');
+    if (negativeFCFs > 0 && warnEl) {
+      warnEl.style.display = 'block';
+      warnEl.textContent = `⚠ ${negativeFCFs} year${negativeFCFs>1?'s':''} of negative FCF — consider increasing margins or reducing CapEx assumptions`;
+    } else if (warnEl) {
+      warnEl.style.display = 'none';
+    }
+
+    const fmtFCF = v => {
+      if (v < 0) return `<span style="color:var(--red)">${fmt(v)}</span>`;
+      return fmt(v);
+    };
+
     const tbody = document.getElementById('fcf-tbody');
     const rows = [
       { label: 'Revenue',   data: revenues,   cls: '', fmt: v => fmt(v) },
@@ -1290,8 +1334,8 @@
       { label: '+ D&A',     data: das,         cls: '', fmt: v => fmt(v) },
       { label: '- CapEx',   data: capexs,      cls: '', fmt: v => '('+fmt(v)+')' },
       { label: '- ΔNWC',    data: nwcChanges,  cls: '', fmt: v => '('+fmt(v)+')' },
-      { label: 'FCF',       data: fcfs,        cls: 'td-accent', fmt: v => fmt(v) },
-      { label: 'PV(FCF)',   data: pvs,         cls: 'td-green',  fmt: v => fmt(v) },
+      { label: 'FCF',       data: fcfs,        cls: 'td-accent', fmt: v => fmtFCF(v) },
+      { label: 'PV(FCF)',   data: pvs,         cls: 'td-green',  fmt: v => fmtFCF(v) },
     ];
 
     tbody.innerHTML = rows.map(r => `
