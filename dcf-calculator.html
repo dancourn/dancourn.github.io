@@ -246,15 +246,6 @@
       font-family: var(--sans);
     }
 
-    .unit-tag {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.04em;
-      margin-left: 4px;
-      opacity: 0.75;
-    }
-
     .label-value {
       font-family: var(--mono);
       font-size: 13px;
@@ -682,7 +673,7 @@
 <header>
   <div class="header-left">
     <div class="logo">DC<span>.</span>Finance</div>
-    <div class="header-badge">DCF Model v1.4</div>
+    <div class="header-badge">DCF Model v1.0</div>
   </div>
   <div class="header-right"><span class="live-dot"></span>Live Calculation</div>
 </header>
@@ -704,55 +695,6 @@
       </div>
       <div class="panel-body">
 
-        <!-- TICKER LOOKUP -->
-        <div style="margin-bottom:1.25rem;">
-          <div class="section-label" style="margin-bottom:0.75rem;">Load Company Data</div>
-          <div style="display:flex;gap:0.5rem;align-items:stretch;">
-            <div style="position:relative;flex:1;">
-              <input
-                type="text"
-                id="ticker-input"
-                placeholder="Enter ticker (e.g. AAPL, MSFT, NVDA)"
-                maxlength="10"
-                style="width:100%;background:var(--bg3);border:1px solid var(--line2);border-radius:3px;color:var(--text);font-family:var(--mono);font-size:13px;padding:0.55rem 0.75rem;outline:none;transition:border-color 0.2s;text-transform:uppercase;"
-                onkeydown="if(event.key==='Enter') fetchTicker()"
-                onfocus="this.style.borderColor='var(--accent)'"
-                onblur="this.style.borderColor='var(--line2)'"
-              />
-            </div>
-            <button
-              id="fetch-btn"
-              onclick="fetchTicker()"
-              style="background:var(--accent);color:#07090f;border:none;border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:0 1rem;cursor:pointer;transition:background 0.2s;white-space:nowrap;"
-              onmouseover="this.style.background='var(--accent2)'"
-              onmouseout="this.style.background='var(--accent)'"
-            >Load ↗</button>
-          </div>
-
-          <!-- Status / Company Card -->
-          <div id="ticker-status" style="margin-top:0.6rem;font-family:var(--mono);font-size:11px;color:var(--muted);">
-            Defaults loaded: CMG — Chipotle Mexican Grill (FY2024 10-K)
-          </div>
-          <div id="company-card" style="display:none;margin-top:0.75rem;background:var(--bg3);border:1px solid var(--line);border-radius:3px;padding:0.85rem 1rem;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
-              <div>
-                <div id="cc-name" style="font-family:var(--serif);font-size:1rem;color:var(--text);margin-bottom:2px;"></div>
-                <div id="cc-meta" style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.06em;"></div>
-              </div>
-              <div style="text-align:right;">
-                <div id="cc-price" style="font-family:var(--serif);font-size:1.3rem;color:var(--text);"></div>
-                <div id="cc-change" style="font-family:var(--mono);font-size:11px;"></div>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--line);">
-              <div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Market Cap</div><div id="cc-mcap" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div></div>
-              <div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Rev Growth</div><div id="cc-revg" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div></div>
-              <div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Beta</div><div id="cc-beta" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div></div>
-            </div>
-            <div id="cc-note" style="margin-top:0.6rem;font-family:var(--mono);font-size:10px;color:var(--yellow);line-height:1.5;display:none;"></div>
-          </div>
-        </div>
-
         <!-- SCENARIOS -->
         <div class="scenario-bar">
           <button class="scenario-btn bull" onclick="loadScenario('bull')">Bull</button>
@@ -766,52 +708,52 @@
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">Base Revenue <span class="unit-tag">$ millions</span></span>
+              <span class="label-text">Base Revenue (Year 0)</span>
             </div>
             <div class="input-wrap">
               <span class="prefix">$</span>
-              <input type="number" id="baseRevenue" value="11314" min="1" step="10" oninput="calc()" />
+              <input type="number" id="baseRevenue" value="1000" min="1" step="10" oninput="calc()" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">EBIT Margin <span class="unit-tag">% of revenue</span></span>
-              <span class="label-value" id="val-ebitMargin">17%</span>
+              <span class="label-text">EBIT Margin</span>
+              <span class="label-value" id="val-ebitMargin">18%</span>
             </div>
-            <input type="range" id="ebitMargin" min="1" max="50" step="0.5" value="17" oninput="syncVal('ebitMargin','val-ebitMargin','%'); calc()" />
+            <input type="range" id="ebitMargin" min="1" max="50" step="0.5" value="18" oninput="syncVal('ebitMargin','val-ebitMargin','%'); calc()" />
           </div>
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">Tax Rate <span class="unit-tag">% of pre-tax income</span></span>
-              <span class="label-value" id="val-taxRate">25%</span>
+              <span class="label-text">Tax Rate</span>
+              <span class="label-value" id="val-taxRate">21%</span>
             </div>
-            <input type="range" id="taxRate" min="0" max="40" step="0.5" value="25" oninput="syncVal('taxRate','val-taxRate','%'); calc()" />
+            <input type="range" id="taxRate" min="0" max="40" step="0.5" value="21" oninput="syncVal('taxRate','val-taxRate','%'); calc()" />
           </div>
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">D&amp;A <span class="unit-tag">% of revenue</span></span>
-              <span class="label-value" id="val-da">3%</span>
+              <span class="label-text">D&A (% of Revenue)</span>
+              <span class="label-value" id="val-da">4%</span>
             </div>
-            <input type="range" id="da" min="0" max="20" step="0.5" value="3" oninput="syncVal('da','val-da','%'); calc()" />
+            <input type="range" id="da" min="0" max="20" step="0.5" value="4" oninput="syncVal('da','val-da','%'); calc()" />
           </div>
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">CapEx <span class="unit-tag">% of revenue</span></span>
-              <span class="label-value" id="val-capex">6%</span>
+              <span class="label-text">CapEx (% of Revenue)</span>
+              <span class="label-value" id="val-capex">5%</span>
             </div>
-            <input type="range" id="capex" min="0" max="30" step="0.5" value="6" oninput="syncVal('capex','val-capex','%'); calc()" />
+            <input type="range" id="capex" min="0" max="30" step="0.5" value="5" oninput="syncVal('capex','val-capex','%'); calc()" />
           </div>
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">Change in NWC <span class="unit-tag">% of rev growth</span></span>
-              <span class="label-value" id="val-nwc">1.5%</span>
+              <span class="label-text">Change in NWC (% Rev)</span>
+              <span class="label-value" id="val-nwc">2%</span>
             </div>
-            <input type="range" id="nwc" min="-5" max="15" step="0.5" value="1.5" oninput="syncVal('nwc','val-nwc','%'); calc()" />
+            <input type="range" id="nwc" min="-5" max="15" step="0.5" value="2" oninput="syncVal('nwc','val-nwc','%'); calc()" />
           </div>
         </div>
 
@@ -821,7 +763,7 @@
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">Revenue Growth Yr 1–5 <span class="unit-tag">% YoY</span></span>
+              <span class="label-text">Revenue Growth (Yr 1–5)</span>
               <span class="label-value" id="val-growth1">12%</span>
             </div>
             <input type="range" id="growth1" min="0" max="60" step="0.5" value="12" oninput="syncVal('growth1','val-growth1','%'); calc()" />
@@ -829,15 +771,15 @@
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">Revenue Growth Yr 6–10 <span class="unit-tag">% YoY</span></span>
-              <span class="label-value" id="val-growth2">7%</span>
+              <span class="label-text">Revenue Growth (Yr 6–10)</span>
+              <span class="label-value" id="val-growth2">6%</span>
             </div>
-            <input type="range" id="growth2" min="0" max="40" step="0.5" value="7" oninput="syncVal('growth2','val-growth2','%'); calc()" />
+            <input type="range" id="growth2" min="0" max="40" step="0.5" value="6" oninput="syncVal('growth2','val-growth2','%'); calc()" />
           </div>
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">Terminal Growth Rate <span class="unit-tag">perpetual % after Yr 10</span></span>
+              <span class="label-text">Terminal Growth Rate</span>
               <span class="label-value" id="val-tgr">2.5%</span>
             </div>
             <input type="range" id="tgr" min="0" max="5" step="0.1" value="2.5" oninput="syncVal('tgr','val-tgr','%'); calc()" />
@@ -845,10 +787,10 @@
 
           <div class="form-row">
             <div class="form-label">
-              <span class="label-text">WACC <span class="unit-tag">weighted avg cost of capital</span></span>
-              <span class="label-value" id="val-wacc">9%</span>
+              <span class="label-text">WACC</span>
+              <span class="label-value" id="val-wacc">10%</span>
             </div>
-            <input type="range" id="wacc" min="4" max="25" step="0.25" value="9" oninput="syncVal('wacc','val-wacc','%'); calc()" />
+            <input type="range" id="wacc" min="4" max="25" step="0.25" value="10" oninput="syncVal('wacc','val-wacc','%'); calc()" />
           </div>
         </div>
 
@@ -857,29 +799,26 @@
           <div class="section-label">Balance Sheet Adjustments</div>
 
           <div class="form-row">
-            <div class="form-label"><span class="label-text">Net Debt <span class="unit-tag">$ millions · negative = net cash</span></span></div>
+            <div class="form-label"><span class="label-text">Net Debt</span></div>
             <div class="input-wrap">
               <span class="prefix">$</span>
-              <input type="number" id="netDebt" value="-1200" step="10" oninput="updateNetDebtLabel(); calc()" />
-            </div>
-            <div id="net-debt-status" style="margin-top:5px;font-family:var(--mono);font-size:11px;color:var(--green);">
-              ✦ Net cash position — adds to equity value
+              <input type="number" id="netDebt" value="200" min="0" step="10" oninput="calc()" />
             </div>
           </div>
 
           <div class="form-row">
-            <div class="form-label"><span class="label-text">Shares Outstanding <span class="unit-tag">millions of shares</span></span></div>
+            <div class="form-label"><span class="label-text">Shares Outstanding (M)</span></div>
             <div class="input-wrap">
               <span class="prefix">#</span>
-              <input type="number" id="shares" value="1355" min="1" step="1" oninput="calc()" />
+              <input type="number" id="shares" value="100" min="1" step="1" oninput="calc()" />
             </div>
           </div>
 
           <div class="form-row">
-            <div class="form-label"><span class="label-text">Current Stock Price <span class="unit-tag">$ per share</span></span></div>
+            <div class="form-label"><span class="label-text">Current Stock Price</span></div>
             <div class="input-wrap">
               <span class="prefix">$</span>
-              <input type="number" id="stockPrice" value="30.50" min="0.01" step="0.5" oninput="calc()" />
+              <input type="number" id="stockPrice" value="85" min="0.01" step="0.5" oninput="calc()" />
             </div>
           </div>
         </div>
@@ -968,15 +907,6 @@
   </div>
 
   <div class="footnote">
-    <div style="margin-bottom:1rem;padding:1rem 1.25rem;background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--yellow);border-radius:0 3px 3px 0;">
-      <div style="color:var(--yellow);letter-spacing:0.12em;text-transform:uppercase;font-size:10px;margin-bottom:0.5rem;">⚙ Setup: Ticker Lookup</div>
-      <div style="color:var(--muted2);font-size:11px;line-height:1.8;">
-        1. Deploy <code style="color:var(--accent2)">worker.js</code> to Cloudflare Workers (free tier — workers.dev)<br>
-        2. Copy your worker URL (e.g. <code style="color:var(--accent2)">https://signal-proxy.yourname.workers.dev</code>)<br>
-        3. Replace <code style="color:var(--accent2)">YOUR_WORKER</code> on line 1 of the script block in this file<br>
-        4. Push to GitHub — ticker lookup will work for any US-listed stock
-      </div>
-    </div>
     Built by Daniel Cournane · Finance + Fintech, University of Delaware ·
     Framework mirrors NBIS and Chipotle valuation models completed at Romero Capital, 2025 ·
     Not investment advice — for educational and portfolio demonstration purposes only.
@@ -984,173 +914,11 @@
 </main>
 
 <script>
-  // ── WORKER URL — replace with your Cloudflare Worker URL ──
-  const WORKER_URL = 'https://signal-proxy.danielcournane.workers.dev';
-
-  // ── TICKER LOOKUP ──
-  async function fetchTicker() {
-    const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
-    if (!ticker) return;
-
-    const btn = document.getElementById('fetch-btn');
-    const status = document.getElementById('ticker-status');
-    const card = document.getElementById('company-card');
-
-    btn.textContent = '...';
-    btn.style.opacity = '0.6';
-    btn.disabled = true;
-    status.style.color = 'var(--muted)';
-    status.textContent = `Fetching ${ticker}…`;
-    card.style.display = 'none';
-
-    try {
-      const res = await fetch(`${WORKER_URL}?ticker=${ticker}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const d = await res.json();
-      console.log('Worker response:', JSON.stringify(d));
-      if (d.error) throw new Error(d.error);
-
-      // ── Helper: set a range slider AND its label ──
-      const setSlider = (id, labelId, value, suffix) => {
-        const el = document.getElementById(id);
-        const v = parseFloat(value);
-        if (!isNaN(v)) {
-          el.value = v;
-          document.getElementById(labelId).textContent = v.toFixed(1) + suffix;
-        }
-      };
-
-      const setInput = (id, value) => {
-        const v = parseFloat(value);
-        if (!isNaN(v) && isFinite(v)) document.getElementById(id).value = v;
-      };
-
-      // ── Populate DCF inputs from API data ──
-      const notes = [];
-
-      // Revenue — raw dollars → millions
-      const rev = Number(d.totalRevenue);
-      if (rev > 0) {
-        setInput('baseRevenue', Math.round(rev / 1e6));
-      } else {
-        notes.push('Revenue not available — enter manually');
-      }
-
-      // Operating margin (EBIT proxy)
-      const opMgn = Number(d.operatingMargin);
-      const profMgn = Number(d.profitMargin);
-      if (opMgn > 0) {
-        setSlider('ebitMargin', 'val-ebitMargin', (opMgn * 100).toFixed(1), '%');
-      } else if (profMgn > 0) {
-        setSlider('ebitMargin', 'val-ebitMargin', Math.min(50, profMgn * 100 * 1.35).toFixed(1), '%');
-        notes.push('EBIT margin estimated from net margin — verify manually');
-      } else {
-        notes.push('Margin not available — enter manually');
-      }
-
-      // Stock price
-      const px = Number(d.price);
-      if (px > 0) setInput('stockPrice', px.toFixed(2));
-
-      // Shares outstanding → millions
-      const shs = Number(d.sharesOutstanding);
-      if (shs > 0) {
-        setInput('shares', Math.round(shs / 1e6));
-      } else {
-        notes.push('Shares not available — enter manually');
-      }
-
-      // Net debt = total debt − total cash (both raw dollars → millions)
-      const debt = Number(d.totalDebt);
-      const cash = Number(d.totalCash);
-      if (debt >= 0 && cash >= 0) {
-        setInput('netDebt', Math.round((debt - cash) / 1e6));
-        updateNetDebtLabel();
-      } else {
-        notes.push('Debt data not available — enter manually');
-      }
-
-      // Revenue growth — seed Yr1-5 from TTM, clamp 0–60%
-      const revG = Number(d.revenueGrowth);
-      if (isFinite(revG)) {
-        const pct = Math.min(60, Math.max(0, revG * 100));
-        setSlider('growth1', 'val-growth1', pct.toFixed(1), '%');
-        notes.push(`Rev growth seeded from TTM (${(revG*100).toFixed(1)}%) — adjust for your forecast`);
-      }
-
-      // WACC via CAPM: rf + β × ERP
-      const beta = Number(d.beta);
-      if (beta > 0) {
-        const wacc = Math.min(25, Math.max(4, 4.3 + beta * 5.5));
-        setSlider('wacc', 'val-wacc', wacc.toFixed(2), '%');
-      }
-
-      // Deselect scenario pills — using live data now
-      document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('scenario-label').textContent = `${ticker} LIVE DATA`;
-
-      // ── Company card ──
-      const fmtRaw = v => {
-        const n = Number(v);
-        if (!n) return '--';
-        if (n >= 1e12) return `$${(n/1e12).toFixed(2)}T`;
-        if (n >= 1e9)  return `$${(n/1e9).toFixed(1)}B`;
-        if (n >= 1e6)  return `$${(n/1e6).toFixed(0)}M`;
-        return `$${n}`;
-      };
-
-      document.getElementById('cc-name').textContent = d.companyName || ticker;
-      document.getElementById('cc-meta').textContent =
-        [ticker, d.exchange, d.sector !== '--' ? d.sector : null, d.industry !== '--' ? d.industry : null]
-        .filter(Boolean).join(' · ');
-
-      document.getElementById('cc-price').textContent = d.price ? `$${Number(d.price).toFixed(2)}` : '--';
-      const chg = d.changePct ? (Number(d.changePct) * 100) : null;
-      const chgEl = document.getElementById('cc-change');
-      if (chg != null) {
-        chgEl.textContent = `${chg >= 0 ? '+' : ''}${chg.toFixed(2)}% today`;
-        chgEl.style.color = chg >= 0 ? 'var(--green)' : 'var(--red)';
-      }
-
-      document.getElementById('cc-mcap').textContent = fmtRaw(d.marketCap);
-      document.getElementById('cc-revg').textContent = d.revenueGrowth != null
-        ? `${(Number(d.revenueGrowth)*100).toFixed(1)}% TTM` : '--';
-      document.getElementById('cc-beta').textContent = d.beta != null ? Number(d.beta).toFixed(2) : '--';
-
-      const noteEl = document.getElementById('cc-note');
-      if (notes.length) {
-        noteEl.style.display = 'block';
-        noteEl.innerHTML = '⚠ ' + notes.join(' · ');
-      } else {
-        noteEl.style.display = 'none';
-      }
-      card.style.display = 'block';
-
-      status.style.color = 'var(--green)';
-      status.textContent = `✓ ${d.companyName || ticker} loaded — verify assumptions before use`;
-
-      calc();
-
-    } catch(err) {
-      status.style.color = 'var(--red)';
-      if (WORKER_URL.includes('YOUR_WORKER')) {
-        status.textContent = '⚠ Worker URL not configured — see setup instructions below';
-      } else {
-        status.textContent = `✗ Error: ${err.message}`;
-      }
-      card.style.display = 'none';
-    } finally {
-      btn.textContent = 'Load ↗';
-      btn.style.opacity = '1';
-      btn.disabled = false;
-    }
-  }
-
   // ── SCENARIOS ──
   const SCENARIOS = {
-    bull: { growth1:15, growth2:10, ebitMargin:20, wacc:8.0,  tgr:3.0, capex:5,  da:3, taxRate:25, nwc:1.5 },
-    base: { growth1:12, growth2:7,  ebitMargin:17, wacc:9.0,  tgr:2.5, capex:6,  da:3, taxRate:25, nwc:1.5 },
-    bear: { growth1:6,  growth2:3,  ebitMargin:14, wacc:11.0, tgr:1.5, capex:7,  da:3, taxRate:25, nwc:2.5 },
+    bull: { growth1:22, growth2:12, ebitMargin:24, wacc:8.5,  tgr:3.0, capex:5,  da:4, taxRate:21, nwc:2 },
+    base: { growth1:12, growth2:6,  ebitMargin:18, wacc:10.0, tgr:2.5, capex:5,  da:4, taxRate:21, nwc:2 },
+    bear: { growth1:5,  growth2:3,  ebitMargin:12, wacc:12.5, tgr:1.5, capex:6,  da:4, taxRate:21, nwc:3 },
   };
 
   const SCENARIO_LABELS = { bull:'BULL CASE', base:'BASE CASE', bear:'BEAR CASE' };
@@ -1181,14 +949,8 @@
   function resetDefaults() { loadScenario('base'); }
 
   // ── HELPERS ──
-  // All model values are in $M — format accordingly
-  const fmt = (n, dec=1) => {
-    const abs = Math.abs(n);
-    const sign = n < 0 ? '-' : '';
-    if (abs >= 1e6)      return `${sign}$${(abs/1e6).toFixed(dec)}T`;
-    if (abs >= 1e3)      return `${sign}$${(abs/1e3).toFixed(dec)}B`;
-    return `${sign}$${abs.toFixed(dec)}M`;
-  };
+  const fmt = (n, dec=1) => n >= 1e9 ? `$${(n/1e9).toFixed(dec)}B`
+    : n >= 1e6 ? `$${(n/1e6).toFixed(dec)}M` : `$${n.toFixed(dec)}`;
 
   const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
 
@@ -1288,13 +1050,11 @@
     `).join('');
 
     // ── VALUE BRIDGE (Bar chart) ──
-    const debtLabel = netDebt >= 0 ? '– Net Debt' : '+ Net Cash';
-    const debtColor = netDebt >= 0 ? 'var(--red)' : 'var(--green)';
     const bridgeData = [
-      { label: 'PV FCFs',    val: pvSum,         color: 'var(--accent)' },
-      { label: 'PV TV',      val: tvPV,           color: 'var(--accent2)' },
-      { label: debtLabel,    val: Math.abs(netDebt), color: debtColor },
-      { label: '= Equity',   val: equityVal,      color: 'var(--green)' },
+      { label: 'PV FCFs',  val: pvSum,  color: 'var(--accent)' },
+      { label: 'PV TV',    val: tvPV,   color: 'var(--accent2)' },
+      { label: '– Debt',   val: -netDebt, color: 'var(--red)' },
+      { label: '= Equity', val: equityVal, color: 'var(--green)' },
     ];
     const maxAbsVal = Math.max(...bridgeData.map(d => Math.abs(d.val)));
     const chart = document.getElementById('bar-chart');
@@ -1386,23 +1146,7 @@
     `;
   }
 
-  function updateNetDebtLabel() {
-    const nd = parseFloat(document.getElementById('netDebt').value) || 0;
-    const el = document.getElementById('net-debt-status');
-    if (nd < 0) {
-      el.style.color = 'var(--green)';
-      el.textContent = '✦ Net cash position — adds to equity value';
-    } else if (nd === 0) {
-      el.style.color = 'var(--muted)';
-      el.textContent = '◇ No net debt or cash adjustment';
-    } else {
-      el.style.color = 'var(--red)';
-      el.textContent = '▼ Net debt position — reduces equity value';
-    }
-  }
-
   // Init
-  updateNetDebtLabel();
   calc();
 </script>
 </body>
