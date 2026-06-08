@@ -682,7 +682,7 @@
 <header>
   <div class="header-left">
     <div class="logo">DC<span>.</span>Finance</div>
-    <div class="header-badge">DCF Model v1.5</div>
+    <div class="header-badge">DCF Model v1.6</div>
   </div>
   <div class="header-right"><span class="live-dot"></span>Live Calculation</div>
 </header>
@@ -1004,7 +1004,7 @@
     card.style.display = 'none';
 
     try {
-      const res = await fetch(`${WORKER_URL}?ticker=${ticker}`);
+      const res = await fetch(`${WORKER_URL}?ticker=${ticker}&_=${Date.now()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const d = await res.json();
       console.log('Worker response:', JSON.stringify(d));
