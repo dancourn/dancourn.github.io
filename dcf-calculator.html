@@ -683,6 +683,25 @@
       line-height: 1.8;
     }
 
+    /* ── GAP ANALYSIS ── */
+    .gap-item {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      padding: 0.65rem 0.85rem;
+      background: var(--bg3);
+      border-radius: 3px;
+      border-left: 2px solid var(--line2);
+      animation: fadein 0.3s ease both;
+    }
+    .gap-item.warn  { border-left-color: var(--yellow); }
+    .gap-item.info  { border-left-color: var(--accent); }
+    .gap-item.pos   { border-left-color: var(--green); }
+    .gap-item.neg   { border-left-color: var(--red); }
+    .gap-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .gap-text { font-size: 12px; color: var(--muted2); line-height: 1.6; font-family: var(--sans); }
+    .gap-text strong { color: var(--text); font-weight: 500; }
+
     /* Pulse dot */
     @keyframes pulse-dot {
       0%, 100% { opacity: 1; transform: scale(1); }
@@ -961,6 +980,15 @@
         </div>
       </div>
 
+      <!-- GAP ANALYSIS -->
+      <div id="gap-analysis" style="display:none;" class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span></span>Why the Gap?</div>
+          <div id="gap-badge" style="font-family:var(--mono);font-size:11px;"></div>
+        </div>
+        <div class="panel-body" style="padding:1rem 1.5rem;display:flex;flex-direction:column;gap:0.6rem;" id="gap-body"></div>
+      </div>
+
       <!-- FCF Table -->
       <div class="panel" style="animation-delay:0.1s">
         <div class="panel-header">
@@ -1182,6 +1210,9 @@
       document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('scenario-label').textContent = `${ticker} LIVE DATA`;
 
+      // Store for gap analysis
+      loadedCompanyData = d;
+
       // Capture snapshot for relative bull/bear scenarios, then activate base
       captureBaseSnapshot();
       activeScenario = 'base';
@@ -1350,6 +1381,72 @@
     return `rgba(240,192,96,${0.12})`;
   }
 
+  // ── GAP ANALYSIS ENGINE ──
+  function runGapAnalysis(ivPerShare, price, upside, equityVal, fcfs, ebitMargin, wacc) {
+    const panel = document.getElementById('gap-analysis');
+    const body  = document.getElementById('gap-body');
+    const badge = document.getElementById('gap-badge');
+    if (!panel || !loadedCompanyData || !price || !ivPerShare) {
+      if (panel) panel.style.display = 'none';
+      return;
+    }
+
+    const d = loadedCompanyData;
+    const absUpside = Math.abs(upside);
+    if (absUpside < 15) { panel.style.display = 'none'; return; } // no gap worth explaining
+
+    const items = [];
+    const de    = Number(d.debtToEquity) || 0;
+    const netD  = Number(d.totalDebt || 0) - Number(d.totalCash || 0);
+    const mcap  = Number(d.marketCap) || 1;
+    const revG  = Number(d.revenueGrowth) || 0;
+    const pe    = Number(d.pe) || 0;
+    const fcf   = Number(d.freeCashflow) || 0;
+    const opMgn = Number(d.operatingMargin) || ebitMargin / 100;
+    const negativeFCFs = fcfs.filter(f => f < 0).length;
+
+    const fmtB = v => {
+      const abs = Math.abs(v);
+      const sign = v < 0 ? '-' : '';
+      if (abs >= 1e12) return `${sign}$${(abs/1e12).toFixed(1)}T`;
+      if (abs >= 1e9)  return `${sign}$${(abs/1e9).toFixed(1)}B`;
+      return `${sign}$${(abs/1e6).toFixed(0)}M`;
+    };
+
+    if (upside < -15) {
+      // Stock trading at PREMIUM to DCF — explain why market pays more
+      if (revG > 0.25) items.push({ type:'info', icon:'⚡', text: `<strong>Hypergrowth premium:</strong> With ${(revG*100).toFixed(0)}% TTM revenue growth, the market is pricing in an extended high-growth runway that a 10-year DCF inherently undervalues. Exponential compounders often look overvalued on DCF.` });
+      if (pe > 35) items.push({ type:'info', icon:'🏰', text: `<strong>Moat/brand premium:</strong> A trailing P/E of ${pe.toFixed(0)}× suggests the market assigns significant value to brand, platform lock-in, or pricing power — intangibles a DCF can't quantify.` });
+      if (de > 40 && netD > 0) items.push({ type:'warn', icon:'⚖️', text: `<strong>Debt load reduces equity value:</strong> Net debt of ${fmtB(netD)} is subtracted directly from DCF value. The market may be pricing in future deleveraging or assumes the debt is manageable relative to cash generation.` });
+      if (opMgn < 0.12) items.push({ type:'warn', icon:'📈', text: `<strong>Margin expansion story:</strong> At ${(opMgn*100).toFixed(1)}% operating margin, the market is likely pricing in a transformation or restructuring thesis — future margins significantly higher than today's. The DCF uses current margins.` });
+      if (negativeFCFs > 0) items.push({ type:'warn', icon:'🔄', text: `<strong>Near-term FCF drag:</strong> ${negativeFCFs} year${negativeFCFs>1?'s':''} of projected negative FCF reduces DCF value significantly. The market may be pricing in a profitability inflection point beyond the model's horizon.` });
+      if (revG < 0.05 && pe > 25) items.push({ type:'info', icon:'💰', text: `<strong>Recurring revenue / dividend premium:</strong> Low-growth companies often trade at premiums due to predictable cash flows, dividends, or share buyback programs that support the stock price but don't appear in FCF projections.` });
+      // Always add the universal note for large premiums
+      if (absUpside > 40) items.push({ type:'info', icon:'💡', text: `<strong>Try raising growth or margin assumptions</strong> to see what it takes to justify the current price — the Bull scenario is a good starting point. The WACC × TGR sensitivity table shows the full range.` });
+    } else {
+      // Stock trading at DISCOUNT to DCF — explain why model says it's undervalued
+      if (netD < 0) items.push({ type:'pos', icon:'🏦', text: `<strong>Net cash adds to value:</strong> ${fmtB(Math.abs(netD))} net cash position is added to DCF equity value. A cash-rich company can return capital, fund growth, or acquire without diluting shareholders.` });
+      if (revG > 0.15) items.push({ type:'pos', icon:'📊', text: `<strong>Growth may be underpriced:</strong> At ${(revG*100).toFixed(0)}% TTM growth, the market may not yet be pricing in the full compounding effect. Check the Bull case to see the upside scenario.` });
+      if (fcf > 0 && (fcf / mcap) > 0.04) items.push({ type:'pos', icon:'💸', text: `<strong>High FCF yield:</strong> Free cash flow yield of ${((fcf/mcap)*100).toFixed(1)}% is strong. High FCF relative to market cap is a classic value signal — the company generates significant cash per dollar of market value.` });
+      if (absUpside > 40) items.push({ type:'warn', icon:'⚠️', text: `<strong>Large upside — check your assumptions:</strong> A ${absUpside.toFixed(0)}% discount could reflect genuinely conservative inputs, or it may signal that the default D&A/CapEx/growth assumptions need adjustment for this specific business.` });
+    }
+
+    if (items.length === 0) {
+      panel.style.display = 'none';
+      return;
+    }
+
+    const dir = upside < 0 ? 'Market premium to DCF' : 'DCF premium to market';
+    badge.innerHTML = `<span style="color:var(--muted)">${dir}</span>`;
+    body.innerHTML = items.map((item, i) => `
+      <div class="gap-item ${item.type}" style="animation-delay:${i*0.06}s">
+        <span class="gap-icon">${item.icon}</span>
+        <span class="gap-text">${item.text}</span>
+      </div>
+    `).join('');
+    panel.style.display = 'block';
+  }
+
   // ── MAIN CALC ──
   function calc() {
     const get = id => {
@@ -1447,6 +1544,9 @@
       : `Equity: ${fmt(equityVal)}`;
     document.getElementById('kpi-ev-sub').style.color = equityVal < 0 ? 'var(--red)' : '';
     document.getElementById('kpi-tvpct').textContent = isFinite(tvPct) ? tvPct.toFixed(1) + '%' : '—';
+
+    // ── GAP ANALYSIS ──
+    runGapAnalysis(ivPerShare, price, upside, equityVal, fcfs, get('ebitMargin'), get('wacc'));
 
     // ── Negative FCF warning banner ──
     const warnEl = document.getElementById('fcf-warning');
@@ -1637,6 +1737,9 @@
     inp.addEventListener('animationend', () => inp.classList.remove('ticker-pulse'));
   });
 
+  // ── LOADED COMPANY DATA (for gap analysis) ──
+  let loadedCompanyData = null;
+
   // ── BLANK STATE ON LOAD ──
   const BLANK_LABEL_IDS = ['val-ebitMargin','val-taxRate','val-da','val-capex','val-nwc','val-growth1','val-growth2','val-tgr','val-wacc'];
   const BLANK_INPUT_IDS = ['baseRevenue','netDebt','shares','stockPrice'];
@@ -1688,6 +1791,10 @@
     // Net debt status
     const nd = document.getElementById('net-debt-status');
     if (nd) { nd.textContent = '—'; nd.style.color = 'var(--muted)'; nd.style.opacity = '0.35'; }
+
+    loadedCompanyData = null;
+    const gap = document.getElementById('gap-analysis');
+    if (gap) gap.style.display = 'none';
 
     // Scenario pills — none active, clear snapshot
     baseSnapshot = null;
