@@ -336,6 +336,8 @@
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
+    input[type="number"]::placeholder { color: var(--muted); opacity: 0.5; }
+
     input[type="number"]:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accentglow);
@@ -787,48 +789,48 @@
             </div>
             <div class="input-wrap">
               <span class="prefix">$</span>
-              <input type="number" id="baseRevenue" value="11314" min="1" step="10" oninput="calc()" />
+              <input type="number" id="baseRevenue" placeholder="—" min="1" step="10" oninput="calc()" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-label">
               <span class="label-text">EBIT Margin <span class="unit-tag">% of revenue</span></span>
-              <span class="label-value" id="val-ebitMargin">17%</span>
+              <span class="label-value" id="val-ebitMargin" style="opacity:0.35">—</span>
             </div>
-            <input type="range" id="ebitMargin" min="1" max="50" step="0.5" value="17" oninput="syncVal('ebitMargin','val-ebitMargin','%'); calc()" />
+            <input type="range" id="ebitMargin" min="1" max="50" step="0.5" value="18" oninput="syncVal('ebitMargin','val-ebitMargin','%'); calc()" />
           </div>
 
           <div class="form-row">
             <div class="form-label">
               <span class="label-text">Tax Rate <span class="unit-tag">% of pre-tax income</span></span>
-              <span class="label-value" id="val-taxRate">25%</span>
+              <span class="label-value" id="val-taxRate" style="opacity:0.35">—</span>
             </div>
-            <input type="range" id="taxRate" min="0" max="40" step="0.5" value="25" oninput="syncVal('taxRate','val-taxRate','%'); calc()" />
+            <input type="range" id="taxRate" min="0" max="40" step="0.5" value="21" oninput="syncVal('taxRate','val-taxRate','%'); calc()" />
           </div>
 
           <div class="form-row">
             <div class="form-label">
               <span class="label-text">D&amp;A <span class="unit-tag">% of revenue</span></span>
-              <span class="label-value" id="val-da">3%</span>
+              <span class="label-value" id="val-da" style="opacity:0.35">—</span>
             </div>
-            <input type="range" id="da" min="0" max="20" step="0.5" value="3" oninput="syncVal('da','val-da','%'); calc()" />
+            <input type="range" id="da" min="0" max="20" step="0.5" value="4" oninput="syncVal('da','val-da','%'); calc()" />
           </div>
 
           <div class="form-row">
             <div class="form-label">
               <span class="label-text">CapEx <span class="unit-tag">% of revenue</span></span>
-              <span class="label-value" id="val-capex">6%</span>
+              <span class="label-value" id="val-capex" style="opacity:0.35">—</span>
             </div>
-            <input type="range" id="capex" min="0" max="30" step="0.5" value="6" oninput="syncVal('capex','val-capex','%'); calc()" />
+            <input type="range" id="capex" min="0" max="30" step="0.5" value="5" oninput="syncVal('capex','val-capex','%'); calc()" />
           </div>
 
           <div class="form-row">
             <div class="form-label">
               <span class="label-text">Change in NWC <span class="unit-tag">% of rev growth</span></span>
-              <span class="label-value" id="val-nwc">1.5%</span>
+              <span class="label-value" id="val-nwc" style="opacity:0.35">—</span>
             </div>
-            <input type="range" id="nwc" min="-5" max="15" step="0.5" value="1.5" oninput="syncVal('nwc','val-nwc','%'); calc()" />
+            <input type="range" id="nwc" min="-5" max="15" step="0.5" value="2" oninput="syncVal('nwc','val-nwc','%'); calc()" />
           </div>
         </div>
 
@@ -839,7 +841,7 @@
           <div class="form-row">
             <div class="form-label">
               <span class="label-text">Revenue Growth Yr 1–5 <span class="unit-tag">% YoY</span></span>
-              <span class="label-value" id="val-growth1">12%</span>
+              <span class="label-value" id="val-growth1" style="opacity:0.35">—</span>
             </div>
             <input type="range" id="growth1" min="0" max="60" step="0.5" value="12" oninput="syncVal('growth1','val-growth1','%'); calc()" />
           </div>
@@ -847,7 +849,7 @@
           <div class="form-row">
             <div class="form-label">
               <span class="label-text">Revenue Growth Yr 6–10 <span class="unit-tag">% YoY</span></span>
-              <span class="label-value" id="val-growth2">7%</span>
+              <span class="label-value" id="val-growth2" style="opacity:0.35">—</span>
             </div>
             <input type="range" id="growth2" min="0" max="40" step="0.5" value="7" oninput="syncVal('growth2','val-growth2','%'); calc()" />
           </div>
@@ -855,7 +857,7 @@
           <div class="form-row">
             <div class="form-label">
               <span class="label-text">Terminal Growth Rate <span class="unit-tag">perpetual % after Yr 10</span></span>
-              <span class="label-value" id="val-tgr">2.5%</span>
+              <span class="label-value" id="val-tgr" style="opacity:0.35">—</span>
             </div>
             <input type="range" id="tgr" min="0" max="5" step="0.1" value="2.5" oninput="syncVal('tgr','val-tgr','%'); calc()" />
           </div>
@@ -863,7 +865,7 @@
           <div class="form-row">
             <div class="form-label">
               <span class="label-text">WACC <span class="unit-tag">weighted avg cost of capital</span></span>
-              <span class="label-value" id="val-wacc">9%</span>
+              <span class="label-value" id="val-wacc" style="opacity:0.35">—</span>
             </div>
             <input type="range" id="wacc" min="4" max="25" step="0.25" value="9" oninput="syncVal('wacc','val-wacc','%'); calc()" />
           </div>
@@ -877,10 +879,10 @@
             <div class="form-label"><span class="label-text">Net Debt <span class="unit-tag">$ millions · negative = net cash</span></span></div>
             <div class="input-wrap">
               <span class="prefix">$</span>
-              <input type="number" id="netDebt" value="-1200" step="10" oninput="updateNetDebtLabel(); calc()" />
+              <input type="number" id="netDebt" placeholder="—" step="10" oninput="updateNetDebtLabel(); calc()" />
             </div>
-            <div id="net-debt-status" style="margin-top:5px;font-family:var(--mono);font-size:11px;color:var(--green);">
-              ✦ Net cash position — adds to equity value
+            <div id="net-debt-status" style="margin-top:5px;font-family:var(--mono);font-size:11px;color:var(--muted);opacity:0.35;">
+              —
             </div>
           </div>
 
@@ -888,7 +890,7 @@
             <div class="form-label"><span class="label-text">Shares Outstanding <span class="unit-tag">millions of shares</span></span></div>
             <div class="input-wrap">
               <span class="prefix">#</span>
-              <input type="number" id="shares" value="1355" min="1" step="1" oninput="calc()" />
+              <input type="number" id="shares" placeholder="—" min="1" step="1" oninput="calc()" />
             </div>
           </div>
 
@@ -896,7 +898,7 @@
             <div class="form-label"><span class="label-text">Current Stock Price <span class="unit-tag">$ per share</span></span></div>
             <div class="input-wrap">
               <span class="prefix">$</span>
-              <input type="number" id="stockPrice" value="30.50" min="0.01" step="0.5" oninput="calc()" />
+              <input type="number" id="stockPrice" placeholder="—" min="0.01" step="0.5" oninput="calc()" />
             </div>
           </div>
         </div>
@@ -1024,7 +1026,9 @@
         const v = parseFloat(value);
         if (!isNaN(v)) {
           el.value = v;
-          document.getElementById(labelId).textContent = v.toFixed(1) + suffix;
+          const lbl = document.getElementById(labelId);
+          lbl.textContent = v.toFixed(1) + suffix;
+          lbl.style.opacity = '1';
         }
       };
 
@@ -1034,13 +1038,12 @@
       };
 
       // ── Invalid ticker detection ──
-      // If companyName equals the ticker, or exchange is N/A with no price, it's not a real ticker
-      const isInvalid = (
-        (!d.price || Number(d.price) === 0) &&
-        (!d.totalRevenue || Number(d.totalRevenue) === 0) &&
-        (!d.marketCap || Number(d.marketCap) === 0)
-      );
-      if (isInvalid) {
+      const nameMatchesTicker = (d.companyName || '').toUpperCase() === ticker;
+      const noExchange = !d.exchange || d.exchange === 'N/A' || d.exchange === 'YHD';
+      const noPrice = !d.price || Number(d.price) === 0;
+      const noRevenue = !d.totalRevenue || Number(d.totalRevenue) === 0;
+
+      if ((nameMatchesTicker && noExchange) || (noPrice && noRevenue)) {
         status.style.color = 'var(--red)';
         status.textContent = `✗ "${ticker}" not found — check the ticker symbol and try again`;
         card.style.display = 'none';
@@ -1200,7 +1203,9 @@
 
   function syncVal(id, labelId, suffix) {
     const v = parseFloat(document.getElementById(id).value);
-    document.getElementById(labelId).textContent = v + suffix;
+    const labelEl = document.getElementById(labelId);
+    labelEl.textContent = v + suffix;
+    labelEl.style.opacity = '1';
     activeScenario = null;
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
   }
@@ -1467,20 +1472,50 @@
   });
 
   // ── BLANK STATE ON LOAD ──
+  const BLANK_LABEL_IDS = ['val-ebitMargin','val-taxRate','val-da','val-capex','val-nwc','val-growth1','val-growth2','val-tgr','val-wacc'];
+  const BLANK_INPUT_IDS = ['baseRevenue','netDebt','shares','stockPrice'];
+
   function setBlankState() {
+    // KPIs
     document.getElementById('kpi-iv').textContent = '—';
     document.getElementById('kpi-iv').className = 'kpi-value';
     document.getElementById('kpi-upside').innerHTML = '<span style="color:var(--muted);font-size:11px;font-family:var(--mono)">Load a ticker to begin</span>';
     document.getElementById('kpi-ev').textContent = '—';
     document.getElementById('kpi-ev-sub').textContent = '—';
+    document.getElementById('kpi-ev-sub').style.color = '';
     document.getElementById('kpi-tvpct').textContent = '—';
+
+    // FCF table, bridge, sensitivity
     document.getElementById('fcf-tbody').innerHTML = `
       <tr><td colspan="11" style="text-align:center;padding:2.5rem 1rem;color:var(--muted);font-family:var(--mono);font-size:12px;letter-spacing:0.08em;">
-        Enter a ticker above and click Load to populate
+        Enter a ticker above and click Load
       </td></tr>`;
     document.getElementById('bar-chart').innerHTML = '';
     document.getElementById('sens-wrap').innerHTML = '';
     document.getElementById('scenario-label').textContent = '—';
+
+    // FCF warning
+    const warn = document.getElementById('fcf-warning');
+    if (warn) warn.style.display = 'none';
+
+    // Slider labels → dim dash
+    BLANK_LABEL_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = '—'; el.style.opacity = '0.35'; }
+    });
+
+    // Number inputs → empty
+    BLANK_INPUT_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    // Net debt status
+    const nd = document.getElementById('net-debt-status');
+    if (nd) { nd.textContent = '—'; nd.style.color = 'var(--muted)'; nd.style.opacity = '0.35'; }
+
+    // Scenario pills — none active
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
   }
 
   // Init — blank state, no calc
