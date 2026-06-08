@@ -1328,17 +1328,25 @@
       <div class="project-item" id="proj-dcf">
         <div class="project-header" onclick="toggleProject('proj-dcf')">
           <div>
-            <div class="project-meta"><span class="project-num">003</span><span class="tag green">Interactive</span><span class="tag">Finance</span><span class="tag gray">Coming Soon</span></div>
-            <div class="project-title">DCF Sensitivity Web App</div>
-            <div class="project-blurb">A live, interactive DCF model — drag WACC, growth rate, and margin assumptions and watch the valuation update in real time. Built from my Chipotle analysis.</div>
+            <div class="project-meta"><span class="project-num">003</span><span class="tag green">Interactive</span><span class="tag">Finance</span><span class="tag live">Live</span></div>
+            <div class="project-title">DCF Valuation Calculator</div>
+            <div class="project-blurb">Type any US ticker and watch a full 10-year DCF populate in real time — live financials, CAPM-derived WACC, sensitivity table, and value bridge. No backend, no sign-in, no sleeping servers.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
         <div class="project-body"><div class="project-inner">
-          <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
+          <div class="project-reflection">
+            <h4>About this project</h4>
+            <p>A fully self-contained DCF model that runs entirely in the browser. Type in a ticker — AAPL, NVDA, CMG, whatever — and it pulls live financials from a Cloudflare Worker proxy I built, then populates a 10-year free cash flow model with TTM revenue, operating margins, net debt, shares outstanding, and a CAPM-estimated WACC using the stock's live beta.</p>
+            <p>The model outputs intrinsic value per share with upside/downside vs. the current price, a full FCF projection table, a value bridge breaking down PV of FCFs vs. terminal value vs. net debt, and a 5×5 sensitivity matrix across WACC and terminal growth rate assumptions. Every assumption is editable via sliders — you can run bull, base, and bear cases instantly or load presets and adjust from there.</p>
+            <p>This is the same DCF framework I used at Romero Capital to value NBIS and HIMS — rebuilt as a tool anyone can use without opening Excel. The architecture decision to use a Cloudflare Worker as a proxy was deliberate: it keeps the Yahoo Finance credentials server-side, means the tool never sleeps or cold-starts, and deploys as a single HTML file on GitHub Pages with zero infrastructure cost.</p>
+          </div>
           <div class="project-sidebar">
-            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">React</span><span class="chip">Recharts</span><span class="chip">JavaScript</span></div></div>
-            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">HTML/CSS/JS</span><span class="chip">Cloudflare Workers</span><span class="chip">Yahoo Finance API</span><span class="chip">GitHub Pages</span></div></div>
+            <div class="sidebar-block"><h5>Links</h5><div class="project-links">
+              <a class="proj-link" href="https://github.com/dancourn/dancourn.github.io/blob/main/dcf-calculator.html" target="_blank">⬡ GitHub</a>
+              <a class="proj-link" href="https://dancourn.github.io/dcf-calculator.html" target="_blank">↗ Live Demo</a>
+            </div></div>
           </div>
         </div></div>
       </div>
