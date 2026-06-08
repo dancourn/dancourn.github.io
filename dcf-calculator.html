@@ -175,7 +175,7 @@
     .panel {
       background: var(--bg2);
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: 6px;
       overflow: hidden;
     }
 
@@ -223,8 +223,9 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--line);
+      padding: 0.3rem 0 0.3rem 0.65rem;
+      border-left: 2px solid var(--accent);
+      opacity: 0.8;
     }
 
     .form-row {
@@ -274,6 +275,7 @@
       border-radius: 2px;
       outline: none;
       cursor: pointer;
+      transition: background 0.3s;
     }
 
     input[type="range"]::-webkit-slider-thumb {
@@ -384,19 +386,28 @@
     /* KPI row */
     .kpi-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1.4fr 1fr 1fr;
       gap: 1px;
       background: var(--line);
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: 6px;
       overflow: hidden;
     }
 
     .kpi-cell {
       background: var(--bg2);
-      padding: 1.25rem 1.5rem;
+      padding: 1.4rem 1.5rem;
       transition: background 0.2s;
+      position: relative;
     }
+
+    .kpi-cell:first-child {
+      border-left: 3px solid transparent;
+      transition: background 0.2s, border-color 0.4s;
+    }
+
+    .kpi-cell:first-child.border-up   { border-left-color: var(--green); }
+    .kpi-cell:first-child.border-down { border-left-color: var(--red); }
 
     .kpi-cell:hover { background: var(--bg3); }
 
@@ -406,17 +417,21 @@
       letter-spacing: 0.15em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.7rem;
     }
 
     .kpi-value {
       font-family: var(--serif);
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 400;
       color: var(--text);
       line-height: 1;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.45rem;
       transition: color 0.3s;
+    }
+
+    .kpi-cell:not(:first-child) .kpi-value {
+      font-size: 1.8rem;
     }
 
     .kpi-value.up   { color: var(--green); }
@@ -472,7 +487,9 @@
 
     tr:last-child td { border-bottom: none; }
 
-    tr:hover td { background: rgba(79,142,247,0.02); }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.018); }
+
+    tr:hover td { background: rgba(79,142,247,0.04) !important; }
 
     .td-highlight {
       color: var(--text) !important;
@@ -524,9 +541,9 @@
 
     .bar-track {
       flex: 1;
-      height: 24px;
+      height: 28px;
       background: var(--bg3);
-      border-radius: 2px;
+      border-radius: 3px;
       overflow: hidden;
       position: relative;
     }
@@ -538,6 +555,19 @@
       display: flex;
       align-items: center;
       padding-left: 8px;
+      position: relative;
+    }
+
+    .bar-fill::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 40%;
+      background: linear-gradient(to right, transparent, rgba(7,9,15,0.35));
+      border-radius: 0 2px 2px 0;
+      pointer-events: none;
     }
 
     .bar-fill span {
@@ -752,15 +782,15 @@
           <!-- Status / Company Card -->
           <div id="ticker-status" style="margin-top:0.6rem;font-family:var(--mono);font-size:11px;color:var(--muted);">
           </div>
-          <div id="company-card" style="display:none;margin-top:0.75rem;background:var(--bg3);border:1px solid var(--line);border-radius:3px;padding:0.85rem 1rem;">
+          <div id="company-card" style="display:none;margin-top:0.75rem;background:var(--bg3);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;padding:1rem 1.1rem;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
               <div>
-                <div id="cc-name" style="font-family:var(--serif);font-size:1rem;color:var(--text);margin-bottom:2px;"></div>
+                <div id="cc-name" style="font-family:var(--serif);font-size:1.25rem;color:var(--text);margin-bottom:3px;line-height:1.2;"></div>
                 <div id="cc-meta" style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.06em;"></div>
               </div>
               <div style="text-align:right;">
-                <div id="cc-price" style="font-family:var(--serif);font-size:1.3rem;color:var(--text);"></div>
-                <div id="cc-change" style="font-family:var(--mono);font-size:11px;"></div>
+                <div id="cc-price" style="font-family:var(--serif);font-size:1.6rem;color:var(--text);line-height:1;"></div>
+                <div id="cc-change" style="font-family:var(--mono);font-size:11px;margin-top:3px;"></div>
               </div>
             </div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--line);">
@@ -1028,6 +1058,7 @@
           const lbl = document.getElementById(labelId);
           lbl.textContent = v.toFixed(1) + suffix;
           lbl.style.opacity = '1';
+          updateSliderFill(el);
         }
       };
 
@@ -1233,10 +1264,12 @@
   }
 
   function syncVal(id, labelId, suffix) {
-    const v = parseFloat(document.getElementById(id).value);
+    const el = document.getElementById(id);
+    const v = parseFloat(el.value);
     const labelEl = document.getElementById(labelId);
     labelEl.textContent = v + suffix;
     labelEl.style.opacity = '1';
+    updateSliderFill(el);
     activeScenario = null;
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
   }
@@ -1338,6 +1371,12 @@
     } else {
       ivEl.textContent = '$' + ivPerShare.toFixed(2);
       ivEl.className = 'kpi-value ' + (ivPerShare > price ? 'up' : 'down');
+      // Set hero border color
+      const ivCell = ivEl.closest('.kpi-cell');
+      if (ivCell) {
+        ivCell.classList.remove('border-up','border-down');
+        ivCell.classList.add(ivPerShare > price ? 'border-up' : 'border-down');
+      }
       upsideEl.innerHTML = `<span class="margin-pill ${upside>=0?'up':'down'}">${fmtPct(upside)} vs $${price.toFixed(2)}</span>`;
     }
 
@@ -1500,7 +1539,19 @@
     }
   }
 
-  // Pulse the ticker input on load to draw attention
+  // ── SLIDER FILL ── fills track left of thumb with accent color
+  function updateSliderFill(el) {
+    const min = parseFloat(el.min) || 0;
+    const max = parseFloat(el.max) || 100;
+    const val = parseFloat(el.value) || min;
+    const pct = ((val - min) / (max - min)) * 100;
+    el.style.background = `linear-gradient(to right, var(--accent) ${pct}%, rgba(255,255,255,0.15) ${pct}%)`;
+  }
+
+  // Apply fill to all sliders on input
+  document.querySelectorAll('input[type="range"]').forEach(el => {
+    el.addEventListener('input', () => updateSliderFill(el));
+  });
   window.addEventListener('load', () => {
     const inp = document.getElementById('ticker-input');
     inp.classList.add('ticker-pulse');
@@ -1552,7 +1603,7 @@
     const sliderIds = ['ebitMargin','taxRate','da','capex','nwc','growth1','growth2','tgr','wacc'];
     sliderIds.forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.value = el.min;
+      if (el) { el.value = el.min; el.style.background = 'rgba(255,255,255,0.15)'; }
     });
 
     // Net debt status
