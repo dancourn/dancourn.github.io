@@ -1108,6 +1108,37 @@
         setSlider('wacc', 'val-wacc', wacc.toFixed(2), '%');
       }
 
+      // ── Fields Yahoo doesn't provide — set sensible defaults by sector ──
+      // Tax rate: use 21% (US corporate standard)
+      setSlider('taxRate', 'val-taxRate', '21', '%');
+
+      // Terminal growth rate: 2.5% default
+      setSlider('tgr', 'val-tgr', '2.5', '%');
+
+      // Revenue growth Yr 6-10: half of Yr 1-5, floored at 3%
+      const revG2 = isFinite(revG) ? Math.max(3, Math.min(20, revG * 50)) : 6;
+      setSlider('growth2', 'val-growth2', revG2.toFixed(1), '%');
+
+      // D&A and CapEx — derive from gross margin if available, else use sector defaults
+      const grossMgn = Number(d.grossMargin);
+      let daDefault = 4, capexDefault = 5;
+      if (d.sector) {
+        const s = d.sector.toLowerCase();
+        if (s.includes('tech') || s.includes('software')) { daDefault = 3; capexDefault = 4; }
+        else if (s.includes('energy') || s.includes('utilities')) { daDefault = 8; capexDefault = 12; }
+        else if (s.includes('real estate')) { daDefault = 10; capexDefault = 8; }
+        else if (s.includes('consumer') && grossMgn < 0.3) { daDefault = 3; capexDefault = 6; } // retail
+        else if (s.includes('health') || s.includes('pharma')) { daDefault = 5; capexDefault = 5; }
+        else if (s.includes('industrial') || s.includes('manufac')) { daDefault = 6; capexDefault = 7; }
+        else if (s.includes('communication')) { daDefault = 5; capexDefault = 6; }
+      }
+      setSlider('da', 'val-da', daDefault.toString(), '%');
+      setSlider('capex', 'val-capex', capexDefault.toString(), '%');
+
+      // NWC: 1.5% for most, higher for retailers
+      const nwcDefault = (d.sector || '').toLowerCase().includes('consumer') && grossMgn < 0.3 ? 2 : 1.5;
+      setSlider('nwc', 'val-nwc', nwcDefault.toString(), '%');
+
       // Deselect scenario pills — using live data now
       document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('scenario-label').textContent = `${ticker} LIVE DATA`;
