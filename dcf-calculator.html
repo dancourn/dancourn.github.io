@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DCF Calculator — Daniel Cournane</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #07090f;
+      --bg2:       #0d1018;
+      --bg3:       #131620;
+      --line:      rgba(255,255,255,0.08);
+      --line2:     rgba(255,255,255,0.15);
+      --text:      #e8eaf0;
+      --muted:     #606880;
+      --muted2:    #9099b0;
+      --accent:    #4f8ef7;
+      --accent2:   #7eb8ff;
+      --accentdim: rgba(79,142,247,0.15);
+      --accentglow:rgba(79,142,247,0.08);
+      --green:     #7dd6a0;
+      --greendim:  rgba(125,214,160,0.12);
+      --red:       #f07070;
+      --reddim:    rgba(240,112,112,0.12);
+      --yellow:    #f0c060;
+      --yellowdim: rgba(240,192,96,0.12);
+      --sans:      'Outfit', sans-serif;
+      --mono:      'JetBrains Mono', monospace;
+      --serif:     'Playfair Display', Georgia, serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* ── GRID BACKGROUND ── */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7,9,15,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .header-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: var(--accentdim);
+      color: var(--accent2);
+      border: 1px solid rgba(79,142,247,0.2);
+      padding: 3px 10px;
+      border-radius: 2px;
+    }
+
+    .header-right {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    /* ── PAGE TITLE ── */
+    .page-title-block {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0.7;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-title {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-title em { font-style: italic; color: var(--accent); }
+
+    .page-desc {
+      font-size: 15px;
+      color: var(--muted2);
+      max-width: 600px;
+      line-height: 1.7;
+    }
+
+    /* ── GRID ── */
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .tool-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .panel-title span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-right: 8px;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+
+    .panel-body { padding: 1.5rem; }
+
+    /* ── FORM GROUPS ── */
+    .form-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .form-section:last-child { margin-bottom: 0; }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .form-row {
+      margin-bottom: 1.1rem;
+    }
+
+    .form-row:last-child { margin-bottom: 0; }
+
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.45rem;
+    }
+
+    .label-text {
+      font-size: 13px;
+      color: var(--muted2);
+      font-family: var(--sans);
+    }
+
+    .unit-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-left: 4px;
+      opacity: 0.75;
+    }
+
+    .label-value {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--accent2);
+      min-width: 60px;
+      text-align: right;
+    }
+
+    /* ── SLIDERS ── */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 3px;
+      background: var(--line2);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 8px rgba(79,142,247,0.5);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.3);
+      box-shadow: 0 0 14px rgba(79,142,247,0.7);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      cursor: pointer;
+    }
+
+    /* Number inputs */
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap .prefix {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--line2);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 0.5rem 0.75rem 0.5rem 1.75rem;
+      outline: none;
+      transition: border-color 0.2s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accentglow);
+    }
+
+    /* ── SCENARIO PILLS ── */
+    .scenario-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .scenario-btn {
+      flex: 1;
+      padding: 0.45rem 0;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-align: center;
+      border: 1px solid var(--line2);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .scenario-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    .scenario-btn.bull { --sc: var(--green); --scdim: var(--greendim); }
+    .scenario-btn.base { --sc: var(--accent); --scdim: var(--accentdim); }
+    .scenario-btn.bear { --sc: var(--red);   --scdim: var(--reddim); }
+
+    .scenario-btn.active {
+      background: var(--scdim);
+      border-color: var(--sc);
+      color: var(--sc);
+    }
+
+    /* ── RESULTS PANEL ── */
+    .results-stack { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    /* KPI row */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .kpi-cell {
+      background: var(--bg2);
+      padding: 1.25rem 1.5rem;
+      transition: background 0.2s;
+    }
+
+    .kpi-cell:hover { background: var(--bg3); }
+
+    .kpi-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .kpi-value {
+      font-family: var(--serif);
+      font-size: 2rem;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 0.35rem;
+      transition: color 0.3s;
+    }
+
+    .kpi-value.up   { color: var(--green); }
+    .kpi-value.down { color: var(--red); }
+
+    .kpi-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* FCF Table */
+    .fcf-panel { }
+
+    .fcf-table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    thead tr {
+      border-bottom: 1px solid var(--line2);
+    }
+
+    th {
+      padding: 0.6rem 0.75rem;
+      text-align: right;
+      color: var(--muted);
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    th:first-child { text-align: left; }
+
+    td {
+      padding: 0.55rem 0.75rem;
+      text-align: right;
+      color: var(--muted2);
+      border-bottom: 1px solid var(--line);
+    }
+
+    td:first-child {
+      text-align: left;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: rgba(79,142,247,0.02); }
+
+    .td-highlight {
+      color: var(--text) !important;
+      font-weight: 500;
+    }
+
+    .td-accent { color: var(--accent2) !important; }
+    .td-green  { color: var(--green) !important; }
+
+    /* Sensitivity table */
+    .sens-table td, .sens-table th {
+      padding: 0.4rem 0.5rem;
+      font-size: 11px;
+    }
+
+    .sens-table .axis-label {
+      color: var(--muted);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .sens-cell {
+      text-align: center !important;
+      border-radius: 2px;
+      transition: opacity 0.3s;
+    }
+
+    /* Bar chart */
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .bar-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      width: 60px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 24px;
+      background: var(--bg3);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      align-items: center;
+      padding-left: 8px;
+    }
+
+    .bar-fill span {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--bg);
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .bar-pct {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      width: 44px;
+      flex-shrink: 0;
+    }
+
+    /* Upside/downside pill */
+    .margin-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 2px;
+    }
+
+    .margin-pill.up   { background: var(--greendim); color: var(--green); border: 1px solid rgba(125,214,160,0.25); }
+    .margin-pill.down { background: var(--reddim);   color: var(--red);   border: 1px solid rgba(240,112,112,0.25); }
+    .margin-pill.flat { background: var(--yellowdim);color: var(--yellow); border: 1px solid rgba(240,192,96,0.25); }
+
+    /* Annotation */
+    .annotation {
+      font-size: 13px;
+      color: var(--muted2);
+      line-height: 1.7;
+      padding: 1rem 1.25rem;
+      background: var(--bg3);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .annotation strong { color: var(--text); font-weight: 500; }
+
+    /* Formula strip */
+    .formula-strip {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--bg3);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .formula-strip .f-accent { color: var(--accent2); }
+    .formula-strip .f-op { color: var(--muted); padding: 0 2px; }
+
+    /* Reset btn */
+    .reset-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line2);
+      border-radius: 3px;
+      padding: 0.4rem 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .reset-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── SENS AXIS LABELS ── */
+    .sens-wrap { overflow-x: auto; }
+
+    .sens-axis-x {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 4px;
+      letter-spacing: 0.06em;
+    }
+
+    .sens-axis-y-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── FOOTER NOTE ── */
+    .footnote {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    /* Pulse dot */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    .live-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse-dot 1.8s ease-in-out infinite;
+      margin-right: 4px;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+
+    /* Fade-in on load */
+    @keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .panel { animation: fadein 0.5s ease both; }
+    .panel:nth-child(2) { animation-delay: 0.1s; }
+    .kpi-row { animation: fadein 0.5s ease 0.15s both; }
+
+    /* Smooth number transitions */
+    .kpi-value { transition: color 0.4s; }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<header>
+  <div class="header-left">
+    <div class="logo">DC<span>.</span>Finance</div>
+    <div class="header-badge">DCF Model v1.4</div>
+  </div>
+  <div class="header-right"><span class="live-dot"></span>Live Calculation</div>
+</header>
+
+<main>
+  <div class="page-title-block">
+    <div class="page-eyebrow">// Valuation Tool 001</div>
+    <h1 class="page-title">Discounted Cash Flow <em>Calculator</em></h1>
+    <p class="page-desc">Adjust assumptions and watch intrinsic value update in real time. Drag WACC, revenue growth, and margins to model bull, base, and bear cases — the same framework behind my Chipotle and NBIS analyses.</p>
+  </div>
+
+  <div class="tool-grid">
+
+    <!-- LEFT: INPUTS -->
+    <div class="panel" style="animation-delay:0s">
+      <div class="panel-header">
+        <div class="panel-title"><span></span>Assumptions</div>
+        <button class="reset-btn" onclick="resetDefaults()">↺ Reset</button>
+      </div>
+      <div class="panel-body">
+
+        <!-- TICKER LOOKUP -->
+        <div style="margin-bottom:1.25rem;">
+          <div class="section-label" style="margin-bottom:0.75rem;">Load Company Data</div>
+          <div style="display:flex;gap:0.5rem;align-items:stretch;">
+            <div style="position:relative;flex:1;">
+              <input
+                type="text"
+                id="ticker-input"
+                placeholder="Enter ticker (e.g. AAPL, MSFT, NVDA)"
+                maxlength="10"
+                style="width:100%;background:var(--bg3);border:1px solid var(--line2);border-radius:3px;color:var(--text);font-family:var(--mono);font-size:13px;padding:0.55rem 0.75rem;outline:none;transition:border-color 0.2s;text-transform:uppercase;"
+                onkeydown="if(event.key==='Enter') fetchTicker()"
+                onfocus="this.style.borderColor='var(--accent)'"
+                onblur="this.style.borderColor='var(--line2)'"
+              />
+            </div>
+            <button
+              id="fetch-btn"
+              onclick="fetchTicker()"
+              style="background:var(--accent);color:#07090f;border:none;border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:0 1rem;cursor:pointer;transition:background 0.2s;white-space:nowrap;"
+              onmouseover="this.style.background='var(--accent2)'"
+              onmouseout="this.style.background='var(--accent)'"
+            >Load ↗</button>
+          </div>
+
+          <!-- Status / Company Card -->
+          <div id="ticker-status" style="margin-top:0.6rem;font-family:var(--mono);font-size:11px;color:var(--muted);">
+            Defaults loaded: CMG — Chipotle Mexican Grill (FY2024 10-K)
+          </div>
+          <div id="company-card" style="display:none;margin-top:0.75rem;background:var(--bg3);border:1px solid var(--line);border-radius:3px;padding:0.85rem 1rem;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+              <div>
+                <div id="cc-name" style="font-family:var(--serif);font-size:1rem;color:var(--text);margin-bottom:2px;"></div>
+                <div id="cc-meta" style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.06em;"></div>
+              </div>
+              <div style="text-align:right;">
+                <div id="cc-price" style="font-family:var(--serif);font-size:1.3rem;color:var(--text);"></div>
+                <div id="cc-change" style="font-family:var(--mono);font-size:11px;"></div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--line);">
+              <div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Market Cap</div><div id="cc-mcap" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div></div>
+              <div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Rev Growth</div><div id="cc-revg" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div></div>
+              <div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Beta</div><div id="cc-beta" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div></div>
+            </div>
+            <div id="cc-note" style="margin-top:0.6rem;font-family:var(--mono);font-size:10px;color:var(--yellow);line-height:1.5;display:none;"></div>
+          </div>
+        </div>
+
+        <!-- SCENARIOS -->
+        <div class="scenario-bar">
+          <button class="scenario-btn bull" onclick="loadScenario('bull')">Bull</button>
+          <button class="scenario-btn base active" onclick="loadScenario('base')">Base</button>
+          <button class="scenario-btn bear" onclick="loadScenario('bear')">Bear</button>
+        </div>
+
+        <!-- COMPANY INPUTS -->
+        <div class="form-section">
+          <div class="section-label">Company Inputs</div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">Base Revenue <span class="unit-tag">$ millions</span></span>
+            </div>
+            <div class="input-wrap">
+              <span class="prefix">$</span>
+              <input type="number" id="baseRevenue" value="11314" min="1" step="10" oninput="calc()" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">EBIT Margin <span class="unit-tag">% of revenue</span></span>
+              <span class="label-value" id="val-ebitMargin">17%</span>
+            </div>
+            <input type="range" id="ebitMargin" min="1" max="50" step="0.5" value="17" oninput="syncVal('ebitMargin','val-ebitMargin','%'); calc()" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">Tax Rate <span class="unit-tag">% of pre-tax income</span></span>
+              <span class="label-value" id="val-taxRate">25%</span>
+            </div>
+            <input type="range" id="taxRate" min="0" max="40" step="0.5" value="25" oninput="syncVal('taxRate','val-taxRate','%'); calc()" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">D&amp;A <span class="unit-tag">% of revenue</span></span>
+              <span class="label-value" id="val-da">3%</span>
+            </div>
+            <input type="range" id="da" min="0" max="20" step="0.5" value="3" oninput="syncVal('da','val-da','%'); calc()" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">CapEx <span class="unit-tag">% of revenue</span></span>
+              <span class="label-value" id="val-capex">6%</span>
+            </div>
+            <input type="range" id="capex" min="0" max="30" step="0.5" value="6" oninput="syncVal('capex','val-capex','%'); calc()" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">Change in NWC <span class="unit-tag">% of rev growth</span></span>
+              <span class="label-value" id="val-nwc">1.5%</span>
+            </div>
+            <input type="range" id="nwc" min="-5" max="15" step="0.5" value="1.5" oninput="syncVal('nwc','val-nwc','%'); calc()" />
+          </div>
+        </div>
+
+        <!-- GROWTH & DISCOUNT -->
+        <div class="form-section">
+          <div class="section-label">Growth & Discount Rate</div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">Revenue Growth Yr 1–5 <span class="unit-tag">% YoY</span></span>
+              <span class="label-value" id="val-growth1">12%</span>
+            </div>
+            <input type="range" id="growth1" min="0" max="60" step="0.5" value="12" oninput="syncVal('growth1','val-growth1','%'); calc()" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">Revenue Growth Yr 6–10 <span class="unit-tag">% YoY</span></span>
+              <span class="label-value" id="val-growth2">7%</span>
+            </div>
+            <input type="range" id="growth2" min="0" max="40" step="0.5" value="7" oninput="syncVal('growth2','val-growth2','%'); calc()" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">Terminal Growth Rate <span class="unit-tag">perpetual % after Yr 10</span></span>
+              <span class="label-value" id="val-tgr">2.5%</span>
+            </div>
+            <input type="range" id="tgr" min="0" max="5" step="0.1" value="2.5" oninput="syncVal('tgr','val-tgr','%'); calc()" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-label">
+              <span class="label-text">WACC <span class="unit-tag">weighted avg cost of capital</span></span>
+              <span class="label-value" id="val-wacc">9%</span>
+            </div>
+            <input type="range" id="wacc" min="4" max="25" step="0.25" value="9" oninput="syncVal('wacc','val-wacc','%'); calc()" />
+          </div>
+        </div>
+
+        <!-- BALANCE SHEET -->
+        <div class="form-section">
+          <div class="section-label">Balance Sheet Adjustments</div>
+
+          <div class="form-row">
+            <div class="form-label"><span class="label-text">Net Debt <span class="unit-tag">$ millions · negative = net cash</span></span></div>
+            <div class="input-wrap">
+              <span class="prefix">$</span>
+              <input type="number" id="netDebt" value="-1200" step="10" oninput="updateNetDebtLabel(); calc()" />
+            </div>
+            <div id="net-debt-status" style="margin-top:5px;font-family:var(--mono);font-size:11px;color:var(--green);">
+              ✦ Net cash position — adds to equity value
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label"><span class="label-text">Shares Outstanding <span class="unit-tag">millions of shares</span></span></div>
+            <div class="input-wrap">
+              <span class="prefix">#</span>
+              <input type="number" id="shares" value="1355" min="1" step="1" oninput="calc()" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-label"><span class="label-text">Current Stock Price <span class="unit-tag">$ per share</span></span></div>
+            <div class="input-wrap">
+              <span class="prefix">$</span>
+              <input type="number" id="stockPrice" value="30.50" min="0.01" step="0.5" oninput="calc()" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+      <!-- KPIs -->
+      <div class="kpi-row">
+        <div class="kpi-cell">
+          <div class="kpi-label">Intrinsic Value / Share</div>
+          <div class="kpi-value" id="kpi-iv">—</div>
+          <div class="kpi-sub" id="kpi-upside">Calculating…</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-label">Enterprise Value</div>
+          <div class="kpi-value" id="kpi-ev">—</div>
+          <div class="kpi-sub" id="kpi-ev-sub">—</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-label">Terminal Value %</div>
+          <div class="kpi-value" id="kpi-tvpct">—</div>
+          <div class="kpi-sub" id="kpi-tv-sub">of total EV</div>
+        </div>
+      </div>
+
+      <!-- FCF Table -->
+      <div class="panel" style="animation-delay:0.1s">
+        <div class="panel-header">
+          <div class="panel-title"><span></span>10-Year FCF Projection</div>
+          <div id="scenario-label" style="font-family:var(--mono);font-size:11px;color:var(--muted)">BASE CASE</div>
+        </div>
+        <div class="panel-body" style="padding:0 0 0.5rem">
+          <div class="fcf-table-wrap">
+            <table id="fcf-table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Y1</th><th>Y2</th><th>Y3</th><th>Y4</th><th>Y5</th>
+                  <th>Y6</th><th>Y7</th><th>Y8</th><th>Y9</th><th>Y10</th>
+                </tr>
+              </thead>
+              <tbody id="fcf-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Value Bridge -->
+      <div class="panel" style="animation-delay:0.15s">
+        <div class="panel-header">
+          <div class="panel-title"><span></span>Value Bridge</div>
+          <div id="bridge-annotation" class="margin-pill flat">—</div>
+        </div>
+        <div class="panel-body">
+          <div class="bar-chart" id="bar-chart"></div>
+        </div>
+      </div>
+
+      <!-- Sensitivity Table -->
+      <div class="panel" style="animation-delay:0.2s">
+        <div class="panel-header">
+          <div class="panel-title"><span></span>Sensitivity: IV/Share (WACC × Terminal Growth)</div>
+        </div>
+        <div class="panel-body" style="padding:1rem 1.5rem">
+          <div class="sens-wrap" id="sens-wrap"></div>
+        </div>
+      </div>
+
+      <!-- Formula -->
+      <div class="formula-strip">
+        <span style="color:var(--muted)">DCF =</span>
+        <span class="f-accent">Σ FCFt / (1+WACC)^t</span>
+        <span class="f-op">+</span>
+        <span class="f-accent">TV / (1+WACC)^10</span>
+        <span class="f-op">—</span>
+        <span class="f-accent">Net Debt</span>
+        <span class="f-op">=</span>
+        <span style="color:var(--text)">Equity Value</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footnote">
+    <div style="margin-bottom:1rem;padding:1rem 1.25rem;background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--yellow);border-radius:0 3px 3px 0;">
+      <div style="color:var(--yellow);letter-spacing:0.12em;text-transform:uppercase;font-size:10px;margin-bottom:0.5rem;">⚙ Setup: Ticker Lookup</div>
+      <div style="color:var(--muted2);font-size:11px;line-height:1.8;">
+        1. Deploy <code style="color:var(--accent2)">worker.js</code> to Cloudflare Workers (free tier — workers.dev)<br>
+        2. Copy your worker URL (e.g. <code style="color:var(--accent2)">https://signal-proxy.yourname.workers.dev</code>)<br>
+        3. Replace <code style="color:var(--accent2)">YOUR_WORKER</code> on line 1 of the script block in this file<br>
+        4. Push to GitHub — ticker lookup will work for any US-listed stock
+      </div>
+    </div>
+    Built by Daniel Cournane · Finance + Fintech, University of Delaware ·
+    Framework mirrors NBIS and Chipotle valuation models completed at Romero Capital, 2025 ·
+    Not investment advice — for educational and portfolio demonstration purposes only.
+  </div>
+</main>
+
+<script>
+  // ── WORKER URL — replace with your Cloudflare Worker URL ──
+  const WORKER_URL = 'https://signal-proxy.danielcournane.workers.dev';
+
+  // ── TICKER LOOKUP ──
+  async function fetchTicker() {
+    const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
+    if (!ticker) return;
+
+    const btn = document.getElementById('fetch-btn');
+    const status = document.getElementById('ticker-status');
+    const card = document.getElementById('company-card');
+
+    btn.textContent = '...';
+    btn.style.opacity = '0.6';
+    btn.disabled = true;
+    status.style.color = 'var(--muted)';
+    status.textContent = `Fetching ${ticker}…`;
+    card.style.display = 'none';
+
+    try {
+      const res = await fetch(`${WORKER_URL}?ticker=${ticker}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const d = await res.json();
+      console.log('Worker response:', JSON.stringify(d));
+      if (d.error) throw new Error(d.error);
+
+      // ── Helper: set a range slider AND its label ──
+      const setSlider = (id, labelId, value, suffix) => {
+        const el = document.getElementById(id);
+        const v = parseFloat(value);
+        if (!isNaN(v)) {
+          el.value = v;
+          document.getElementById(labelId).textContent = v.toFixed(1) + suffix;
+        }
+      };
+
+      const setInput = (id, value) => {
+        const v = parseFloat(value);
+        if (!isNaN(v) && isFinite(v)) document.getElementById(id).value = v;
+      };
+
+      // ── Populate DCF inputs from API data ──
+      const notes = [];
+
+      // Revenue — raw dollars → millions
+      const rev = Number(d.totalRevenue);
+      if (rev > 0) {
+        setInput('baseRevenue', Math.round(rev / 1e6));
+      } else {
+        notes.push('Revenue not available — enter manually');
+      }
+
+      // Operating margin (EBIT proxy)
+      const opMgn = Number(d.operatingMargin);
+      const profMgn = Number(d.profitMargin);
+      if (opMgn > 0) {
+        setSlider('ebitMargin', 'val-ebitMargin', (opMgn * 100).toFixed(1), '%');
+      } else if (profMgn > 0) {
+        setSlider('ebitMargin', 'val-ebitMargin', Math.min(50, profMgn * 100 * 1.35).toFixed(1), '%');
+        notes.push('EBIT margin estimated from net margin — verify manually');
+      } else {
+        notes.push('Margin not available — enter manually');
+      }
+
+      // Stock price
+      const px = Number(d.price);
+      if (px > 0) setInput('stockPrice', px.toFixed(2));
+
+      // Shares outstanding → millions
+      const shs = Number(d.sharesOutstanding);
+      if (shs > 0) {
+        setInput('shares', Math.round(shs / 1e6));
+      } else {
+        notes.push('Shares not available — enter manually');
+      }
+
+      // Net debt = total debt − total cash (both raw dollars → millions)
+      const debt = Number(d.totalDebt);
+      const cash = Number(d.totalCash);
+      if (debt >= 0 && cash >= 0) {
+        setInput('netDebt', Math.round((debt - cash) / 1e6));
+        updateNetDebtLabel();
+      } else {
+        notes.push('Debt data not available — enter manually');
+      }
+
+      // Revenue growth — seed Yr1-5 from TTM, clamp 0–60%
+      const revG = Number(d.revenueGrowth);
+      if (isFinite(revG)) {
+        const pct = Math.min(60, Math.max(0, revG * 100));
+        setSlider('growth1', 'val-growth1', pct.toFixed(1), '%');
+        notes.push(`Rev growth seeded from TTM (${(revG*100).toFixed(1)}%) — adjust for your forecast`);
+      }
+
+      // WACC via CAPM: rf + β × ERP
+      const beta = Number(d.beta);
+      if (beta > 0) {
+        const wacc = Math.min(25, Math.max(4, 4.3 + beta * 5.5));
+        setSlider('wacc', 'val-wacc', wacc.toFixed(2), '%');
+      }
+
+      // Deselect scenario pills — using live data now
+      document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('scenario-label').textContent = `${ticker} LIVE DATA`;
+
+      // ── Company card ──
+      const fmtRaw = v => {
+        const n = Number(v);
+        if (!n) return '--';
+        if (n >= 1e12) return `$${(n/1e12).toFixed(2)}T`;
+        if (n >= 1e9)  return `$${(n/1e9).toFixed(1)}B`;
+        if (n >= 1e6)  return `$${(n/1e6).toFixed(0)}M`;
+        return `$${n}`;
+      };
+
+      document.getElementById('cc-name').textContent = d.companyName || ticker;
+      document.getElementById('cc-meta').textContent =
+        [ticker, d.exchange, d.sector !== '--' ? d.sector : null, d.industry !== '--' ? d.industry : null]
+        .filter(Boolean).join(' · ');
+
+      document.getElementById('cc-price').textContent = d.price ? `$${Number(d.price).toFixed(2)}` : '--';
+      const chg = d.changePct ? (Number(d.changePct) * 100) : null;
+      const chgEl = document.getElementById('cc-change');
+      if (chg != null) {
+        chgEl.textContent = `${chg >= 0 ? '+' : ''}${chg.toFixed(2)}% today`;
+        chgEl.style.color = chg >= 0 ? 'var(--green)' : 'var(--red)';
+      }
+
+      document.getElementById('cc-mcap').textContent = fmtRaw(d.marketCap);
+      document.getElementById('cc-revg').textContent = d.revenueGrowth != null
+        ? `${(Number(d.revenueGrowth)*100).toFixed(1)}% TTM` : '--';
+      document.getElementById('cc-beta').textContent = d.beta != null ? Number(d.beta).toFixed(2) : '--';
+
+      const noteEl = document.getElementById('cc-note');
+      if (notes.length) {
+        noteEl.style.display = 'block';
+        noteEl.innerHTML = '⚠ ' + notes.join(' · ');
+      } else {
+        noteEl.style.display = 'none';
+      }
+      card.style.display = 'block';
+
+      status.style.color = 'var(--green)';
+      status.textContent = `✓ ${d.companyName || ticker} loaded — verify assumptions before use`;
+
+      calc();
+
+    } catch(err) {
+      status.style.color = 'var(--red)';
+      if (WORKER_URL.includes('YOUR_WORKER')) {
+        status.textContent = '⚠ Worker URL not configured — see setup instructions below';
+      } else {
+        status.textContent = `✗ Error: ${err.message}`;
+      }
+      card.style.display = 'none';
+    } finally {
+      btn.textContent = 'Load ↗';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }
+
+  // ── SCENARIOS ──
+  const SCENARIOS = {
+    bull: { growth1:15, growth2:10, ebitMargin:20, wacc:8.0,  tgr:3.0, capex:5,  da:3, taxRate:25, nwc:1.5 },
+    base: { growth1:12, growth2:7,  ebitMargin:17, wacc:9.0,  tgr:2.5, capex:6,  da:3, taxRate:25, nwc:1.5 },
+    bear: { growth1:6,  growth2:3,  ebitMargin:14, wacc:11.0, tgr:1.5, capex:7,  da:3, taxRate:25, nwc:2.5 },
+  };
+
+  const SCENARIO_LABELS = { bull:'BULL CASE', base:'BASE CASE', bear:'BEAR CASE' };
+  let activeScenario = 'base';
+
+  function loadScenario(s) {
+    activeScenario = s;
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.scenario-btn.${s}`).classList.add('active');
+    const p = SCENARIOS[s];
+    for (const [k,v] of Object.entries(p)) {
+      const el = document.getElementById(k);
+      if (el) { el.value = v; }
+      const vEl = document.getElementById('val-'+k);
+      if (vEl) vEl.textContent = v + '%';
+    }
+    document.getElementById('scenario-label').textContent = SCENARIO_LABELS[s];
+    calc();
+  }
+
+  function syncVal(id, labelId, suffix) {
+    const v = parseFloat(document.getElementById(id).value);
+    document.getElementById(labelId).textContent = v + suffix;
+    activeScenario = null;
+    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  }
+
+  function resetDefaults() { loadScenario('base'); }
+
+  // ── HELPERS ──
+  // All model values are in $M — format accordingly
+  const fmt = (n, dec=1) => {
+    const abs = Math.abs(n);
+    const sign = n < 0 ? '-' : '';
+    if (abs >= 1e6)      return `${sign}$${(abs/1e6).toFixed(dec)}T`;
+    if (abs >= 1e3)      return `${sign}$${(abs/1e3).toFixed(dec)}B`;
+    return `${sign}$${abs.toFixed(dec)}M`;
+  };
+
+  const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+
+  // Color scale for sensitivity
+  function sensColor(val, min, max, mid) {
+    const t = (val - min) / (max - min || 1);
+    if (val >= mid * 1.1) return `rgba(125,214,160,${0.08 + 0.35 * t})`;
+    if (val <= mid * 0.9) return `rgba(240,112,112,${0.08 + 0.35 * (1-t)})`;
+    return `rgba(240,192,96,${0.12})`;
+  }
+
+  // ── MAIN CALC ──
+  function calc() {
+    const get = id => parseFloat(document.getElementById(id).value) || 0;
+
+    const baseRev    = get('baseRevenue');
+    const ebitM      = get('ebitMargin')  / 100;
+    const taxRate    = get('taxRate')     / 100;
+    const daRate     = get('da')          / 100;
+    const capexRate  = get('capex')       / 100;
+    const nwcRate    = get('nwc')         / 100;
+    const g1         = get('growth1')     / 100;
+    const g2         = get('growth2')     / 100;
+    const tgr        = get('tgr')         / 100;
+    const wacc       = get('wacc')        / 100;
+    const netDebt    = get('netDebt');
+    const shares     = get('shares');
+    const price      = get('stockPrice');
+
+    // Build FCF array
+    const revenues = [], ebits = [], nopats = [], das = [], capexs = [], nwcChanges = [], fcfs = [], pvs = [];
+    let prevRev = baseRev;
+
+    for (let y = 1; y <= 10; y++) {
+      const g = y <= 5 ? g1 : g2;
+      const rev = prevRev * (1 + g);
+      const ebit = rev * ebitM;
+      const nopat = ebit * (1 - taxRate);
+      const da = rev * daRate;
+      const capex = rev * capexRate;
+      const nwcChange = (rev - prevRev) * nwcRate;
+      const fcf = nopat + da - capex - nwcChange;
+      const pv = fcf / Math.pow(1 + wacc, y);
+
+      revenues.push(rev);
+      ebits.push(ebit);
+      nopats.push(nopat);
+      das.push(da);
+      capexs.push(capex);
+      nwcChanges.push(nwcChange);
+      fcfs.push(fcf);
+      pvs.push(pv);
+
+      prevRev = rev;
+    }
+
+    const pvSum = pvs.reduce((a,b)=>a+b, 0);
+    const terminalFCF = fcfs[9] * (1 + tgr);
+    const tvRaw = terminalFCF / (wacc - tgr);
+    const tvPV = tvRaw / Math.pow(1 + wacc, 10);
+    const ev = pvSum + tvPV;
+    const equityVal = ev - netDebt;
+    const ivPerShare = equityVal / shares;
+    const upside = ((ivPerShare - price) / price) * 100;
+    const tvPct = (tvPV / ev) * 100;
+
+    // ── KPIs ──
+    const ivEl = document.getElementById('kpi-iv');
+    ivEl.textContent = '$' + ivPerShare.toFixed(2);
+    ivEl.className = 'kpi-value ' + (ivPerShare > price ? 'up' : 'down');
+
+    const upsideEl = document.getElementById('kpi-upside');
+    upsideEl.innerHTML = `<span class="margin-pill ${upside>=0?'up':'down'}">${fmtPct(upside)} vs $${price.toFixed(2)}</span>`;
+
+    document.getElementById('kpi-ev').textContent = fmt(ev);
+    document.getElementById('kpi-ev-sub').textContent = `Equity: ${fmt(equityVal)}`;
+    document.getElementById('kpi-tvpct').textContent = tvPct.toFixed(1) + '%';
+
+    // ── FCF TABLE ──
+    const tbody = document.getElementById('fcf-tbody');
+    const rows = [
+      { label: 'Revenue',   data: revenues,   cls: '', fmt: v => fmt(v) },
+      { label: 'EBIT',      data: ebits,       cls: '', fmt: v => fmt(v) },
+      { label: 'NOPAT',     data: nopats,      cls: 'td-highlight', fmt: v => fmt(v) },
+      { label: '+ D&A',     data: das,         cls: '', fmt: v => fmt(v) },
+      { label: '- CapEx',   data: capexs,      cls: '', fmt: v => '('+fmt(v)+')' },
+      { label: '- ΔNWC',    data: nwcChanges,  cls: '', fmt: v => '('+fmt(v)+')' },
+      { label: 'FCF',       data: fcfs,        cls: 'td-accent', fmt: v => fmt(v) },
+      { label: 'PV(FCF)',   data: pvs,         cls: 'td-green',  fmt: v => fmt(v) },
+    ];
+
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${r.label}</td>
+        ${r.data.map(v => `<td class="${r.cls}">${r.fmt(v)}</td>`).join('')}
+      </tr>
+    `).join('');
+
+    // ── VALUE BRIDGE (Bar chart) ──
+    const debtLabel = netDebt >= 0 ? '– Net Debt' : '+ Net Cash';
+    const debtColor = netDebt >= 0 ? 'var(--red)' : 'var(--green)';
+    const bridgeData = [
+      { label: 'PV FCFs',    val: pvSum,         color: 'var(--accent)' },
+      { label: 'PV TV',      val: tvPV,           color: 'var(--accent2)' },
+      { label: debtLabel,    val: Math.abs(netDebt), color: debtColor },
+      { label: '= Equity',   val: equityVal,      color: 'var(--green)' },
+    ];
+    const maxAbsVal = Math.max(...bridgeData.map(d => Math.abs(d.val)));
+    const chart = document.getElementById('bar-chart');
+    chart.innerHTML = bridgeData.map(d => {
+      const pct = Math.abs(d.val) / maxAbsVal * 100;
+      return `
+        <div class="bar-row">
+          <div class="bar-label">${d.label}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${pct}%;background:${d.color}">
+              <span>${fmt(Math.abs(d.val))}</span>
+            </div>
+          </div>
+          <div class="bar-pct">${((Math.abs(d.val)/ev)*100).toFixed(0)}%</div>
+        </div>
+      `;
+    }).join('');
+
+    // Bridge pill
+    const pillEl = document.getElementById('bridge-annotation');
+    pillEl.textContent = upside >= 0
+      ? `↑ ${fmtPct(upside)} upside`
+      : `↓ ${fmtPct(upside)} downside`;
+    pillEl.className = 'margin-pill ' + (upside >= 3 ? 'up' : upside < -3 ? 'down' : 'flat');
+
+    // ── SENSITIVITY TABLE ──
+    const waccRange  = [-2, -1, 0, 1, 2].map(d => (wacc*100 + d).toFixed(2));
+    const tgrRange   = [-1, -0.5, 0, 0.5, 1].map(d => (tgr*100 + d).toFixed(1));
+
+    let sensVals = [];
+    for (const wRow of waccRange) {
+      const row = [];
+      for (const tCol of tgrRange) {
+        const w2 = parseFloat(wRow)/100, t2 = parseFloat(tCol)/100;
+        let pv2 = 0;
+        let prevR2 = baseRev;
+        let lastFCF2 = 0;
+        for (let y2 = 1; y2 <= 10; y2++) {
+          const g = y2 <= 5 ? g1 : g2;
+          const r2 = prevR2 * (1+g);
+          const f2 = r2*ebitM*(1-taxRate) + r2*daRate - r2*capexRate - (r2-prevR2)*nwcRate;
+          pv2 += f2 / Math.pow(1+w2, y2);
+          lastFCF2 = f2;
+          prevR2 = r2;
+        }
+        if (w2 > t2) {
+          const tv2 = (lastFCF2*(1+t2)/(w2-t2)) / Math.pow(1+w2,10);
+          const iv2 = (pv2 + tv2 - netDebt) / shares;
+          row.push(iv2);
+        } else {
+          row.push(null);
+        }
+      }
+      sensVals.push(row);
+    }
+
+    const allVals = sensVals.flat().filter(v=>v!==null);
+    const sMin = Math.min(...allVals), sMax = Math.max(...allVals);
+
+    const sensWrap = document.getElementById('sens-wrap');
+    sensWrap.innerHTML = `
+      <div class="sens-axis-x" style="margin-left:60px;">← Terminal Growth Rate →</div>
+      <table class="sens-table" style="width:100%">
+        <thead>
+          <tr>
+            <th class="axis-label" style="width:60px;">WACC ↓</th>
+            ${tgrRange.map(t=>`<th style="text-align:center;color:var(--muted);font-size:10px;">${t}%</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${sensVals.map((row, ri) => `
+            <tr>
+              <td style="font-family:var(--mono);font-size:10px;color:var(--muted);text-align:right;padding-right:8px;">${waccRange[ri]}%</td>
+              ${row.map((v,ci) => {
+                if (v === null) return `<td class="sens-cell" style="color:var(--muted)">—</td>`;
+                const isCurrent = ri===2 && ci===2;
+                const bg = sensColor(v, sMin, sMax, ivPerShare);
+                const border = isCurrent ? 'border:1px solid var(--accent);' : '';
+                const fw = isCurrent ? 'font-weight:600;color:var(--text);' : '';
+                return `<td class="sens-cell" style="background:${bg};${border}${fw}">\$${v.toFixed(1)}</td>`;
+              }).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;text-align:right;">
+        Highlighted cell = current assumptions
+      </div>
+    `;
+  }
+
+  function updateNetDebtLabel() {
+    const nd = parseFloat(document.getElementById('netDebt').value) || 0;
+    const el = document.getElementById('net-debt-status');
+    if (nd < 0) {
+      el.style.color = 'var(--green)';
+      el.textContent = '✦ Net cash position — adds to equity value';
+    } else if (nd === 0) {
+      el.style.color = 'var(--muted)';
+      el.textContent = '◇ No net debt or cash adjustment';
+    } else {
+      el.style.color = 'var(--red)';
+      el.textContent = '▼ Net debt position — reduces equity value';
+    }
+  }
+
+  // Init
+  updateNetDebtLabel();
+  calc();
+</script>
+</body>
+</html>
