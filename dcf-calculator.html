@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DCF Calculator — Daniel Cournane</title>
+  <title>Valence — DCF Calculator by Daniel Cournane</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -668,12 +668,30 @@
 
     /* Fade-in on load */
     @keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-    .panel { animation: fadein 0.5s ease both; }
-    .panel:nth-child(2) { animation-delay: 0.1s; }
-    .kpi-row { animation: fadein 0.5s ease 0.15s both; }
+    @keyframes slidedown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+    @keyframes pulseglow { 0%,100% { box-shadow: 0 0 0 0 rgba(79,142,247,0); } 50% { box-shadow: 0 0 0 4px rgba(79,142,247,0.15); } }
 
-    /* Smooth number transitions */
+    .page-title-block { animation: fadein 0.6s ease both; }
+    .tool-grid > .panel { animation: fadein 0.6s ease 0.15s both; }
+    .tool-grid > div:last-child { animation: fadein 0.6s ease 0.25s both; }
+    .kpi-row { animation: fadein 0.6s ease 0.3s both; }
+
+    /* Results reveal animation — triggered by JS */
+    .results-reveal {
+      animation: fadein 0.45s ease both !important;
+    }
+
+    /* Ticker input pulse on load */
+    @keyframes inputpulse {
+      0% { border-color: var(--line2); }
+      50% { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accentglow); }
+      100% { border-color: var(--line2); }
+    }
+    .ticker-pulse { animation: inputpulse 1.8s ease 0.8s 2; }
+
+    /* KPI number count-up feel */
     .kpi-value { transition: color 0.4s; }
+    .kpi-value.animating { animation: fadein 0.3s ease both; }
   </style>
 </head>
 <body>
@@ -682,7 +700,7 @@
 <header>
   <div class="header-left">
     <div class="logo">DC<span>.</span>Finance</div>
-    <div class="header-badge">DCF Model v1.6</div>
+    <div class="header-badge">Valence</div>
   </div>
   <div class="header-right"><span class="live-dot"></span>Live Calculation</div>
 </header>
@@ -691,7 +709,7 @@
   <div class="page-title-block">
     <div class="page-eyebrow">// Valuation Tool 001</div>
     <h1 class="page-title">Discounted Cash Flow <em>Calculator</em></h1>
-    <p class="page-desc">Adjust assumptions and watch intrinsic value update in real time. Drag WACC, revenue growth, and margins to model bull, base, and bear cases — the same framework behind my Chipotle and NBIS analyses.</p>
+    <p class="page-desc">Type any US ticker to load live financials, then adjust WACC, growth, and margin assumptions to build your own bull, base, and bear case valuations — intrinsic value updates in real time.</p>
   </div>
 
   <div class="tool-grid">
@@ -731,7 +749,6 @@
 
           <!-- Status / Company Card -->
           <div id="ticker-status" style="margin-top:0.6rem;font-family:var(--mono);font-size:11px;color:var(--muted);">
-            Defaults loaded: CMG — Chipotle Mexican Grill (FY2024 10-K)
           </div>
           <div id="company-card" style="display:none;margin-top:0.75rem;background:var(--bg3);border:1px solid var(--line);border-radius:3px;padding:0.85rem 1rem;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
@@ -968,17 +985,7 @@
   </div>
 
   <div class="footnote">
-    <div style="margin-bottom:1rem;padding:1rem 1.25rem;background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--yellow);border-radius:0 3px 3px 0;">
-      <div style="color:var(--yellow);letter-spacing:0.12em;text-transform:uppercase;font-size:10px;margin-bottom:0.5rem;">⚙ Setup: Ticker Lookup</div>
-      <div style="color:var(--muted2);font-size:11px;line-height:1.8;">
-        1. Deploy <code style="color:var(--accent2)">worker.js</code> to Cloudflare Workers (free tier — workers.dev)<br>
-        2. Copy your worker URL (e.g. <code style="color:var(--accent2)">https://signal-proxy.yourname.workers.dev</code>)<br>
-        3. Replace <code style="color:var(--accent2)">YOUR_WORKER</code> on line 1 of the script block in this file<br>
-        4. Push to GitHub — ticker lookup will work for any US-listed stock
-      </div>
-    </div>
     Built by Daniel Cournane · Finance + Fintech, University of Delaware ·
-    Framework mirrors NBIS and Chipotle valuation models completed at Romero Capital, 2025 ·
     Not investment advice — for educational and portfolio demonstration purposes only.
   </div>
 </main>
@@ -1128,6 +1135,13 @@
 
       status.style.color = 'var(--green)';
       status.textContent = `✓ ${d.companyName || ticker} loaded — verify assumptions before use`;
+
+      // Animate results panels in
+      document.querySelectorAll('.kpi-cell, .kpi-row').forEach((el, i) => {
+        el.style.animation = 'none';
+        el.offsetHeight; // reflow
+        el.style.animation = `fadein 0.4s ease ${i * 0.05}s both`;
+      });
 
       calc();
 
@@ -1401,9 +1415,33 @@
     }
   }
 
-  // Init
+  // Pulse the ticker input on load to draw attention
+  window.addEventListener('load', () => {
+    const inp = document.getElementById('ticker-input');
+    inp.classList.add('ticker-pulse');
+    inp.addEventListener('animationend', () => inp.classList.remove('ticker-pulse'));
+  });
+
+  // ── BLANK STATE ON LOAD ──
+  function setBlankState() {
+    document.getElementById('kpi-iv').textContent = '—';
+    document.getElementById('kpi-iv').className = 'kpi-value';
+    document.getElementById('kpi-upside').innerHTML = '<span style="color:var(--muted);font-size:11px;font-family:var(--mono)">Load a ticker to begin</span>';
+    document.getElementById('kpi-ev').textContent = '—';
+    document.getElementById('kpi-ev-sub').textContent = '—';
+    document.getElementById('kpi-tvpct').textContent = '—';
+    document.getElementById('fcf-tbody').innerHTML = `
+      <tr><td colspan="11" style="text-align:center;padding:2.5rem 1rem;color:var(--muted);font-family:var(--mono);font-size:12px;letter-spacing:0.08em;">
+        Enter a ticker above and click Load to populate
+      </td></tr>`;
+    document.getElementById('bar-chart').innerHTML = '';
+    document.getElementById('sens-wrap').innerHTML = '';
+    document.getElementById('scenario-label').textContent = '—';
+  }
+
+  // Init — blank state, no calc
   updateNetDebtLabel();
-  calc();
+  setBlankState();
 </script>
 </body>
 </html>
