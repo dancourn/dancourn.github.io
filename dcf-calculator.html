@@ -1174,6 +1174,12 @@
       document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('scenario-label').textContent = `${ticker} LIVE DATA`;
 
+      // Capture snapshot for relative bull/bear scenarios, then activate base
+      captureBaseSnapshot();
+      activeScenario = 'base';
+      document.querySelector('.scenario-btn.base').classList.add('active');
+      document.getElementById('scenario-label').textContent = 'BASE CASE';
+
       // ── Company card ──
       const fmtRaw = v => {
         const n = Number(v);
@@ -1238,30 +1244,68 @@
     }
   }
 
-  // ── SCENARIOS ──
-  const SCENARIOS = {
-    bull: { growth1:15, growth2:10, ebitMargin:20, wacc:8.0,  tgr:3.0, capex:5,  da:3, taxRate:25, nwc:1.5 },
-    base: { growth1:12, growth2:7,  ebitMargin:17, wacc:9.0,  tgr:2.5, capex:6,  da:3, taxRate:25, nwc:1.5 },
-    bear: { growth1:6,  growth2:3,  ebitMargin:14, wacc:11.0, tgr:1.5, capex:7,  da:3, taxRate:25, nwc:2.5 },
-  };
+  // SCENARIOS — relative to live-loaded company data
+  let baseSnapshot = null;
+
+  function captureBaseSnapshot() {
+    baseSnapshot = {
+      growth1:    parseFloat(document.getElementById('growth1').value)    || 10,
+      growth2:    parseFloat(document.getElementById('growth2').value)    || 5,
+      ebitMargin: parseFloat(document.getElementById('ebitMargin').value) || 15,
+      wacc:       parseFloat(document.getElementById('wacc').value)       || 10,
+      tgr:        parseFloat(document.getElementById('tgr').value)        || 2.5,
+      capex:      parseFloat(document.getElementById('capex').value)      || 5,
+      da:         parseFloat(document.getElementById('da').value)         || 4,
+      taxRate:    parseFloat(document.getElementById('taxRate').value)    || 21,
+      nwc:        parseFloat(document.getElementById('nwc').value)        || 1.5,
+    };
+  }
+
+  function buildScenario(s) {
+    if (!baseSnapshot) return null;
+    const b = baseSnapshot;
+    const g1Shift = Math.max(1.5, +(b.growth1 * 0.25).toFixed(1));
+    const g2Shift = Math.max(1.0, +(b.growth2 * 0.25).toFixed(1));
+    if (s === 'base') return { ...b };
+    if (s === 'bull') return {
+      ...b,
+      growth1:    Math.min(60, +(b.growth1 + g1Shift).toFixed(1)),
+      growth2:    Math.min(40, +(b.growth2 + g2Shift).toFixed(1)),
+      ebitMargin: Math.min(50, +(b.ebitMargin + 2.5).toFixed(1)),
+      wacc:       Math.max(4,  +(b.wacc - 0.75).toFixed(2)),
+      tgr:        Math.min(5,  +(b.tgr + 0.5).toFixed(1)),
+    };
+    if (s === 'bear') return {
+      ...b,
+      growth1:    Math.max(0,  +(b.growth1 - g1Shift).toFixed(1)),
+      growth2:    Math.max(0,  +(b.growth2 - g2Shift).toFixed(1)),
+      ebitMargin: Math.max(1,  +(b.ebitMargin - 3).toFixed(1)),
+      wacc:       Math.min(25, +(b.wacc + 1.0).toFixed(2)),
+      tgr:        Math.max(0,  +(b.tgr - 0.5).toFixed(1)),
+    };
+    return null;
+  }
 
   const SCENARIO_LABELS = { bull:'BULL CASE', base:'BASE CASE', bear:'BEAR CASE' };
-  let activeScenario = 'base';
+  let activeScenario = null;
 
   function loadScenario(s) {
+    const p = buildScenario(s);
+    if (!p) return;
     activeScenario = s;
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
     document.querySelector(`.scenario-btn.${s}`).classList.add('active');
-    const p = SCENARIOS[s];
-    for (const [k,v] of Object.entries(p)) {
+    for (const [k, v] of Object.entries(p)) {
       const el = document.getElementById(k);
-      if (el) { el.value = v; }
-      const vEl = document.getElementById('val-'+k);
-      if (vEl) vEl.textContent = v + '%';
+      if (el) { el.value = v; updateSliderFill(el); }
+      const vEl = document.getElementById('val-' + k);
+      if (vEl) { vEl.textContent = v + '%'; vEl.style.opacity = '1'; }
     }
     document.getElementById('scenario-label').textContent = SCENARIO_LABELS[s];
     calc();
   }
+
+  function resetDefaults() { loadScenario('base'); }
 
   function syncVal(id, labelId, suffix) {
     const el = document.getElementById(id);
@@ -1610,7 +1654,8 @@
     const nd = document.getElementById('net-debt-status');
     if (nd) { nd.textContent = '—'; nd.style.color = 'var(--muted)'; nd.style.opacity = '0.35'; }
 
-    // Scenario pills — none active
+    // Scenario pills — none active, clear snapshot
+    baseSnapshot = null;
     document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
   }
 
