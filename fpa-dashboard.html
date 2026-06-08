@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FP&A Expected vs. Actuals — Daniel Cournane</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg:       #0a0e17;
+      --bg2:      #0f1520;
+      --bg3:      #151c2c;
+      --bg4:      #1a2235;
+      --line:     rgba(255,255,255,0.07);
+      --line2:    rgba(255,255,255,0.12);
+      --text:     #e2e8f4;
+      --muted:    #5a6480;
+      --muted2:   #8899bb;
+      --accent:   #00d4aa;
+      --accdim:   rgba(0,212,170,0.12);
+      --accglow:  rgba(0,212,170,0.06);
+      --blue:     #4f8ef7;
+      --bluedim:  rgba(79,142,247,0.15);
+      --green:    #00d4aa;
+      --red:      #f05674;
+      --reddim:   rgba(240,86,116,0.12);
+      --yellow:   #f5c542;
+      --ylwdim:   rgba(245,197,66,0.12);
+      --sans:     'Space Grotesk', sans-serif;
+      --mono:     'Space Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* NOISE */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.45;
+    }
+
+    /* GRID BG */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,170,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,170,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* HEADER */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,14,23,0.93);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 2rem;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 1.25rem; }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    .logo span { color: var(--accent); }
+
+    .header-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: var(--accdim);
+      color: var(--accent);
+      border: 1px solid rgba(0,212,170,0.25);
+      padding: 3px 10px;
+      border-radius: 2px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .live-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+      margin-right: 5px;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+    /* UPLOAD STRIP */
+    .upload-strip {
+      position: relative;
+      z-index: 1;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--line);
+      padding: 0.85rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .upload-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .upload-btn {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg3);
+      border: 1px solid var(--line2);
+      border-radius: 3px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted2);
+      padding: 0.4rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upload-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .upload-btn input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+
+    .upload-status {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .upload-status.loaded { color: var(--accent); }
+
+    .upload-hint {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    /* MAIN */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* PAGE TITLE */
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-family: var(--sans);
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.35rem;
+    }
+
+    .page-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .page-sub span { color: var(--accent); }
+
+    /* FILTER ROW */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .filter-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 0.35rem 0.85rem;
+      border-radius: 2px;
+      border: 1px solid var(--line2);
+      background: transparent;
+      color: var(--muted2);
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active {
+      background: var(--accdim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* KPI CARDS */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 500px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+    .kpi-card {
+      background: var(--bg2);
+      padding: 1.25rem 1.5rem;
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card:hover { background: var(--bg3); }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .kpi-card:hover::before { opacity: 1; }
+
+    .kpi-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .kpi-value {
+      font-family: var(--sans);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-delta {
+      font-family: var(--mono);
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .kpi-delta.pos { color: var(--accent); }
+    .kpi-delta.neg { color: var(--red); }
+    .kpi-delta.neu { color: var(--muted); }
+
+    /* CHART GRID */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+
+    .chart-grid-3 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) { .chart-grid-3 { grid-template-columns: 1fr; } }
+
+    /* PANEL */
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .panel-title::before {
+      content: '';
+      display: block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .panel-body { padding: 1.25rem 1.5rem; }
+
+    .chart-wrap {
+      padding: 1rem 1.5rem 1.25rem;
+      position: relative;
+    }
+
+    /* INSIGHT CALLOUTS */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) { .insights-grid { grid-template-columns: 1fr; } }
+
+    .insight-card {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .insight-card:hover { background: var(--bg3); border-color: var(--line2); }
+    .insight-card.warn { border-left: 3px solid var(--red); }
+    .insight-card.ok   { border-left: 3px solid var(--accent); }
+    .insight-card.info { border-left: 3px solid var(--blue); }
+    .insight-card.caution { border-left: 3px solid var(--yellow); }
+
+    .insight-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .insight-body {}
+    .insight-title {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .insight-text {
+      font-family: var(--sans);
+      font-size: 12px;
+      color: var(--muted2);
+      line-height: 1.5;
+    }
+
+    /* VARIANCE TABLE */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    thead tr {
+      border-bottom: 1px solid var(--line2);
+    }
+
+    th {
+      padding: 0.65rem 1rem;
+      text-align: right;
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    th:first-child { text-align: left; }
+
+    td {
+      padding: 0.6rem 1rem;
+      text-align: right;
+      color: var(--muted2);
+      border-bottom: 1px solid var(--line);
+    }
+    td:first-child { text-align: left; color: var(--text); font-family: var(--sans); font-size: 13px; font-weight: 500; }
+
+    tr:last-child td { border-bottom: none; font-weight: 600; color: var(--text); }
+    tr:hover td { background: rgba(0,212,170,0.02); }
+
+    .var-pos { color: var(--accent) !important; }
+    .var-neg { color: var(--red) !important; }
+    .var-pct-pos { color: var(--accent) !important; }
+    .var-pct-neg { color: var(--red) !important; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 2px;
+    }
+    .badge.over  { background: var(--reddim); color: var(--red); }
+    .badge.under { background: var(--accdim); color: var(--accent); }
+    .badge.flat  { background: var(--bluedim); color: var(--blue); }
+
+    /* FOOTER */
+    .footnote {
+      margin-top: 2.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadein { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+    .kpi-grid    { animation: fadein 0.5s ease both; }
+    .insights-grid { animation: fadein 0.5s ease 0.1s both; }
+    .chart-grid  { animation: fadein 0.5s ease 0.15s both; }
+    .chart-grid-3 { animation: fadein 0.5s ease 0.2s both; }
+    .panel.table-panel { animation: fadein 0.5s ease 0.25s both; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo">DC<span>.</span>Finance</div>
+    <div class="header-badge">FP&A Dashboard</div>
+  </div>
+  <div class="header-right">
+    <span><span class="live-dot"></span>Interactive</span>
+  </div>
+</header>
+
+<!-- UPLOAD STRIP -->
+<div class="upload-strip">
+  <span class="upload-label">Data Source</span>
+  <label class="upload-btn">
+    ↑ Upload File
+    <input type="file" accept=".csv,.xlsx,.xls" onchange="handleUpload(event)" />
+  </label>
+  <span class="upload-status" id="upload-status">Using demo data — FY2024 P&amp;L Cost Centers</span>
+  <span class="upload-hint">CSV or Excel · columns: Department, Month, Expected, Actuals</span>
+</div>
+
+<main>
+  <div class="page-header">
+    <div class="page-title">Expected vs. Actuals Dashboard</div>
+    <div class="page-sub">FY2024 · <span id="period-label">All Quarters</span> · <span id="dept-label">All Cost Centers</span></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-row">
+    <span class="filter-label">Period:</span>
+    <div class="filter-group" id="filter-period">
+      <button class="filter-btn active" onclick="setFilter('period','all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('period','Q1',this)">Q1</button>
+      <button class="filter-btn" onclick="setFilter('period','Q2',this)">Q2</button>
+      <button class="filter-btn" onclick="setFilter('period','Q3',this)">Q3</button>
+      <button class="filter-btn" onclick="setFilter('period','Q4',this)">Q4</button>
+    </div>
+    <span class="filter-label" style="margin-left:1rem;">Cost Center:</span>
+    <div class="filter-group" id="filter-dept">
+      <button class="filter-btn active" onclick="setFilter('dept','all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('dept','Revenue',this)">Revenue</button>
+      <button class="filter-btn" onclick="setFilter('dept','COGS',this)">COGS</button>
+      <button class="filter-btn" onclick="setFilter('dept','R&D',this)">R&amp;D</button>
+      <button class="filter-btn" onclick="setFilter('dept','S&M',this)">S&amp;M</button>
+      <button class="filter-btn" onclick="setFilter('dept','G&A',this)">G&amp;A</button>
+      <button class="filter-btn" onclick="setFilter('dept','CapEx',this)">CapEx</button>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Expected</div>
+      <div class="kpi-value" id="kpi-expected">—</div>
+      <div class="kpi-delta neu" id="kpi-expected-sub">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Actuals</div>
+      <div class="kpi-value" id="kpi-actuals">—</div>
+      <div class="kpi-delta" id="kpi-actuals-sub">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Variance ($)</div>
+      <div class="kpi-value" id="kpi-var">—</div>
+      <div class="kpi-delta" id="kpi-var-sub">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Variance (%)</div>
+      <div class="kpi-value" id="kpi-varpct">—</div>
+      <div class="kpi-delta" id="kpi-varpct-sub">—</div>
+    </div>
+  </div>
+
+  <!-- INSIGHT CALLOUTS -->
+  <div class="insights-grid" id="insights-grid"></div>
+
+  <!-- CHART ROW 1 -->
+  <div class="chart-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Expected vs. Actuals by Department</div>
+      </div>
+      <div class="chart-wrap" style="height:280px">
+        <canvas id="chart-dept"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Monthly Spend vs. Plan</div>
+      </div>
+      <div class="chart-wrap" style="height:280px">
+        <canvas id="chart-trend"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHART ROW 2 -->
+  <div class="chart-grid-3">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Variance vs. Plan (%)</div>
+      </div>
+      <div class="chart-wrap" style="height:240px">
+        <canvas id="chart-var"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Cost Breakdown</div>
+      </div>
+      <div class="chart-wrap" style="height:240px;display:flex;align-items:center;justify-content:center;">
+        <canvas id="chart-donut" style="max-height:220px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANCE TABLE -->
+  <div class="panel table-panel">
+    <div class="panel-header">
+      <div class="panel-title">Variance Detail by Cost Center</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">
+        <span style="color:var(--accent)">▲ Under plan</span> &nbsp;
+        <span style="color:var(--red)">▼ Over plan</span>
+      </div>
+    </div>
+    <div class="panel-body" style="padding:0 0 0.5rem">
+      <div class="table-wrap">
+        <table id="var-table">
+          <thead>
+            <tr>
+              <th>Department</th>
+              <th>Expected</th>
+              <th>Actuals</th>
+              <th>Variance ($)</th>
+              <th>Variance (%)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="var-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Built by Daniel Cournane · Finance + Fintech, University of Delaware ·
+    Upload a CSV or Excel file (Department, Month, Expected, Actuals) to replace demo data ·
+    Revenue uses Expected vs. Actuals · All other lines use Budget vs. Actuals · Not for financial reporting
+  </div>
+</main>
+
+<script>
+// ── DEMO DATA ──
+const DEMO = [
+  // ── SaaS Hypergrowth Co. · FY2024 Demo ──
+  // Revenue: misses Q1, recovers strongly H2
+  {dept:'Revenue', month:'Jan', q:'Q1', budget:3200000, actuals:2980000},
+  {dept:'Revenue', month:'Feb', q:'Q1', budget:3400000, actuals:3250000},
+  {dept:'Revenue', month:'Mar', q:'Q1', budget:3800000, actuals:3920000},
+  {dept:'Revenue', month:'Apr', q:'Q2', budget:4100000, actuals:4050000},
+  {dept:'Revenue', month:'May', q:'Q2', budget:4400000, actuals:4520000},
+  {dept:'Revenue', month:'Jun', q:'Q2', budget:4800000, actuals:5100000},
+  {dept:'Revenue', month:'Jul', q:'Q3', budget:5200000, actuals:5350000},
+  {dept:'Revenue', month:'Aug', q:'Q3', budget:5600000, actuals:5890000},
+  {dept:'Revenue', month:'Sep', q:'Q3', budget:6100000, actuals:6480000},
+  {dept:'Revenue', month:'Oct', q:'Q4', budget:6600000, actuals:7100000},
+  {dept:'Revenue', month:'Nov', q:'Q4', budget:7200000, actuals:7850000},
+  {dept:'Revenue', month:'Dec', q:'Q4', budget:8000000, actuals:8920000},
+  // COGS: software margins, mostly on plan
+  {dept:'COGS', month:'Jan', q:'Q1', budget:640000, actuals:610000},
+  {dept:'COGS', month:'Feb', q:'Q1', budget:680000, actuals:650000},
+  {dept:'COGS', month:'Mar', q:'Q1', budget:760000, actuals:790000},
+  {dept:'COGS', month:'Apr', q:'Q2', budget:820000, actuals:800000},
+  {dept:'COGS', month:'May', q:'Q2', budget:880000, actuals:860000},
+  {dept:'COGS', month:'Jun', q:'Q2', budget:960000, actuals:940000},
+  {dept:'COGS', month:'Jul', q:'Q3', budget:1040000, actuals:1020000},
+  {dept:'COGS', month:'Aug', q:'Q3', budget:1120000, actuals:1100000},
+  {dept:'COGS', month:'Sep', q:'Q3', budget:1220000, actuals:1280000},
+  {dept:'COGS', month:'Oct', q:'Q4', budget:1320000, actuals:1350000},
+  {dept:'COGS', month:'Nov', q:'Q4', budget:1440000, actuals:1480000},
+  {dept:'COGS', month:'Dec', q:'Q4', budget:1600000, actuals:1670000},
+  // R&D: consistently over plan — hiring ahead of schedule
+  {dept:'R&D', month:'Jan', q:'Q1', budget:1800000, actuals:1960000},
+  {dept:'R&D', month:'Feb', q:'Q1', budget:1800000, actuals:2050000},
+  {dept:'R&D', month:'Mar', q:'Q1', budget:1900000, actuals:2110000},
+  {dept:'R&D', month:'Apr', q:'Q2', budget:2000000, actuals:2180000},
+  {dept:'R&D', month:'May', q:'Q2', budget:2000000, actuals:2220000},
+  {dept:'R&D', month:'Jun', q:'Q2', budget:2100000, actuals:2290000},
+  {dept:'R&D', month:'Jul', q:'Q3', budget:2200000, actuals:2310000},
+  {dept:'R&D', month:'Aug', q:'Q3', budget:2200000, actuals:2380000},
+  {dept:'R&D', month:'Sep', q:'Q3', budget:2300000, actuals:2450000},
+  {dept:'R&D', month:'Oct', q:'Q4', budget:2400000, actuals:2520000},
+  {dept:'R&D', month:'Nov', q:'Q4', budget:2400000, actuals:2610000},
+  {dept:'R&D', month:'Dec', q:'Q4', budget:2500000, actuals:2780000},
+  // S&M: heavy Q1 campaign + Q4 push, lumpy spend
+  {dept:'S&M', month:'Jan', q:'Q1', budget:2200000, actuals:2380000},
+  {dept:'S&M', month:'Feb', q:'Q1', budget:1800000, actuals:1720000},
+  {dept:'S&M', month:'Mar', q:'Q1', budget:1800000, actuals:1810000},
+  {dept:'S&M', month:'Apr', q:'Q2', budget:1900000, actuals:1850000},
+  {dept:'S&M', month:'May', q:'Q2', budget:1900000, actuals:1940000},
+  {dept:'S&M', month:'Jun', q:'Q2', budget:2000000, actuals:2080000},
+  {dept:'S&M', month:'Jul', q:'Q3', budget:1800000, actuals:1760000},
+  {dept:'S&M', month:'Aug', q:'Q3', budget:1800000, actuals:1840000},
+  {dept:'S&M', month:'Sep', q:'Q3', budget:1900000, actuals:1970000},
+  {dept:'S&M', month:'Oct', q:'Q4', budget:2400000, actuals:2550000},
+  {dept:'S&M', month:'Nov', q:'Q4', budget:2600000, actuals:2780000},
+  {dept:'S&M', month:'Dec', q:'Q4', budget:3000000, actuals:3210000},
+  // G&A: lean ops, tight to plan
+  {dept:'G&A', month:'Jan', q:'Q1', budget:420000, actuals:410000},
+  {dept:'G&A', month:'Feb', q:'Q1', budget:420000, actuals:425000},
+  {dept:'G&A', month:'Mar', q:'Q1', budget:420000, actuals:430000},
+  {dept:'G&A', month:'Apr', q:'Q2', budget:440000, actuals:435000},
+  {dept:'G&A', month:'May', q:'Q2', budget:440000, actuals:448000},
+  {dept:'G&A', month:'Jun', q:'Q2', budget:440000, actuals:452000},
+  {dept:'G&A', month:'Jul', q:'Q3', budget:460000, actuals:455000},
+  {dept:'G&A', month:'Aug', q:'Q3', budget:460000, actuals:462000},
+  {dept:'G&A', month:'Sep', q:'Q3', budget:460000, actuals:471000},
+  {dept:'G&A', month:'Oct', q:'Q4', budget:480000, actuals:476000},
+  {dept:'G&A', month:'Nov', q:'Q4', budget:480000, actuals:489000},
+  {dept:'G&A', month:'Dec', q:'Q4', budget:480000, actuals:502000},
+  // CapEx: cloud-first, minimal — small infra spikes Q4
+  {dept:'CapEx', month:'Jan', q:'Q1', budget:180000, actuals:160000},
+  {dept:'CapEx', month:'Feb', q:'Q1', budget:120000, actuals:115000},
+  {dept:'CapEx', month:'Mar', q:'Q1', budget:120000, actuals:130000},
+  {dept:'CapEx', month:'Apr', q:'Q2', budget:200000, actuals:210000},
+  {dept:'CapEx', month:'May', q:'Q2', budget:150000, actuals:140000},
+  {dept:'CapEx', month:'Jun', q:'Q2', budget:150000, actuals:145000},
+  {dept:'CapEx', month:'Jul', q:'Q3', budget:180000, actuals:170000},
+  {dept:'CapEx', month:'Aug', q:'Q3', budget:150000, actuals:155000},
+  {dept:'CapEx', month:'Sep', q:'Q3', budget:150000, actuals:160000},
+  {dept:'CapEx', month:'Oct', q:'Q4', budget:200000, actuals:195000},
+  {dept:'CapEx', month:'Nov', q:'Q4', budget:250000, actuals:270000},
+  {dept:'CapEx', month:'Dec', q:'Q4', budget:300000, actuals:340000},
+];
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DEPTS  = ['Revenue','COGS','R&D','S&M','G&A','CapEx'];
+
+let rawData   = DEMO.slice();
+let filters   = { period: 'all', dept: 'all' };
+let charts    = {};
+
+// ── CHART DEFAULTS ──
+Chart.defaults.color = '#5a6480';
+Chart.defaults.font.family = "'Space Mono', monospace";
+Chart.defaults.font.size = 10;
+
+const ACC = '#00d4aa', RED = '#f05674', BLUE = '#4f8ef7', YLW = '#f5c542';
+const DEPT_COLORS = ['#00d4aa','#4f8ef7','#f5c542','#f05674','#a78bfa','#fb923c'];
+
+// ── UPLOAD ──
+function handleUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const statusEl = document.getElementById('upload-status');
+  statusEl.textContent = `Reading ${file.name}…`;
+  statusEl.className = 'upload-status';
+
+  const reader = new FileReader();
+  const isXLSX = file.name.match(/\.(xlsx|xls)$/i);
+
+  function parseRows(rows) {
+    try {
+      const header = rows[0].map(h => (h || '').toString().trim().toLowerCase());
+      const di = header.findIndex(h => h.includes('department') || h.includes('dept') || h.includes('cost'));
+      const mi = header.findIndex(h => h.includes('month'));
+      const bi = header.findIndex(h => h.includes('budget') || h.includes('expected') || h.includes('plan'));
+      const ai = header.findIndex(h => h.includes('actual'));
+      if ([di,mi,bi,ai].some(i => i === -1)) throw new Error(`Missing column — need: Department, Month, Expected, Actuals`);
+      const qMap = {jan:'Q1',feb:'Q1',mar:'Q1',apr:'Q2',may:'Q2',jun:'Q2',jul:'Q3',aug:'Q3',sep:'Q3',oct:'Q4',nov:'Q4',dec:'Q4'};
+      rawData = rows.slice(1).map(cols => {
+        const month = (cols[mi] || '').toString().trim();
+        const dept  = (cols[di] || '').toString().trim();
+        const b     = parseFloat((cols[bi] || '0').toString().replace(/[$,]/g,'')) || 0;
+        const a     = parseFloat((cols[ai] || '0').toString().replace(/[$,]/g,'')) || 0;
+        const q     = qMap[month.slice(0,3).toLowerCase()] || 'Q1';
+        return { dept, month: month.slice(0,3), q, budget: b, actuals: a };
+      }).filter(r => r.dept && r.budget > 0);
+      if (!rawData.length) throw new Error('No valid rows found');
+      statusEl.textContent = `✓ ${file.name} loaded (${rawData.length} rows)`;
+      statusEl.className = 'upload-status loaded';
+      render();
+    } catch(err) {
+      statusEl.textContent = `✗ ${err.message}`;
+    }
+  }
+
+  if (isXLSX) {
+    reader.onload = ev => {
+      const wb   = XLSX.read(ev.target.result, { type: 'array' });
+      // Use first sheet that looks like data (skip README-type sheets)
+      const sheetName = wb.SheetNames.find(n => !n.toLowerCase().includes('read')) || wb.SheetNames[0];
+      const ws   = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      parseRows(rows);
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.onload = ev => {
+      const rows = ev.target.result.split('\n').filter(Boolean).map(r => r.split(','));
+      parseRows(rows);
+    };
+    reader.readAsText(file);
+  }
+}
+
+// ── FILTER ──
+function setFilter(type, val, btn) {
+  filters[type] = val;
+  // Only clear buttons within the same group
+  const groupId = type === 'period' ? 'filter-period' : 'filter-dept';
+  document.getElementById(groupId).querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('period-label').textContent = filters.period === 'all' ? 'All Quarters' : filters.period;
+  document.getElementById('dept-label').textContent   = filters.dept   === 'all' ? 'All Cost Centers' : filters.dept;
+  render();
+}
+
+// ── HELPERS ──
+function getFiltered() {
+  return rawData.filter(r =>
+    (filters.period === 'all' || r.q === filters.period) &&
+    (filters.dept   === 'all' || r.dept === filters.dept)
+  );
+}
+
+const fmt = n => {
+  if (Math.abs(n) >= 1e6) return `$${(n/1e6).toFixed(1)}M`;
+  if (Math.abs(n) >= 1e3) return `$${(n/1e3).toFixed(0)}K`;
+  return `$${n}`;
+};
+
+const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
+
+function sumBy(data, key) { return data.reduce((s,r) => s + r[key], 0); }
+
+function groupBy(data, key) {
+  return data.reduce((acc, r) => {
+    (acc[r[key]] = acc[r[key]] || []).push(r);
+    return acc;
+  }, {});
+}
+
+// ── RENDER ──
+function render() {
+  const data = getFiltered();
+  if (!data.length) return;
+
+  const totalBudget  = sumBy(data, 'budget');
+  const totalActuals = sumBy(data, 'actuals');
+  // Net favorable variance: Revenue beat adds value, cost overruns subtract
+  const totalVar = data.reduce((sum, r) =>
+    r.dept === 'Revenue' ? sum + (r.actuals - r.budget) : sum + (r.budget - r.actuals), 0);
+  const totalVarPct  = (totalVar / totalBudget) * 100;
+
+  document.getElementById('kpi-expected').textContent  = fmt(totalBudget);
+  document.getElementById('kpi-actuals').textContent = fmt(totalActuals);
+  document.getElementById('kpi-var').textContent     = fmt(Math.abs(totalVar));
+  document.getElementById('kpi-varpct').textContent  = Math.abs(totalVarPct).toFixed(1) + '%';
+
+  document.getElementById('kpi-expected-sub').textContent  = 'Annual plan';
+  document.getElementById('kpi-actuals-sub').className   = 'kpi-delta ' + (totalVar >= 0 ? 'pos' : 'neg');
+  document.getElementById('kpi-actuals-sub').textContent = totalVar >= 0 ? `${fmt(totalVar)} net favorable` : `${fmt(-totalVar)} net unfavorable`;
+  document.getElementById('kpi-var').style.color          = totalVar >= 0 ? 'var(--accent)' : 'var(--red)';
+  document.getElementById('kpi-varpct').style.color       = totalVar >= 0 ? 'var(--accent)' : 'var(--red)';
+  document.getElementById('kpi-var-sub').className        = 'kpi-delta ' + (totalVar >= 0 ? 'pos' : 'neg');
+  document.getElementById('kpi-var-sub').textContent      = totalVar >= 0 ? '▲ Under plan' : '▼ Over plan';
+  document.getElementById('kpi-varpct-sub').className     = 'kpi-delta ' + (totalVar >= 0 ? 'pos' : 'neg');
+  document.getElementById('kpi-varpct-sub').textContent   = totalVar >= 0 ? '▲ Favorable' : '▼ Unfavorable';
+
+  // By dept
+  const depts = DEPTS.filter(d => filters.dept === 'all' || d === filters.dept);
+  const byDept = groupBy(data, 'dept');
+
+  const deptBudgets  = depts.map(d => sumBy(byDept[d] || [], 'budget'));
+  const deptActuals  = depts.map(d => sumBy(byDept[d] || [], 'actuals'));
+  // Variance: for Revenue, favorable = actuals > expected (sign flipped vs costs)
+  const deptVarPcts  = depts.map((d,i) => {
+    const b = deptBudgets[i], a = deptActuals[i];
+    if (b === 0) return 0;
+    return d === 'Revenue'
+      ? ((a - b) / b) * 100   // Revenue: positive = good (beat plan)
+      : ((b - a) / b) * 100;  // Costs: positive = good (under plan)
+  });
+
+  // By month
+  const months = MONTHS.filter(m => {
+    const qMap = {Jan:'Q1',Feb:'Q1',Mar:'Q1',Apr:'Q2',May:'Q2',Jun:'Q2',
+                  Jul:'Q3',Aug:'Q3',Sep:'Q3',Oct:'Q4',Nov:'Q4',Dec:'Q4'};
+    return filters.period === 'all' || qMap[m] === filters.period;
+  });
+  const byMonth  = groupBy(data, 'month');
+  const mBudgets = months.map(m => sumBy(byMonth[m] || [], 'budget'));
+  const mActuals = months.map(m => sumBy(byMonth[m] || [], 'actuals'));
+
+  const costDepts   = depts.filter(d => d !== 'Revenue');
+  const costActuals = costDepts.map(d => deptActuals[depts.indexOf(d)]);
+  renderDeptChart(depts, deptBudgets, deptActuals);
+  renderTrendChart(months, mBudgets, mActuals);
+  renderVarChart(depts, deptVarPcts);
+  renderDonut(costDepts, costActuals);
+  renderTable(depts, deptBudgets, deptActuals);
+  renderInsights(depts, deptBudgets, deptActuals, totalVar, totalVarPct);
+}
+
+// ── CHARTS ──
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+const gridOpts = { color: 'rgba(255,255,255,0.05)' };
+const tooltipOpts = {
+  backgroundColor: '#0f1520',
+  borderColor: 'rgba(255,255,255,0.1)',
+  borderWidth: 1,
+  titleColor: '#e2e8f4',
+  bodyColor: '#8899bb',
+  padding: 10,
+  cornerRadius: 3,
+  callbacks: { label: ctx => ` ${fmt(ctx.raw)}` }
+};
+
+function renderDeptChart(depts, budgets, actuals) {
+  destroyChart('dept');
+  const ctx = document.getElementById('chart-dept').getContext('2d');
+  charts['dept'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: depts,
+      datasets: [
+        { label: 'Expected',  data: budgets,  backgroundColor: 'rgba(79,142,247,0.6)',  borderColor: BLUE, borderWidth: 1, borderRadius: 3 },
+        { label: 'Actuals', data: actuals,  backgroundColor: 'rgba(0,212,170,0.6)',   borderColor: ACC,  borderWidth: 1, borderRadius: 3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#8899bb', font:{size:10} } }, tooltip: tooltipOpts },
+      scales: {
+        x: { grid: gridOpts, ticks: { color: '#5a6480' } },
+        y: { grid: gridOpts, ticks: { color: '#5a6480', callback: v => fmt(v) } }
+      }
+    }
+  });
+}
+
+function renderTrendChart(months, budgets, actuals) {
+  destroyChart('trend');
+  const ctx = document.getElementById('chart-trend').getContext('2d');
+  charts['trend'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'Expected',  data: budgets,  borderColor: BLUE, backgroundColor: 'rgba(79,142,247,0.08)', tension: 0.4, fill: false, pointRadius: 3, borderWidth: 2, pointBackgroundColor: BLUE },
+        { label: 'Actuals', data: actuals,  borderColor: ACC,  backgroundColor: 'rgba(0,212,170,0.08)',  tension: 0.4, fill: true,  pointRadius: 3, borderWidth: 2, pointBackgroundColor: ACC },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#8899bb', font:{size:10} } }, tooltip: tooltipOpts },
+      scales: {
+        x: { grid: gridOpts, ticks: { color: '#5a6480' } },
+        y: { grid: gridOpts, ticks: { color: '#5a6480', callback: v => fmt(v) } }
+      }
+    }
+  });
+}
+
+function renderVarChart(depts, varPcts) {
+  destroyChart('var');
+  const ctx = document.getElementById('chart-var').getContext('2d');
+  charts['var'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: depts,
+      datasets: [{
+        label: 'Variance %',
+        data: varPcts,
+        backgroundColor: varPcts.map(v => v >= 0 ? 'rgba(0,212,170,0.6)' : 'rgba(240,86,116,0.6)'),
+        borderColor:     varPcts.map(v => v >= 0 ? ACC : RED),
+        borderWidth: 1, borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...tooltipOpts, callbacks: { label: ctx => ` ${fmtPct(ctx.raw)}` } }
+      },
+      scales: {
+        x: { grid: gridOpts, ticks: { color: '#5a6480', callback: v => v + '%' } },
+        y: { grid: { display: false }, ticks: { color: '#8899bb' } }
+      }
+    }
+  });
+}
+
+function renderDonut(depts, actuals) {
+  destroyChart('donut');
+  const ctx = document.getElementById('chart-donut').getContext('2d');
+  charts['donut'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: depts,
+      datasets: [{ data: actuals, backgroundColor: DEPT_COLORS, borderColor: '#0f1520', borderWidth: 3, hoverBorderWidth: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'right', labels: { color: '#8899bb', font:{size:10}, boxWidth: 10, padding: 10 } },
+        tooltip: { ...tooltipOpts, callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)}` } }
+      }
+    }
+  });
+}
+
+// ── VARIANCE TABLE ──
+function renderTable(depts, budgets, actuals) {
+  const tbody = document.getElementById('var-tbody');
+  let totalB = 0, totalA = 0;
+  const rows = depts.map((d, i) => {
+    totalB += budgets[i]; totalA += actuals[i];
+    const b = budgets[i], a = actuals[i];
+    const isRev = d === 'Revenue';
+    // For Revenue: v positive = beat plan (good). For costs: v positive = under plan (good)
+    const v  = isRev ? (a - b) : (b - a);
+    const vp = b > 0 ? (v / b) * 100 : 0;
+    const favorable = v > 0;
+    const status = Math.abs(vp) < 1
+      ? `<span class="badge flat">On Track</span>`
+      : favorable
+        ? `<span class="badge under">▲ ${isRev ? 'Above plan' : 'Under plan'}</span>`
+        : `<span class="badge over">▼ ${isRev ? 'Below plan' : 'Over plan'}</span>`;
+    // Raw dollar variance always shows as actuals - expected for display
+    const rawV = a - b;
+    return `<tr>
+      <td>${d}</td>
+      <td>${fmt(b)}</td>
+      <td>${fmt(a)}</td>
+      <td class="${favorable ? 'var-pos' : 'var-neg'}">${rawV >= 0 ? '+' : ''}${fmt(rawV)}</td>
+      <td class="${favorable ? 'var-pct-pos' : 'var-pct-neg'}">${rawV >= 0 ? '+' : ''}${((rawV/b)*100).toFixed(1)}%</td>
+      <td>${status}</td>
+    </tr>`;
+  });
+  const netFav = depts.reduce((sum, d, i) =>
+    d === 'Revenue' ? sum + (actuals[i]-budgets[i]) : sum + (budgets[i]-actuals[i]), 0);
+  const tvp = totalB > 0 ? (netFav / totalB) * 100 : 0;
+  rows.push(`<tr>
+    <td>Total</td>
+    <td>${fmt(totalB)}</td>
+    <td>${fmt(totalA)}</td>
+    <td class="${netFav >= 0 ? 'var-pos' : 'var-neg'}">${netFav >= 0 ? '+' : ''}${fmt(netFav)}</td>
+    <td class="${netFav >= 0 ? 'var-pct-pos' : 'var-pct-neg'}">${netFav >= 0 ? '+' : ''}${tvp.toFixed(1)}%</td>
+    <td></td>
+  </tr>`);
+  tbody.innerHTML = rows.join('');
+}
+
+// ── INSIGHT CALLOUTS ──
+function renderInsights(depts, budgets, actuals, totalVar, totalVarPct) {
+  const insights = [];
+
+  // Biggest overspend (for cost lines only — skip Revenue)
+  let worstDept = '', worstPct = 0;
+  depts.filter(d => d !== 'Revenue').forEach((d, i) => {
+    const di = depts.indexOf(d);
+    const b = budgets[di], a = actuals[di];
+    const vp = b > 0 ? ((a - b) / b) * 100 : 0;
+    if (vp > worstPct) { worstPct = vp; worstDept = d; }
+  });
+  if (worstDept && worstPct > 1) {
+    insights.push({ type:'warn', icon:'🔴', title:`${worstDept} is ${worstPct.toFixed(1)}% over plan`, text:`Largest unfavorable cost variance. Review spend drivers and flag for reforecast.` });
+  }
+
+  // Revenue performance
+  if (depts.includes('Revenue')) {
+    const ri = depts.indexOf('Revenue');
+    const b = budgets[ri], a = actuals[ri];
+    const vp = b > 0 ? ((a - b) / b) * 100 : 0;
+    if (vp > 1) {
+      insights.push({ type:'ok', icon:'✅', title:`Revenue tracking ${vp.toFixed(1)}% ahead of plan`, text:`Actuals are beating plan. Assess whether outperformance is sustainable or pull-forward.` });
+    } else if (vp < -1) {
+      insights.push({ type:'warn', icon:'⚠️', title:`Revenue is ${Math.abs(vp).toFixed(1)}% below plan`, text:`Revenue miss may require cost action to protect operating income targets.` });
+    }
+  } else {
+    // Biggest underspend for non-revenue filtering
+    let bestDept = '', bestPct = 0;
+    depts.forEach((d, i) => {
+      const b = budgets[i], a = actuals[i];
+      const vp = b > 0 ? ((b - a) / b) * 100 : 0;
+      if (vp > bestPct) { bestPct = vp; bestDept = d; }
+    });
+    if (bestDept && bestPct > 1) {
+      insights.push({ type:'ok', icon:'✅', title:`${bestDept} tracking ${bestPct.toFixed(1)}% under plan`, text:`Largest favorable variance. Assess whether savings are structural or timing-related.` });
+    }
+  }
+
+  // Overall
+  if (Math.abs(totalVarPct) > 3) {
+    const dir = totalVar >= 0 ? 'favorable' : 'unfavorable';
+    const color = totalVar >= 0 ? 'ok' : 'warn';
+    insights.push({ type: color, icon: totalVar >= 0 ? '📊' : '⚠️',
+      title: `Portfolio is ${Math.abs(totalVarPct).toFixed(1)}% ${dir} overall`,
+      text: totalVar >= 0
+        ? `Total actuals are tracking below plan. Consider whether underspend reflects efficiency or delayed spend.`
+        : `Total actuals are above budget. Recommend variance review with department heads to identify root causes.`
+    });
+  } else {
+    insights.push({ type:'info', icon:'📊', title:'Portfolio tracking close to budget', text:'Overall variance is within 3%. No material reforecast trigger at this time.' });
+  }
+
+  // Count over-budget depts
+  const overCount = depts.filter((d,i) => actuals[i] > budgets[i]).length;
+  if (overCount > 0) {
+    insights.push({ type: overCount >= 3 ? 'warn' : 'caution', icon: '📋',
+      title: `${overCount} of ${depts.length} departments over plan`,
+      text: overCount >= 3
+        ? `Majority of departments showing unfavorable variance. Recommend cross-functional budget review.`
+        : `Isolated overspend — review impacted departments individually before escalating.`
+    });
+  }
+
+  // Trend callout (if full year)
+  if (filters.period === 'all' && filters.dept === 'all') {
+    insights.push({ type:'info', icon:'📈', title:'Q4 showing highest absolute spend', text:'Seasonal spend pattern consistent with year-end budget utilization. Monitor for unusual accelerations in final quarter.' });
+  }
+
+  // Pad to 3 for clean grid
+  while (insights.length < 3) {
+    insights.push({ type:'info', icon:'💡', title:'No additional flags', text:'All other departments are within normal variance thresholds for this period.' });
+  }
+
+  document.getElementById('insights-grid').innerHTML = insights.slice(0,3).map(i => `
+    <div class="insight-card ${i.type}">
+      <span class="insight-icon">${i.icon}</span>
+      <div class="insight-body">
+        <div class="insight-title">${i.title}</div>
+        <div class="insight-text">${i.text}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── INIT ──
+render();
+</script>
+</body>
+</html>

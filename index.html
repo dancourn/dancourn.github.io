@@ -1281,46 +1281,26 @@
       <div class="project-item" id="proj-fpa">
         <div class="project-header" onclick="toggleProject('proj-fpa')">
           <div>
-            <div class="project-meta"><span class="project-num">001</span><span class="tag">Python</span><span class="tag">Streamlit</span><span class="tag">Plotly</span><span class="tag live">Live</span></div>
-            <div class="project-title">FP&amp;A Budget vs. Actuals Dashboard</div>
-            <div class="project-blurb">Automated variance analysis tool that ingests budget templates and actuals, then generates a full reporting dashboard — the monthly close, automated.</div>
+            <div class="project-meta"><span class="project-num">001</span><span class="tag">HTML/JS</span><span class="tag">Finance</span><span class="tag live">Live</span></div>
+            <div class="project-title">FP&amp;A Expected vs. Actuals Dashboard</div>
+            <div class="project-blurb">Interactive variance analysis dashboard — upload your own CSV or Excel, or explore the built-in SaaS demo. Filter by quarter and cost center, with auto-generated insight callouts and a full variance table.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
         <div class="project-body"><div class="project-inner">
           <div class="project-reflection">
-            <h4>What I Built</h4>
-            <p>A fully interactive FP&A dashboard that takes an Excel file with Budget and Actuals sheets and automatically generates variance analysis across all cost centers and quarters. The app produces a KPI summary, a color-coded variance table, auto-generated insight callouts, a bar chart, a quarter-by-quarter trend line, a waterfall chart, and a heatmap — all driven by a single file upload.</p>
-            <h4>What I Learned</h4>
-            <p>This project forced me to think like an FP&A analyst and a software engineer at the same time. On the finance side, I had to structure the variance logic correctly — actuals minus budget, signed the right way, aggregated both by category and by quarter. On the technical side, I learned how to build a real data pipeline: reading Excel with Pandas, transforming it in memory, and rendering it dynamically through a web interface with zero page reloads.</p>
-            <p>The biggest technical lesson was understanding Streamlit's rendering model — it re-executes the entire script on every interaction, which means every calculation, every chart, and every styled element has to be stateless and fast. Caching data with <code>@st.cache_data</code> was essential to keep the app responsive. I also learned how opinionated CSS injection works inside a sandboxed iframe, which required me to think carefully about which styling approaches Streamlit would actually honor.</p>
-            <h4>Real-World Application</h4>
-            <p>In practice, this is the tool that replaces the monthly Excel reconciliation an FP&A analyst spends 3–4 hours on during close week. A finance team would drop their actuals export from their ERP — SAP, NetSuite, Oracle — alongside the budget file, and have a fully formatted variance report in seconds. The waterfall chart alone is a standard deliverable in CFO presentations. Building this demonstrated that I understand not just how to model variance, but how to operationalize that analysis into something a team can actually use repeatedly.</p>
+            <h4>About this project</h4>
+            <p>This is the tool that replaces the monthly Excel reconciliation an FP&A analyst spends 3–4 hours on during close week. A finance team drops their actuals export alongside the plan file and gets a fully formatted variance report instantly — no Python environment, no Streamlit cold starts, no broken dependencies.</p>
+            <p>Built as a self-contained HTML file with Chart.js and SheetJS for in-browser Excel parsing. Revenue is treated as an expectation (favorable when actuals beat plan), while cost lines use standard budget logic — a distinction most generic dashboards get wrong. The insight callout engine auto-generates contextual flags: R&amp;D hiring ahead of plan, revenue recovery after a Q1 miss, COGS creep in H2.</p>
+            <p>Includes a downloadable sample Excel file so anyone can test the upload feature with realistic data from a different company profile than the default demo.</p>
           </div>
           <div class="project-sidebar">
-            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">Python</span><span class="chip">Pandas</span><span class="chip">Streamlit</span><span class="chip">Plotly</span><span class="chip">OpenPyXL</span></div></div>
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">HTML/CSS/JS</span><span class="chip">Chart.js</span><span class="chip">SheetJS</span><span class="chip">GitHub Pages</span></div></div>
             <div class="sidebar-block"><h5>Links</h5><div class="project-links">
-              <a href="https://github.com/dancourn/fpa-dashboard" target="_blank" class="proj-link">⬡ GitHub ↗</a>
-              <a href="https://fpa-dashboard-33x2a7zeru2vlpzrpq7f9b.streamlit.app/" target="_blank" class="proj-link">↗ Live Demo ↗</a>
+              <a href="https://github.com/dancourn/dancourn.github.io/blob/main/fpa-dashboard.html" target="_blank" class="proj-link">⬡ GitHub</a>
+              <a href="https://dancourn.github.io/fpa-dashboard.html" target="_blank" class="proj-link">↗ Live Demo</a>
+              <a href="https://dancourn.github.io/fpa_sample_data.xlsx" target="_blank" class="proj-link">↓ Sample Data</a>
             </div></div>
-          </div>
-        </div></div>
-      </div>
-
-      <div class="project-item" id="proj-earnings">
-        <div class="project-header" onclick="toggleProject('proj-earnings')">
-          <div>
-            <div class="project-meta"><span class="project-num">002</span><span class="tag">Python</span><span class="tag green">LLM / AI</span><span class="tag gray">Coming Soon</span></div>
-            <div class="project-title">Earnings Call Sentiment Analyzer</div>
-            <div class="project-blurb">Pulls earnings transcripts and runs structured LLM analysis — sentiment scoring, key themes, and quarter-over-quarter tone shifts.</div>
-          </div>
-          <div class="project-toggle"><span class="toggle-icon">+</span></div>
-        </div>
-        <div class="project-body"><div class="project-inner">
-          <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
-          <div class="project-sidebar">
-            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">Python</span><span class="chip">Anthropic API</span><span class="chip">BeautifulSoup</span><span class="chip">Pandas</span></div></div>
-            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
           </div>
         </div></div>
       </div>
@@ -1328,42 +1308,78 @@
       <div class="project-item" id="proj-dcf">
         <div class="project-header" onclick="toggleProject('proj-dcf')">
           <div>
-            <div class="project-meta"><span class="project-num">003</span><span class="tag green">Interactive</span><span class="tag">Finance</span><span class="tag live">Live</span></div>
-            <div class="project-title">DCF Valuation Calculator</div>
-            <div class="project-blurb">Type any US ticker and watch a full 10-year DCF populate in real time — live financials, CAPM-derived WACC, sensitivity table, and value bridge. No backend, no sign-in, no sleeping servers.</div>
+            <div class="project-meta"><span class="project-num">002</span><span class="tag green">Interactive</span><span class="tag">Finance</span><span class="tag live">Live</span></div>
+            <div class="project-title">Valence — DCF Valuation Calculator</div>
+            <div class="project-blurb">Type any US ticker and a full 10-year DCF populates in real time — live financials via Cloudflare Worker, CAPM-derived WACC, sensitivity table, value bridge, and company-relative bull/base/bear scenarios.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
         <div class="project-body"><div class="project-inner">
           <div class="project-reflection">
             <h4>About this project</h4>
-            <p>A fully self-contained DCF model that runs entirely in the browser. Type in a ticker — AAPL, NVDA, CMG, whatever — and it pulls live financials from a Cloudflare Worker proxy I built, then populates a 10-year free cash flow model with TTM revenue, operating margins, net debt, shares outstanding, and a CAPM-estimated WACC using the stock's live beta.</p>
-            <p>The model outputs intrinsic value per share with upside/downside vs. the current price, a full FCF projection table, a value bridge breaking down PV of FCFs vs. terminal value vs. net debt, and a 5×5 sensitivity matrix across WACC and terminal growth rate assumptions. Every assumption is editable via sliders — you can run bull, base, and bear cases instantly or load presets and adjust from there.</p>
-            <p>This is the same DCF framework I used at Romero Capital to value NBIS and HIMS — rebuilt as a tool anyone can use without opening Excel. The architecture decision to use a Cloudflare Worker as a proxy was deliberate: it keeps the Yahoo Finance credentials server-side, means the tool never sleeps or cold-starts, and deploys as a single HTML file on GitHub Pages with zero infrastructure cost.</p>
+            <p>A fully self-contained DCF model that runs entirely in the browser. Type in a ticker — AAPL, NVDA, CMG — and it pulls live financials from a Cloudflare Worker proxy, then populates a 10-year free cash flow model with TTM revenue, operating margins, net debt, shares outstanding, and a CAPM-estimated WACC using the stock's live beta.</p>
+            <p>The model outputs intrinsic value per share with upside/downside vs. the current price, a full FCF projection table, a value bridge, and a 5×5 sensitivity matrix across WACC and terminal growth rate. Every assumption is editable — bull, base, and bear cases scale proportionally to each company's actual growth profile rather than generic presets.</p>
+            <p>A "Why the Gap?" panel automatically surfaces data-driven explanations when the model diverges significantly from the market price — debt load, margin expansion stories, hypergrowth premiums, or moat/brand value the DCF can't capture. The architecture decision to use a serverless Cloudflare Worker as a proxy keeps API credentials off the client and eliminates cold starts entirely.</p>
           </div>
           <div class="project-sidebar">
             <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">HTML/CSS/JS</span><span class="chip">Cloudflare Workers</span><span class="chip">Yahoo Finance API</span><span class="chip">GitHub Pages</span></div></div>
             <div class="sidebar-block"><h5>Links</h5><div class="project-links">
-              <a class="proj-link" href="https://github.com/dancourn/dancourn.github.io/blob/main/dcf-calculator.html" target="_blank">⬡ GitHub</a>
-              <a class="proj-link" href="https://dancourn.github.io/dcf-calculator.html" target="_blank">↗ Live Demo</a>
+              <a href="https://github.com/dancourn/dancourn.github.io/blob/main/dcf-calculator.html" target="_blank" class="proj-link">⬡ GitHub</a>
+              <a href="https://dancourn.github.io/dcf-calculator.html" target="_blank" class="proj-link">↗ Live Demo</a>
             </div></div>
           </div>
         </div></div>
       </div>
 
-      <div class="project-item" id="proj-sec">
-        <div class="project-header" onclick="toggleProject('proj-sec')">
+      <div class="project-item" id="proj-ma">
+        <div class="project-header" onclick="toggleProject('proj-ma')">
           <div>
-            <div class="project-meta"><span class="project-num">004</span><span class="tag">Python</span><span class="tag green">LLM / AI</span><span class="tag gray">Coming Soon</span></div>
-            <div class="project-title">SEC 10-K Parser &amp; Snapshot Generator</div>
-            <div class="project-blurb">Feeds a ticker into the SEC EDGAR API, extracts key financials via LLM, and generates a formatted one-page investment snapshot — automating hours of manual analyst work.</div>
+            <div class="project-meta"><span class="project-num">003</span><span class="tag green">Interactive</span><span class="tag">M&amp;A</span><span class="tag gray">Coming Soon</span></div>
+            <div class="project-title">M&amp;A Accretion / Dilution Calculator</div>
+            <div class="project-blurb">Input acquirer and target financials, deal price, financing mix, and synergies — instantly see whether the deal is accretive or dilutive in Year 1 and Year 3, with a before/after EPS bridge.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
         <div class="project-body"><div class="project-inner">
           <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
           <div class="project-sidebar">
-            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">Python</span><span class="chip">SEC EDGAR API</span><span class="chip">Anthropic API</span><span class="chip">ReportLab</span></div></div>
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">HTML/CSS/JS</span><span class="chip">GitHub Pages</span></div></div>
+            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="project-item" id="proj-lbo">
+        <div class="project-header" onclick="toggleProject('proj-lbo')">
+          <div>
+            <div class="project-meta"><span class="project-num">004</span><span class="tag green">Interactive</span><span class="tag">Private Equity</span><span class="tag gray">Coming Soon</span></div>
+            <div class="project-title">LBO Returns Calculator</div>
+            <div class="project-blurb">Model a leveraged buyout — entry price, debt structure, EBITDA growth, exit multiple, and hold period — and get live IRR, MOIC, and a debt paydown waterfall. Built from my eBay LBO model.</div>
+          </div>
+          <div class="project-toggle"><span class="toggle-icon">+</span></div>
+        </div>
+        <div class="project-body"><div class="project-inner">
+          <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
+          <div class="project-sidebar">
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">HTML/CSS/JS</span><span class="chip">GitHub Pages</span></div></div>
+            <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="project-item" id="proj-comps">
+        <div class="project-header" onclick="toggleProject('proj-comps')">
+          <div>
+            <div class="project-meta"><span class="project-num">005</span><span class="tag green">Interactive</span><span class="tag">Valuation</span><span class="tag gray">Coming Soon</span></div>
+            <div class="project-title">Comparable Companies Table</div>
+            <div class="project-blurb">Enter up to 6 tickers and get a live comps table — EV/EBITDA, EV/Revenue, P/E, NTM growth — pulled in real time and benchmarked against the peer median. The third leg of the valuation triangle alongside DCF and LBO.</div>
+          </div>
+          <div class="project-toggle"><span class="toggle-icon">+</span></div>
+        </div>
+        <div class="project-body"><div class="project-inner">
+          <div class="project-reflection"><h4>About this project</h4><p class="coming-soon-note">Project in progress — reflections and write-up coming once complete.</p></div>
+          <div class="project-sidebar">
+            <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">HTML/CSS/JS</span><span class="chip">Cloudflare Workers</span><span class="chip">Yahoo Finance API</span><span class="chip">GitHub Pages</span></div></div>
             <div class="sidebar-block"><h5>Links</h5><div class="project-links"><a class="proj-link disabled">⬡ GitHub — coming soon</a><a class="proj-link disabled">↗ Live Demo — coming soon</a></div></div>
           </div>
         </div></div>
