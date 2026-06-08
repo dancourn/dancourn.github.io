@@ -321,7 +321,8 @@
       pointer-events: none;
     }
 
-    input[type="number"] {
+    input[type="number"],
+    .input-wrap input[type="text"] {
       width: 100%;
       background: var(--bg3);
       border: 1px solid var(--line2);
@@ -338,9 +339,11 @@
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
-    input[type="number"]::placeholder { color: var(--muted); opacity: 0.5; }
+    input[type="number"]::placeholder,
+    .input-wrap input[type="text"]::placeholder { color: var(--muted); opacity: 0.5; }
 
-    input[type="number"]:focus {
+    input[type="number"]:focus,
+    .input-wrap input[type="text"]:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accentglow);
     }
@@ -819,7 +822,7 @@
             </div>
             <div class="input-wrap">
               <span class="prefix">$</span>
-              <input type="number" id="baseRevenue" placeholder="—" min="1" step="10" oninput="calc()" />
+              <input type="text" id="baseRevenue" placeholder="—" oninput="fmtInput(this); calc()" />
             </div>
           </div>
 
@@ -909,7 +912,7 @@
             <div class="form-label"><span class="label-text">Net Debt <span class="unit-tag">$ millions · negative = net cash</span></span></div>
             <div class="input-wrap">
               <span class="prefix">$</span>
-              <input type="number" id="netDebt" placeholder="—" step="10" oninput="updateNetDebtLabel(); calc()" />
+              <input type="text" id="netDebt" placeholder="—" oninput="fmtInput(this); updateNetDebtLabel(); calc()" />
             </div>
             <div id="net-debt-status" style="margin-top:5px;font-family:var(--mono);font-size:11px;color:var(--muted);opacity:0.35;">
               —
@@ -920,7 +923,7 @@
             <div class="form-label"><span class="label-text">Shares Outstanding <span class="unit-tag">millions of shares</span></span></div>
             <div class="input-wrap">
               <span class="prefix">#</span>
-              <input type="number" id="shares" placeholder="—" min="1" step="1" oninput="calc()" />
+              <input type="text" id="shares" placeholder="—" oninput="fmtInput(this); calc()" />
             </div>
           </div>
 
@@ -1062,9 +1065,14 @@
         }
       };
 
+      // ── Helper: format number inputs with commas ──
+      const fmtComma = n => isNaN(n) ? '' : Math.round(n).toLocaleString('en-US');
+
       const setInput = (id, value) => {
         const v = parseFloat(value);
-        if (!isNaN(v) && isFinite(v)) document.getElementById(id).value = v;
+        if (!isNaN(v) && isFinite(v)) {
+          document.getElementById(id).value = fmtComma(v);
+        }
       };
 
       // ── Invalid ticker detection ──
@@ -1248,16 +1256,17 @@
   let baseSnapshot = null;
 
   function captureBaseSnapshot() {
+    const gv = id => parseFloat((document.getElementById(id).value || '').replace(/,/g,'')) || 0;
     baseSnapshot = {
-      growth1:    parseFloat(document.getElementById('growth1').value)    || 10,
-      growth2:    parseFloat(document.getElementById('growth2').value)    || 5,
-      ebitMargin: parseFloat(document.getElementById('ebitMargin').value) || 15,
-      wacc:       parseFloat(document.getElementById('wacc').value)       || 10,
-      tgr:        parseFloat(document.getElementById('tgr').value)        || 2.5,
-      capex:      parseFloat(document.getElementById('capex').value)      || 5,
-      da:         parseFloat(document.getElementById('da').value)         || 4,
-      taxRate:    parseFloat(document.getElementById('taxRate').value)    || 21,
-      nwc:        parseFloat(document.getElementById('nwc').value)        || 1.5,
+      growth1:    gv('growth1')    || 10,
+      growth2:    gv('growth2')    || 5,
+      ebitMargin: gv('ebitMargin') || 15,
+      wacc:       gv('wacc')       || 10,
+      tgr:        gv('tgr')        || 2.5,
+      capex:      gv('capex')      || 5,
+      da:         gv('da')         || 4,
+      taxRate:    gv('taxRate')    || 21,
+      nwc:        gv('nwc')        || 1.5,
     };
   }
 
@@ -1343,7 +1352,11 @@
 
   // ── MAIN CALC ──
   function calc() {
-    const get = id => parseFloat(document.getElementById(id).value) || 0;
+    const get = id => {
+      const el = document.getElementById(id);
+      const raw = (el.value || '').replace(/,/g, '');
+      return parseFloat(raw) || 0;
+    };
 
     const baseRev    = get('baseRevenue');
     const ebitM      = get('ebitMargin')  / 100;
@@ -1413,7 +1426,11 @@
       ivEl.className = 'kpi-value';
       upsideEl.innerHTML = `<span style="color:var(--muted);font-family:var(--mono);font-size:11px;">Enter shares and price to calculate IV/share</span>`;
     } else {
-      ivEl.textContent = '$' + ivPerShare.toFixed(2);
+      const fmtIV = v => {
+        if (!isFinite(v)) return '—';
+        return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      };
+      ivEl.textContent = fmtIV(ivPerShare);
       ivEl.className = 'kpi-value ' + (ivPerShare > price ? 'up' : 'down');
       // Set hero border color
       const ivCell = ivEl.closest('.kpi-cell');
@@ -1556,7 +1573,7 @@
                 const bg = sensColor(v, sMin, sMax, ivPerShare);
                 const border = isCurrent ? 'border:1px solid var(--accent);' : '';
                 const fw = isCurrent ? 'font-weight:600;color:var(--text);' : '';
-                return `<td class="sens-cell" style="background:${bg};${border}${fw}">\$${v.toFixed(1)}</td>`;
+                return `<td class="sens-cell" style="background:${bg};${border}${fw}">$${v.toLocaleString('en-US', {minimumFractionDigits:1, maximumFractionDigits:1})}</td>`;
               }).join('')}
             </tr>
           `).join('')}
@@ -1569,7 +1586,8 @@
   }
 
   function updateNetDebtLabel() {
-    const nd = parseFloat(document.getElementById('netDebt').value) || 0;
+    const raw = (document.getElementById('netDebt').value || '').replace(/,/g, '');
+    const nd = parseFloat(raw) || 0;
     const el = document.getElementById('net-debt-status');
     if (nd < 0) {
       el.style.color = 'var(--green)';
@@ -1580,6 +1598,23 @@
     } else {
       el.style.color = 'var(--red)';
       el.textContent = '▼ Net debt position — reduces equity value';
+    }
+  }
+
+  // ── COMMA FORMATTING for text inputs ──
+  function fmtInput(el) {
+    const raw = el.value.replace(/[^0-9\-]/g, '');
+    if (raw === '' || raw === '-') return;
+    const isNeg = raw.startsWith('-');
+    const digits = raw.replace('-', '');
+    if (!digits) return;
+    const num = parseInt(digits, 10);
+    if (!isNaN(num)) {
+      const formatted = (isNeg ? '-' : '') + num.toLocaleString('en-US');
+      const cursorOffset = formatted.length - el.value.length;
+      const pos = Math.max(0, (el.selectionStart || 0) + cursorOffset);
+      el.value = formatted;
+      try { el.setSelectionRange(pos, pos); } catch(e) {}
     }
   }
 
