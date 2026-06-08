@@ -7,24 +7,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:        #07090f;
-      --bg2:       #0d1018;
-      --bg3:       #131620;
-      --line:      rgba(255,255,255,0.08);
-      --line2:     rgba(255,255,255,0.15);
-      --text:      #e8eaf0;
-      --muted:     #606880;
-      --muted2:    #9099b0;
-      --accent:    #4f8ef7;
-      --accent2:   #7eb8ff;
-      --accentdim: rgba(79,142,247,0.15);
-      --accentglow:rgba(79,142,247,0.08);
-      --green:     #7dd6a0;
-      --greendim:  rgba(125,214,160,0.12);
-      --red:       #f07070;
-      --reddim:    rgba(240,112,112,0.12);
-      --yellow:    #f0c060;
-      --yellowdim: rgba(240,192,96,0.12);
+      --bg:        #f4f6fb;
+      --bg2:       #ffffff;
+      --bg3:       #edf0f7;
+      --line:      rgba(0,0,0,0.08);
+      --line2:     rgba(0,0,0,0.13);
+      --text:      #111827;
+      --muted:     #7b8499;
+      --muted2:    #4b5468;
+      --accent:    #2563eb;
+      --accent2:   #1d4ed8;
+      --accentdim: rgba(37,99,235,0.1);
+      --accentglow:rgba(37,99,235,0.07);
+      --green:     #16a34a;
+      --greendim:  rgba(22,163,74,0.1);
+      --red:       #dc2626;
+      --reddim:    rgba(220,38,38,0.09);
+      --yellow:    #b45309;
+      --yellowdim: rgba(180,83,9,0.1);
       --sans:      'Outfit', sans-serif;
       --mono:      'JetBrains Mono', monospace;
       --serif:     'Playfair Display', Georgia, serif;
@@ -54,13 +54,119 @@
       opacity: 0.4;
     }
 
+    /* ── CROSSHAIR CURSOR ── */
+    *, *::before, *::after { cursor: none !important; }
+    #cursor-cross {
+      position: fixed;
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+    }
+    #cursor-cross::before,
+    #cursor-cross::after {
+      content: '';
+      position: absolute;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+    #cursor-cross::before {
+      width: 1px;
+      height: 100%;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+    }
+    #cursor-cross::after {
+      width: 100%;
+      height: 1px;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+    }
+
+    /* ── AMBIENT GLOW ORBS ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.04;
+      animation: orb-drift 18s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 600px; height: 600px; background: #93c5fd; top: -200px; right: -100px; animation-delay: 0s; }
+    .orb-2 { width: 400px; height: 400px; background: #6ee7b7; bottom: -100px; left: -100px; animation-delay: -6s; }
+    .orb-3 { width: 300px; height: 300px; background: #93c5fd; bottom: 30%; right: 20%; animation-delay: -12s; opacity: 0.025; }
+
+    @keyframes orb-drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    /* ── PARTICLE CANVAS ── */
+    #particle-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* ── KPI GLOW ── */
+    @keyframes kpi-glow-up {
+      0%, 100% { text-shadow: 0 0 20px rgba(125,214,160,0.3); }
+      50%       { text-shadow: 0 0 40px rgba(125,214,160,0.6); }
+    }
+    @keyframes kpi-glow-down {
+      0%, 100% { text-shadow: 0 0 20px rgba(240,112,112,0.3); }
+      50%       { text-shadow: 0 0 40px rgba(240,112,112,0.5); }
+    }
+    .kpi-value.up   { animation: kpi-glow-up   3s ease-in-out infinite; }
+    .kpi-value.down { animation: kpi-glow-down 3s ease-in-out infinite; }
+
+    /* ── PANEL SHIMMER HEADER ── */
+    .panel-header {
+      position: relative;
+      overflow: hidden;
+    }
+    .panel-header::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(79,142,247,0.04) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: shimmer 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* ── LOAD BUTTON GLOW ── */
+    #fetch-btn {
+      position: relative;
+      overflow: hidden;
+    }
+    #fetch-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.4s;
+    }
+    #fetch-btn:hover::after { transform: translateX(100%); }
+
     /* ── GRID BACKGROUND ── */
     .grid-bg {
       position: fixed;
       inset: 0;
       background-image:
-        linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
       z-index: 0;
@@ -71,7 +177,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(7,9,15,0.92);
+      background: rgba(244,246,251,0.92);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--line);
       padding: 0 2rem;
@@ -164,7 +270,11 @@
       display: grid;
       grid-template-columns: 380px 1fr;
       gap: 1.5rem;
-      align-items: start;
+      align-items: stretch;
+    }
+
+    .tool-grid > .panel {
+      height: 100%;
     }
 
     @media (max-width: 900px) {
@@ -270,8 +380,8 @@
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
-      height: 3px;
-      background: var(--line2);
+      height: 4px;
+      background: rgba(0,0,0,0.15);
       border-radius: 2px;
       outline: none;
       cursor: pointer;
@@ -285,15 +395,15 @@
       height: 14px;
       border-radius: 50%;
       background: var(--accent);
-      border: 2px solid var(--bg);
-      box-shadow: 0 0 8px rgba(79,142,247,0.5);
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(37,99,235,0.35);
       cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s, left 0.4s ease;
+      transition: transform 0.15s, box-shadow 0.15s;
     }
 
     input[type="range"]::-webkit-slider-thumb:hover {
       transform: scale(1.3);
-      box-shadow: 0 0 14px rgba(79,142,247,0.7);
+      box-shadow: 0 2px 10px rgba(37,99,235,0.5);
     }
 
     input[type="range"]::-moz-range-thumb {
@@ -301,7 +411,8 @@
       height: 14px;
       border-radius: 50%;
       background: var(--accent);
-      border: 2px solid var(--bg);
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(37,99,235,0.35);
       cursor: pointer;
     }
 
@@ -751,6 +862,11 @@
 </head>
 <body>
 <div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<canvas id="particle-canvas"></canvas>
+<div id="cursor-cross"></div>
 
 <header>
   <div class="header-left">
@@ -762,7 +878,6 @@
 
 <main>
   <div class="page-title-block">
-    <div class="page-eyebrow">// Valuation Tool 001</div>
     <h1 class="page-title">Discounted Cash Flow <em>Calculator</em></h1>
     <p class="page-desc">Type any US ticker to load live financials, then adjust WACC, growth, and margin assumptions to build your own bull, base, and bear case valuations — intrinsic value updates in real time.</p>
   </div>
@@ -787,8 +902,9 @@
                 id="ticker-input"
                 placeholder="Enter ticker — AAPL, MSFT, NVDA…"
                 maxlength="10"
-                style="width:100%;background:var(--bg3);border:1px solid var(--line2);border-radius:3px;color:var(--text);font-family:var(--mono);font-size:13px;padding:0.55rem 0.75rem;outline:none;transition:border-color 0.2s;text-transform:uppercase;letter-spacing:0.05em;"
+                style="width:100%;background:var(--bg3);border:1px solid var(--line2);border-radius:3px;color:var(--text);font-family:var(--mono);font-size:13px;padding:0.55rem 0.75rem;outline:none;transition:border-color 0.2s;"
                 onkeydown="if(event.key==='Enter') fetchTicker()"
+                oninput="this.value=this.value.toUpperCase()"
                 onfocus="this.style.borderColor='var(--accent)'"
                 onblur="this.style.borderColor='var(--line2)'"
               />
@@ -796,7 +912,7 @@
             <button
               id="fetch-btn"
               onclick="fetchTicker()"
-              style="background:var(--accent);color:#07090f;border:none;border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0 1.1rem;cursor:pointer;transition:background 0.2s;white-space:nowrap;"
+              style="background:var(--accent);color:#ffffff;border:none;border-radius:3px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0 1.1rem;cursor:pointer;transition:background 0.2s;white-space:nowrap;"
               onmouseover="this.style.background='var(--accent2)'"
               onmouseout="this.style.background='var(--accent)'"
             >Load ↗</button>
@@ -1214,6 +1330,7 @@
 
       // Store for gap analysis
       loadedCompanyData = d;
+      tickerLoaded = true;
 
       // Capture snapshot for relative bull/bear scenarios, then activate base
       captureBaseSnapshot();
@@ -1451,6 +1568,7 @@
 
   // ── MAIN CALC ──
   function calc() {
+    if (!tickerLoaded) return; // don't run until a ticker has been loaded
     const get = id => {
       const el = document.getElementById(id);
       const raw = (el.value || '').replace(/,/g, '');
@@ -1726,7 +1844,7 @@
     const max = parseFloat(el.max) || 100;
     const val = parseFloat(el.value) || min;
     const pct = ((val - min) / (max - min)) * 100;
-    el.style.background = `linear-gradient(to right, var(--accent) ${pct}%, rgba(255,255,255,0.15) ${pct}%)`;
+    el.style.background = `linear-gradient(to right, var(--accent) ${pct}%, rgba(0,0,0,0.15) ${pct}%)`;
   }
 
   // Apply fill to all sliders on input
@@ -1741,6 +1859,7 @@
 
   // ── LOADED COMPANY DATA (for gap analysis) ──
   let loadedCompanyData = null;
+  let tickerLoaded = false; // gates calc() from running before a ticker is loaded
 
   // ── BLANK STATE ON LOAD ──
   const BLANK_LABEL_IDS = ['val-ebitMargin','val-taxRate','val-da','val-capex','val-nwc','val-growth1','val-growth2','val-tgr','val-wacc'];
@@ -1787,7 +1906,7 @@
     const sliderIds = ['ebitMargin','taxRate','da','capex','nwc','growth1','growth2','tgr','wacc'];
     sliderIds.forEach(id => {
       const el = document.getElementById(id);
-      if (el) { el.value = el.min; el.style.background = 'rgba(255,255,255,0.15)'; }
+      if (el) { el.value = el.min; el.style.background = 'rgba(0,0,0,0.15)'; }
     });
 
     // Net debt status
@@ -1795,6 +1914,7 @@
     if (nd) { nd.textContent = '—'; nd.style.color = 'var(--muted)'; nd.style.opacity = '0.35'; }
 
     loadedCompanyData = null;
+    tickerLoaded = false;
     const gap = document.getElementById('gap-analysis');
     if (gap) gap.style.display = 'none';
 
@@ -1806,6 +1926,75 @@
   // Init — blank state, no calc
   updateNetDebtLabel();
   setBlankState();
+  // ── CROSSHAIR CURSOR ──
+  const cross = document.getElementById('cursor-cross');
+  document.addEventListener('mousemove', e => {
+    cross.style.left = e.clientX + 'px';
+    cross.style.top  = e.clientY + 'px';
+  });
+  document.addEventListener('mouseleave', () => cross.style.opacity = '0');
+  document.addEventListener('mouseenter', () => cross.style.opacity = '1');
+
+  // ── PARTICLE SYSTEM ──
+  (function() {
+    const canvas = document.getElementById('particle-canvas');
+    const ctx    = canvas.getContext('2d');
+    let W = window.innerWidth, H = window.innerHeight;
+    canvas.width = W; canvas.height = H;
+    window.addEventListener('resize', () => {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W; canvas.height = H;
+    });
+
+    const N = 55;
+    const particles = Array.from({ length: N }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.2 + 0.3,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      a: Math.random() * 0.4 + 0.1,
+    }));
+
+    const LINK_DIST = 140;
+    const ACCENT    = '37,99,235';
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Links
+      for (let i = 0; i < N; i++) {
+        for (let j = i + 1; j < N; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < LINK_DIST) {
+            const opacity = (1 - dist / LINK_DIST) * 0.12;
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(${ACCENT},${opacity})`;
+            ctx.lineWidth = 0.6;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Dots
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${ACCENT},${p.a})`;
+        ctx.fill();
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+      });
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
 </script>
 </body>
 </html>
