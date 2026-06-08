@@ -281,6 +281,50 @@
       .tool-grid { grid-template-columns: 1fr; }
     }
 
+    /* ── MOBILE ── */
+    @media (max-width: 640px) {
+      main { padding: 1.5rem 1rem 3rem; }
+      header { padding: 0 1rem; }
+
+      .page-title { font-size: 1.6rem; }
+      .page-desc  { font-size: 13px; }
+      .page-title-block { margin-bottom: 1.5rem; }
+
+      /* KPI row stacks to 1 column on small screens */
+      .kpi-row {
+        grid-template-columns: 1fr;
+      }
+      .kpi-value { font-size: 1.6rem; }
+      .kpi-cell:not(:first-child) .kpi-value { font-size: 1.4rem; }
+
+      /* FCF table — horizontal scroll with sticky first column */
+      .fcf-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .fcf-table-wrap table { min-width: 700px; }
+
+      /* Sensitivity table — horizontal scroll */
+      .sens-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+      /* Gap analysis items */
+      .gap-item { padding: 0.6rem 0.75rem; }
+      .gap-text  { font-size: 11px; }
+
+      /* Value bridge labels */
+      .bar-label { width: 48px; font-size: 10px; }
+      .bar-fill span { font-size: 10px; }
+
+      /* Scenario buttons */
+      .scenario-btn { font-size: 10px; padding: 0.4rem 0; }
+
+      /* Company card — stack price below name */
+      #company-card > div:first-child { flex-direction: column; gap: 0.4rem; }
+
+      /* Panel body padding tighter */
+      .panel-body { padding: 1rem; }
+
+      /* Formula strip wraps cleanly */
+      .formula-strip { font-size: 10px; gap: 0.4rem; }
+    }
+
     /* ── PANELS ── */
     .panel {
       background: var(--bg2);
