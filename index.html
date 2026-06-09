@@ -205,6 +205,10 @@
       /* fade out toward right so it doesn't create a hard edge */
       mask-image: linear-gradient(to right, black 55%, transparent 100%);
     }
+
+    /* Mobile-only inline photo — hidden on desktop */
+    .hero-mobile-photo { display: none; }
+
     .hero-photo-col {
       position: relative;
       display: flex;
@@ -1053,20 +1057,8 @@
       /* Hero */
       .hero { padding-bottom: 3.5rem; min-height: 100svh; padding-top: 90px; }
       .hero-split { grid-template-columns: 1fr; }
-      .hero-photo-col {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: 0;
-        padding-bottom: 0;
-        margin-top: 2rem;
-        order: 2;
-      }
-      .hero-photo-wrap {
-        width: 160px;
-        height: 210px;
-      }
-      .hero-photo-col::before { display: none; }
+      .hero-photo-col { display: none; }
+      .hero-mobile-photo { display: flex; }
       .hero h1 { font-size: clamp(3rem, 12vw, 4.5rem); line-height: 0.95; }
       .hero h1 .line2 { padding-left: 1rem; }
       .hero-descriptor p { font-size: 15px; }
@@ -1246,7 +1238,13 @@
       <!-- LEFT: text -->
       <div class="hero-text-col">
         <p class="hero-eyebrow" id="heroEyebrow"></p>
-        <h1>Daniel<span class="line2"><em>Cournane</em></span></h1>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">
+          <h1>Daniel<span class="line2"><em>Cournane</em></span></h1>
+          <!-- Mobile-only photo — hidden on desktop via CSS -->
+          <div class="hero-mobile-photo" style="flex-shrink:0;width:82px;height:82px;border-radius:50%;overflow:hidden;border:1px solid rgba(79,142,247,0.35);box-shadow:0 0 18px rgba(79,142,247,0.15);margin-top:0.25rem;">
+            <img src="images/daniel.jpg" alt="Daniel Cournane" style="width:100%;height:100%;object-fit:cover;object-position:center 5%;filter:grayscale(10%) contrast(1.03) brightness(0.95);" />
+          </div>
+        </div>
         <div class="hero-descriptor">
           <p>Finance grad from the University of Delaware with a minor in Fintech. I like the overlap between finance and technology more than I like keeping them separate. Right now I'm focused on building things that show what that looks like in practice.</p>
         </div>
