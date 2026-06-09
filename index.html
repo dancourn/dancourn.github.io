@@ -1241,8 +1241,8 @@
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">
           <h1>Daniel<span class="line2"><em>Cournane</em></span></h1>
           <!-- Mobile-only photo — hidden on desktop via CSS -->
-          <div class="hero-mobile-photo" style="flex-shrink:0;width:82px;height:82px;border-radius:50%;overflow:hidden;border:1px solid rgba(79,142,247,0.35);box-shadow:0 0 18px rgba(79,142,247,0.15);margin-top:0.25rem;">
-            <img src="images/daniel.jpg" alt="Daniel Cournane" style="width:100%;height:100%;object-fit:cover;object-position:center 5%;filter:grayscale(10%) contrast(1.03) brightness(0.95);" />
+          <div class="hero-mobile-photo" style="flex-shrink:0;width:82px;height:82px;border-radius:50%;overflow:hidden;border:1px solid rgba(79,142,247,0.35);box-shadow:0 0 18px rgba(79,142,247,0.15);margin-top:0.5rem;">
+            <img id="mobile-photo-img" alt="Daniel Cournane" style="width:100%;height:100%;object-fit:cover;object-position:center 5%;filter:grayscale(10%) contrast(1.03) brightness(0.95);" />
           </div>
         </div>
         <div class="hero-descriptor">
@@ -2159,6 +2159,11 @@
       obs.observe(statsRow);
     }
   })();
+
+  // ── MOBILE PHOTO — copy src from desktop hero photo ──
+  const desktopImg = document.querySelector('.hero-photo-wrap img');
+  const mobileImg  = document.getElementById('mobile-photo-img');
+  if (desktopImg && mobileImg) mobileImg.src = desktopImg.src;
 
   // ── TICKER BUILD ─────────────────────────────────────────────────────────
   (function() {
