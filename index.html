@@ -481,7 +481,7 @@
     }
 
     .hero-stats {
-      margin-top: 1.5rem;
+      margin-top: 2.5rem;
       display: flex; gap: 0;
       border-top: 1px solid var(--line);
       padding-top: 1.5rem;
@@ -493,7 +493,14 @@
       font-family: var(--serif); font-size: 2.4rem; font-weight: 400;
       color: var(--accent); line-height: 1; margin-bottom: 0.3rem;
     }
-    .stat-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); }
+    .stat-label {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 0 14px rgba(255,255,255,0.5), 0 0 32px rgba(255,255,255,0.18);
+      margin-top: 0.5rem;
+      display: block;
+    }
 
     /* ── LAYOUT ── */
     .wrapper { max-width: 1200px; margin: 0 auto; padding: 0 3rem; }
@@ -1064,7 +1071,7 @@
       .hero-descriptor p { font-size: 15px; }
       .hero-ctas { flex-direction: column; gap: 0.75rem; }
       .hero-ctas .btn { justify-content: center; padding: 1rem 1.5rem; font-size: 12px; }
-      .hero-stats { flex-direction: row; flex-wrap: wrap; gap: 0; border-top: 1px solid var(--line); padding-top: 1.75rem; margin-top: 2rem; width: 100%; box-sizing: border-box; }
+      .hero-stats { flex-direction: row; flex-wrap: wrap; gap: 0; border-top: 1px solid var(--line); padding-top: 1.75rem; margin-top: 2.5rem; width: 100%; box-sizing: border-box; }
       .stat { flex: 0 0 50%; max-width: 50%; border-right: none; padding-right: 0.75rem; padding-left: 0; margin-right: 0; padding-bottom: 1.25rem; margin-bottom: 0; border-bottom: 1px solid var(--line); box-sizing: border-box; }
       .stat:nth-child(even) { padding-left: 0.75rem; padding-right: 0; border-left: 1px solid var(--line); }
       .stat:nth-child(3), .stat:nth-child(4) { border-bottom: none; padding-top: 1.25rem; }
@@ -1184,9 +1191,148 @@
     .ticker-chg.up   { color: #7dd6a0; }
     .ticker-chg.down { color: #e07070; }
     .ticker-arr { font-size: 9px; }
+    /* ── CONTACT MODAL ── */
+    .contact-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .contact-modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .contact-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 8, 15, 0.6);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .contact-modal {
+      position: relative;
+      z-index: 1;
+      background: var(--bg2);
+      border: 1px solid var(--line2);
+      border-radius: 8px;
+      padding: 2.5rem 2.75rem;
+      width: min(420px, 90vw);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(79,142,247,0.06);
+      transform: translateY(12px) scale(0.97);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .contact-modal-overlay.open .contact-modal {
+      transform: translateY(0) scale(1);
+    }
+    .contact-modal-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      width: 30px; height: 30px;
+      background: none;
+      border: 1px solid var(--line2);
+      border-radius: 50%;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .contact-modal-close:hover { border-color: var(--accent); color: var(--accent); }
+
+    .contact-modal-eyebrow {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .contact-modal-title {
+      font-family: var(--serif);
+      font-size: 1.65rem;
+      color: var(--text);
+      font-weight: 400;
+      margin-bottom: 0.4rem;
+      line-height: 1.2;
+    }
+    .contact-modal-sub {
+      font-family: var(--sans);
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    .contact-modal-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.1rem;
+      background: var(--bg3);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .contact-modal-row:hover { border-color: var(--accent); background: rgba(79,142,247,0.04); }
+    .contact-modal-icon {
+      width: 36px; height: 36px;
+      background: var(--accentdim);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .contact-modal-info { display: flex; flex-direction: column; gap: 1px; }
+    .contact-modal-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .contact-modal-value {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+
   </style>
 </head>
 <body>
+
+<!-- CONTACT MODAL -->
+<div class="contact-modal-overlay" id="contactModal">
+  <div class="contact-modal-backdrop" onclick="closeContactModal(null)"></div>
+  <div class="contact-modal">
+    <button class="contact-modal-close" onclick="closeContactModal(null)" aria-label="Close">✕</button>
+    <div class="contact-modal-eyebrow">// Contact</div>
+    <div class="contact-modal-title">Let's connect.</div>
+    <div class="contact-modal-sub">Open to FP&A, corporate finance, and fintech roles — reach out directly.</div>
+    <a href="mailto:danielcournane@gmail.com" class="contact-modal-row">
+      <div class="contact-modal-icon">✉</div>
+      <div class="contact-modal-info">
+        <span class="contact-modal-label">Email</span>
+        <span class="contact-modal-value">danielcournane@gmail.com</span>
+      </div>
+    </a>
+    <a href="tel:+16317076584" class="contact-modal-row">
+      <div class="contact-modal-icon">📞</div>
+      <div class="contact-modal-info">
+        <span class="contact-modal-label">Phone</span>
+        <span class="contact-modal-value">(631) 707-6584</span>
+      </div>
+    </a>
+  </div>
+</div>
 
 <canvas id="fmCanvas"></canvas>
 <div class="cursor-dot" id="cursorDot"></div>
@@ -1254,7 +1400,7 @@
         </div>
         <div class="hero-ctas">
           <a href="#projects" class="btn btn-primary">View Projects ↓</a>
-          <a href="mailto:danielcournane@gmail.com" class="btn btn-ghost">Get In Touch</a>
+          <button onclick="openContactModal()" class="btn btn-ghost" style="background:none;border:none;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted2);padding:1rem 1.5rem;border:1px solid var(--line2);border-radius:3px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--line2)';this.style.color='var(--muted2)'">Get In Touch</button>
           <a href="https://www.linkedin.com/in/danielcournane" target="_blank" class="btn btn-ghost">LinkedIn ↗</a>
           <a href="https://dancourn.github.io/resume.pdf" target="_blank" class="btn btn-ghost">Resume ↓</a>
         </div>
@@ -1763,10 +1909,15 @@
       <div class="section-line"></div>
     </div>
 
-    <!-- Framing text -->
-    <p class="reveal" style="font-size:16px;color:var(--muted2);line-height:1.8;max-width:700px;margin-bottom:2.5rem;">
-      During my internship at Romero Capital, I built full investment cases from scratch — company diligence, financial modeling, DCF and comps valuation, and a written investment thesis. Below is my analysis of <strong style="color:var(--text);">Nebius Group (NBIS)</strong>, an AI infrastructure company I covered in July 2025. I issued a Buy rating at <strong style="color:var(--accent);">$60.00 (~15.5% upside)</strong>. The price target was subsequently reached within the forecast window.
-    </p>
+    <!-- Framing text + Nebius logo -->
+    <div class="reveal" style="display:flex;align-items:center;gap:3rem;margin-bottom:2.5rem;flex-wrap:wrap;">
+      <p style="font-size:16px;color:var(--muted2);line-height:1.8;max-width:620px;flex:1;min-width:280px;margin:0;">
+        During my internship at Romero Capital, I built full investment cases from scratch — company diligence, financial modeling, DCF and comps valuation, and a written investment thesis. Below is my analysis of <strong style="color:var(--text);">Nebius Group (NBIS)</strong>, an AI infrastructure company I covered in July 2025. I issued a Buy rating at <strong style="color:var(--accent);">$60.00 (~15.5% upside)</strong>. The price target was subsequently reached within the forecast window.
+      </p>
+      <div style="flex-shrink:0;opacity:0.18;filter:invert(1) brightness(2);">
+        <img src="https://dancourn.github.io/nebius-logo.png" alt="Nebius" style="width:160px;display:block;" />
+      </div>
+    </div>
 
     <!-- Call record card -->
     <div class="reveal" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:2.5rem;">
@@ -2160,43 +2311,80 @@
     }
   })();
 
+  // ── CONTACT MODAL ──
+  function openContactModal() {
+    document.getElementById('contactModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeContactModal() {
+    document.getElementById('contactModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeContactModal();
+  });
+
   // ── MOBILE PHOTO — copy src from desktop hero photo ──
   const desktopImg = document.querySelector('.hero-photo-wrap img');
   const mobileImg  = document.getElementById('mobile-photo-img');
   if (desktopImg && mobileImg) mobileImg.src = desktopImg.src;
 
-  // ── TICKER BUILD ─────────────────────────────────────────────────────────
+  // ── TICKER BUILD — live prices via Cloudflare Worker ─────────────────────
   (function() {
-    const stocks = [
-      { sym:'SPY',   val:'591.42',   chg:'+0.84%', up:true  },
-      { sym:'QQQ',   val:'512.17',   chg:'+1.12%', up:true  },
-      { sym:'AAPL',  val:'213.55',   chg:'+0.62%', up:true  },
-      { sym:'MSFT',  val:'461.20',   chg:'+0.38%', up:true  },
-      { sym:'NVDA',  val:'137.84',   chg:'+2.41%', up:true  },
-      { sym:'TSLA',  val:'248.30',   chg:'-1.82%', up:false },
-      { sym:'META',  val:'624.90',   chg:'+1.05%', up:true  },
-      { sym:'GOOG',  val:'182.74',   chg:'+0.77%', up:true  },
-      { sym:'AMZN',  val:'228.14',   chg:'+0.93%', up:true  },
-      { sym:'NFLX',  val:'1,284.60', chg:'+1.68%', up:true  },
-      { sym:'JPM',   val:'268.45',   chg:'+0.51%', up:true  },
-      { sym:'GS',    val:'582.10',   chg:'-0.29%', up:false },
-      { sym:'BRK.B', val:'484.22',   chg:'+0.14%', up:true  },
-      { sym:'AMD',   val:'164.33',   chg:'+3.12%', up:true  },
-      { sym:'PLTR',  val:'128.50',   chg:'+4.80%', up:true  },
-      { sym:'COIN',  val:'268.74',   chg:'+2.95%', up:true  },
-      { sym:'10Y',   val:'4.42%',    chg:'+3bps',  up:true  },
-      { sym:'VIX',   val:'13.84',    chg:'-0.62%', up:false },
-      { sym:'BTC',   val:'104,210',  chg:'+1.44%', up:true  },
-      { sym:'GLD',   val:'312.58',   chg:'-0.18%', up:false },
-      { sym:'DXY',   val:'104.32',   chg:'-0.21%', up:false },
-    ];
+    const WORKER = 'https://signal-proxy.danielcournane.workers.dev';
+    const SYMS   = ['SPY','QQQ','AAPL','MSFT','NVDA','TSLA','META','GOOG','AMZN','NFLX','JPM','GS','AMD','PLTR','COIN','BTC-USD'];
+    const LABELS = {'BTC-USD':'BTC'};
+
+    function fmt(price) {
+      if (!price || isNaN(price)) return '—';
+      return price >= 1000
+        ? price.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})
+        : price.toFixed(2);
+    }
+
     function buildItem(s) {
       const dir = s.up ? 'up' : 'down';
       const arr = s.up ? '▲' : '▼';
       return `<span class="ticker-item"><span class="ticker-sym">${s.sym}</span><span class="ticker-val">${s.val}</span><span class="ticker-chg ${dir} ticker-arr">${arr}</span><span class="ticker-chg ${dir}">${s.chg}</span></span>`;
     }
-    const track = document.getElementById('tickerTrack');
-    if (track) { const html = stocks.map(buildItem).join(''); track.innerHTML = html + html; }
+
+    function render(stocks) {
+      const track = document.getElementById('tickerTrack');
+      if (!track) return;
+      const html = stocks.map(buildItem).join('');
+      track.innerHTML = html + html;
+    }
+
+    async function fetchOne(sym) {
+      try {
+        const res  = await fetch(`${WORKER}/?ticker=${encodeURIComponent(sym)}&_=${Date.now()}`);
+        const data = await res.json();
+        if (!data || data.error || data.price == null) return null;
+        const price   = Number(data.price);
+        const pct     = Number(data.changePct) * 100; // worker returns as decimal e.g. 0.0084
+        const up      = pct >= 0;
+        return {
+          sym: LABELS[sym] || sym,
+          val: fmt(price),
+          chg: (up ? '+' : '') + pct.toFixed(2) + '%',
+          up
+        };
+      } catch(e) { return null; }
+    }
+
+    async function fetchLive() {
+      // Fire all requests in parallel
+      const results = await Promise.all(SYMS.map(fetchOne));
+      const stocks  = results.map((r, i) => r || {
+        sym: LABELS[SYMS[i]] || SYMS[i], val:'—', chg:'—', up:true
+      });
+      render(stocks);
+    }
+
+    // Show empty placeholders immediately then replace with live
+    render(SYMS.map(s => ({ sym: LABELS[s] || s, val:'...', chg:'', up:true })));
+    fetchLive();
+    setInterval(fetchLive, 5 * 60 * 1000);
   })();
 
   // ── PROJECT CARD TILT ────────────────────────────────────────────────────
