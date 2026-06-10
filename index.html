@@ -1472,16 +1472,18 @@
           <div>
             <div class="project-meta"><span class="project-num">001</span><span class="tag">HTML/JS</span><span class="tag">Finance</span><span class="tag live">Live</span></div>
             <div class="project-title">FP&amp;A Expected vs. Actuals Dashboard</div>
-            <div class="project-blurb">Interactive variance analysis dashboard — upload your own CSV or Excel, or explore the built-in SaaS demo. Filter by quarter and cost center, with auto-generated insight callouts and a full variance table.</div>
+            <div class="project-blurb">Interactive variance analysis dashboard. Upload your own CSV or Excel, or explore the built-in SaaS demo. Filter by quarter and cost center, with auto-generated insight callouts and a full variance table.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
         <div class="project-body"><div class="project-inner">
           <div class="project-reflection">
-            <h4>About this project</h4>
-            <p>This is the tool that replaces the monthly Excel reconciliation an FP&A analyst spends 3–4 hours on during close week. A finance team drops their actuals export alongside the plan file and gets a fully formatted variance report instantly — no Python environment, no Streamlit cold starts, no broken dependencies.</p>
-            <p>Built as a self-contained HTML file with Chart.js and SheetJS for in-browser Excel parsing. Revenue is treated as an expectation (favorable when actuals beat plan), while cost lines use standard budget logic — a distinction most generic dashboards get wrong. The insight callout engine auto-generates contextual flags: R&amp;D hiring ahead of plan, revenue recovery after a Q1 miss, COGS creep in H2.</p>
-            <p>Includes a downloadable sample Excel file so anyone can test the upload feature with realistic data from a different company profile than the default demo.</p>
+            <h4>The idea</h4>
+            <p>Close week in FP&A is the same pain every month: reconciling actuals against plan in Excel, manually flagging variances, reformatting the same table. I wanted to build something that replaced that whole workflow. Drop in your actuals and plan file, get a fully formatted variance report in the browser instantly.</p>
+            <h4>How I built it</h4>
+            <p>I used Claude Code to handle the implementation. My job was the finance logic: what the tool should actually do, how it should behave, and making sure the output was analytically correct. The thing I cared most about getting right was variance directionality. Revenue is favorable when actuals beat plan, cost lines flip. Most generic dashboards treat everything the same way and end up flagging the wrong things. I spec'd that logic out carefully and iterated until it matched how a real FP&A analyst would read it. The auto-generated insight callouts, things like R&D running ahead of plan or COGS creeping in H2, were my idea and I designed the logic for when and how they fire.</p>
+            <h4>Biggest challenge</h4>
+            <p>The hardest part wasn't the code, it was getting the variance logic airtight. Finance has a lot of edge cases: partially favorable variances, cost lines that are expected to overshoot, line items that need context to interpret correctly. I kept testing it against realistic data until the output matched what I would actually write in a variance commentary. That back-and-forth is where most of my time went.</p>
           </div>
           <div class="project-sidebar">
             <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">HTML/CSS/JS</span><span class="chip">Chart.js</span><span class="chip">SheetJS</span><span class="chip">GitHub Pages</span></div></div>
@@ -1499,16 +1501,18 @@
           <div>
             <div class="project-meta"><span class="project-num">002</span><span class="tag green">Interactive</span><span class="tag">Finance</span><span class="tag live">Live</span></div>
             <div class="project-title">Valence — DCF Valuation Calculator</div>
-            <div class="project-blurb">Type any US ticker and a full 10-year DCF populates in real time — live financials via Cloudflare Worker, CAPM-derived WACC, sensitivity table, value bridge, and company-relative bull/base/bear scenarios.</div>
+            <div class="project-blurb">Type any US ticker and a full 10-year DCF populates in real time. Live financials via Cloudflare Worker, CAPM-derived WACC, sensitivity table, value bridge, and company-relative bull/base/bear scenarios.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
         <div class="project-body"><div class="project-inner">
           <div class="project-reflection">
-            <h4>About this project</h4>
-            <p>A fully self-contained DCF model that runs entirely in the browser. Type in a ticker — AAPL, NVDA, CMG — and it pulls live financials from a Cloudflare Worker proxy, then populates a 10-year free cash flow model with TTM revenue, operating margins, net debt, shares outstanding, and a CAPM-estimated WACC using the stock's live beta.</p>
-            <p>The model outputs intrinsic value per share with upside/downside vs. the current price, a full FCF projection table, a value bridge, and a 5×5 sensitivity matrix across WACC and terminal growth rate. Every assumption is editable — bull, base, and bear cases scale proportionally to each company's actual growth profile rather than generic presets.</p>
-            <p>A "Why the Gap?" panel automatically surfaces data-driven explanations when the model diverges significantly from the market price — debt load, margin expansion stories, hypergrowth premiums, or moat/brand value the DCF can't capture. The architecture decision to use a serverless Cloudflare Worker as a proxy keeps API credentials off the client and eliminates cold starts entirely.</p>
+            <h4>The idea</h4>
+            <p>I built a lot of DCF models in school and for my PE internship. Every single one lived in Excel. I wanted to see what it looked like to make that process live and interactive, where you type a ticker and the model just runs, pulling real financials and giving you outputs you can actually play with.</p>
+            <h4>How I built it</h4>
+            <p>I used Claude Code for the implementation side. My focus was the finance architecture: how the WACC should be derived, how the bull/base/bear cases should scale relative to each company's actual growth profile rather than generic percentages, and what the "Why the Gap?" panel should surface when the model diverges from market price. That last piece was my idea after noticing the model would output intrinsic values way below market for high-growth names. Instead of just showing a number and leaving people confused, I built logic that auto-flags the likely reasons: debt load, margin expansion stories, brand value the DCF can't quantify. I designed what those explanations should say and when they should trigger.</p>
+            <h4>Biggest challenge</h4>
+            <p>The WACC calculation had a lot of edge cases I had to think through carefully. Recently public companies don't have enough price history for a meaningful beta. Some companies have negative earnings that break the standard formula. I worked through each scenario and decided how the model should handle it, then made sure the output was still defensible from a finance standpoint rather than just technically functional.</p>
           </div>
           <div class="project-sidebar">
             <div class="sidebar-block"><h5>Stack</h5><div class="tech-chips"><span class="chip">HTML/CSS/JS</span><span class="chip">Cloudflare Workers</span><span class="chip">Yahoo Finance API</span><span class="chip">GitHub Pages</span></div></div>
@@ -1525,7 +1529,7 @@
           <div>
             <div class="project-meta"><span class="project-num">003</span><span class="tag green">Interactive</span><span class="tag">M&amp;A</span><span class="tag gray">Coming Soon</span></div>
             <div class="project-title">M&amp;A Accretion / Dilution Calculator</div>
-            <div class="project-blurb">Input acquirer and target financials, deal price, financing mix, and synergies — instantly see whether the deal is accretive or dilutive in Year 1 and Year 3, with a before/after EPS bridge.</div>
+            <div class="project-blurb">Input acquirer and target financials, deal price, financing mix, and synergies. Instantly see whether the deal is accretive or dilutive in Year 1 and Year 3, with a before/after EPS bridge.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
@@ -1543,7 +1547,7 @@
           <div>
             <div class="project-meta"><span class="project-num">004</span><span class="tag green">Interactive</span><span class="tag">Private Equity</span><span class="tag gray">Coming Soon</span></div>
             <div class="project-title">LBO Returns Calculator</div>
-            <div class="project-blurb">Model a leveraged buyout — entry price, debt structure, EBITDA growth, exit multiple, and hold period — and get live IRR, MOIC, and a debt paydown waterfall. Built from my eBay LBO model.</div>
+            <div class="project-blurb">Model a leveraged buyout. Set your entry price, debt structure, EBITDA growth, exit multiple, and hold period and get live IRR, MOIC, and a debt paydown waterfall. Built from my eBay LBO model.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
@@ -1561,7 +1565,7 @@
           <div>
             <div class="project-meta"><span class="project-num">005</span><span class="tag green">Interactive</span><span class="tag">Valuation</span><span class="tag gray">Coming Soon</span></div>
             <div class="project-title">Comparable Companies Table</div>
-            <div class="project-blurb">Enter up to 6 tickers and get a live comps table — EV/EBITDA, EV/Revenue, P/E, NTM growth — pulled in real time and benchmarked against the peer median. The third leg of the valuation triangle alongside DCF and LBO.</div>
+            <div class="project-blurb">Enter up to 6 tickers and get a live comps table with EV/EBITDA, EV/Revenue, P/E, and NTM growth, pulled in real time and benchmarked against the peer median. The third leg of the valuation triangle alongside DCF and LBO.</div>
           </div>
           <div class="project-toggle"><span class="toggle-icon">+</span></div>
         </div>
