@@ -1965,7 +1965,7 @@
     <div class="reveal" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:2.5rem;">
     <div style="
       display:grid;
-      grid-template-columns:repeat(5,minmax(130px,1fr));
+      grid-template-columns:repeat(6,minmax(130px,1fr));
       gap:1px;
       background:rgba(255,255,255,0.05);
       border:1px solid rgba(255,255,255,0.05);
@@ -1997,6 +1997,14 @@
         <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Outcome</div>
         <div style="font-family:var(--serif);font-size:1.5rem;color:#7dd6a0;">✓ Hit</div>
         <div style="font-family:var(--mono);font-size:10px;color:#7dd6a0;margin-top:0.2rem;">Target reached in window</div>
+      </div>
+
+      <!-- LIVE PRICE CELL -->
+      <div style="background:#0d1018;padding:1.25rem 1.5rem;position:relative;overflow:hidden;" id="nbisLiveCell">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7dd6a0,transparent);opacity:0.6;"></div>
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Live Price</div>
+        <div style="font-family:var(--serif);font-size:1.5rem;color:var(--text);" id="nbisLivePrice">—</div>
+        <div style="font-family:var(--mono);font-size:10px;margin-top:0.2rem;" id="nbisLiveDelta">fetching...</div>
       </div>
     </div><!-- end scroll wrapper -->
 
@@ -2586,6 +2594,63 @@
       });
     }, { threshold: 0.25 });
     blocks.forEach(b => obs.observe(b));
+  })();
+
+  // ── NBIS LIVE PRICE ──────────────────────────────────────────────────────
+  (function() {
+    const WORKER   = 'https://signal-proxy.danielcournane.workers.dev';
+    const TARGET   = 60.00;
+    const ENTRY    = 51.97;
+
+    function fmt(p) {
+      return '$' + Number(p).toFixed(2);
+    }
+
+    async function fetchNBIS() {
+      try {
+        const res  = await fetch(`${WORKER}/?ticker=NBIS&_=${Date.now()}`);
+        const data = await res.json();
+        if (!data || data.error || data.price == null) throw new Error('no data');
+
+        const price   = Number(data.price);
+        const pct     = Number(data.changePct) * 100;
+        const up      = pct >= 0;
+        const vsTarget = ((price - TARGET) / TARGET * 100);
+        const aboveTarget = price >= TARGET;
+
+        // Price
+        const priceEl = document.getElementById('nbisLivePrice');
+        if (priceEl) {
+          priceEl.textContent = fmt(price);
+          priceEl.style.color = up ? '#7dd6a0' : '#e07070';
+        }
+
+        // Delta line: day change + vs target
+        const deltaEl = document.getElementById('nbisLiveDelta');
+        if (deltaEl) {
+          const daySign  = up ? '+' : '';
+          const tgtSign  = aboveTarget ? '+' : '';
+          const tgtColor = aboveTarget ? '#7dd6a0' : '#e07070';
+          deltaEl.innerHTML =
+            `<span style="color:${up ? '#7dd6a0' : '#e07070'}">${daySign}${pct.toFixed(2)}% today</span>` +
+            `<br><span style="color:${tgtColor};font-size:9px;">${tgtSign}${vsTarget.toFixed(1)}% vs $60 target</span>`;
+        }
+
+        // Flash the cell border on update
+        const cell = document.getElementById('nbisLiveCell');
+        if (cell) {
+          cell.style.outline = `1px solid ${up ? 'rgba(125,214,160,0.4)' : 'rgba(224,112,112,0.4)'}`;
+          setTimeout(() => { cell.style.outline = ''; }, 800);
+        }
+
+      } catch(e) {
+        const deltaEl = document.getElementById('nbisLiveDelta');
+        if (deltaEl) { deltaEl.textContent = 'unavailable'; deltaEl.style.color = 'var(--muted)'; }
+      }
+    }
+
+    fetchNBIS();
+    setInterval(fetchNBIS, 5 * 60 * 1000);
   })();
 
   // ── MAGNETIC CURSOR PULL ──────────────────────────────────────────────────
