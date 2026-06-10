@@ -7,24 +7,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:        #f4f6fb;
-      --bg2:       #ffffff;
-      --bg3:       #edf0f7;
-      --line:      rgba(0,0,0,0.08);
-      --line2:     rgba(0,0,0,0.13);
-      --text:      #111827;
-      --muted:     #7b8499;
-      --muted2:    #4b5468;
+      --bg:        #dde1ea;
+      --bg2:       #e8ecf2;
+      --bg3:       #d0d5e0;
+      --line:      rgba(0,0,0,0.10);
+      --line2:     rgba(0,0,0,0.17);
+      --text:      #0f1623;
+      --muted:     #636d84;
+      --muted2:    #3d4557;
       --accent:    #2563eb;
       --accent2:   #1d4ed8;
-      --accentdim: rgba(37,99,235,0.1);
-      --accentglow:rgba(37,99,235,0.07);
-      --green:     #16a34a;
-      --greendim:  rgba(22,163,74,0.1);
-      --red:       #dc2626;
-      --reddim:    rgba(220,38,38,0.09);
-      --yellow:    #b45309;
-      --yellowdim: rgba(180,83,9,0.1);
+      --accentdim: rgba(37,99,235,0.12);
+      --accentglow:rgba(37,99,235,0.08);
+      --green:     #15803d;
+      --greendim:  rgba(21,128,61,0.12);
+      --red:       #b91c1c;
+      --reddim:    rgba(185,28,28,0.10);
+      --yellow:    #92400e;
+      --yellowdim: rgba(146,64,14,0.11);
       --sans:      'Outfit', sans-serif;
       --mono:      'JetBrains Mono', monospace;
       --serif:     'Playfair Display', Georgia, serif;
@@ -43,6 +43,44 @@
       min-height: 100vh;
     }
 
+    /* ── DATA LOADED MODAL ── */
+    #data-modal-backdrop {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(8, 12, 22, 0.55);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    #data-modal-backdrop.visible { opacity: 1; pointer-events: all; }
+    #data-modal {
+      background: var(--bg2); border: 1px solid var(--line2);
+      border-radius: 8px; padding: 2rem 2.25rem 1.75rem;
+      width: min(460px, 90vw);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+      transform: translateY(14px);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #data-modal-backdrop.visible #data-modal { transform: translateY(0); }
+    .dm-ticker-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); background: var(--accentdim);
+      border: 1px solid rgba(37,99,235,0.2);
+      border-radius: 3px; padding: 3px 10px; margin-bottom: 1rem;
+    }
+    .dm-title { font-family: var(--serif); font-size: 1.45rem; color: var(--text); margin-bottom: 0.5rem; line-height: 1.3; }
+    .dm-sub { font-size: 13px; color: var(--muted2); line-height: 1.7; margin-bottom: 1.4rem; }
+    .dm-checklist { display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 1.5rem; }
+    .dm-check { display: flex; align-items: flex-start; gap: 0.65rem; font-family: var(--mono); font-size: 11px; color: var(--muted2); line-height: 1.55; }
+    .dm-icon { flex-shrink:0; width:16px; height:16px; border-radius:50%; background:var(--accentdim); display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--accent); margin-top:1px; }
+    .dm-footer { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding-top:1.1rem; border-top:1px solid var(--line); }
+    .dm-btn { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; background:var(--accent); color:#fff; border:none; border-radius:3px; padding:0.65rem 1.4rem; cursor:pointer; transition:background 0.18s; }
+    .dm-btn:hover { background:var(--accent2); }
+    .dm-skip { font-family:var(--mono); font-size:10px; color:var(--muted); cursor:pointer; background:none; border:none; padding:0; text-decoration:underline; }
+    .dm-skip:hover { color:var(--muted2); }
+
     /* ── NOISE OVERLAY ── */
     body::before {
       content: '';
@@ -59,7 +97,7 @@
     #cursor-cross {
       position: fixed;
       pointer-events: none;
-      z-index: 99999;
+      z-index: 999999;
       transform: translate(-50%, -50%);
       width: 20px;
       height: 20px;
@@ -177,7 +215,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(244,246,251,0.92);
+      background: rgba(221,225,234,0.92);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--line);
       padding: 0 2rem;
@@ -290,9 +328,9 @@
       .page-desc  { font-size: 13px; }
       .page-title-block { margin-bottom: 1.5rem; }
 
-      /* KPI row stacks to 1 column on small screens */
+      /* KPI row stacks to 2 columns on small screens */
       .kpi-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
       }
       .kpi-value { font-size: 1.6rem; }
       .kpi-cell:not(:first-child) .kpi-value { font-size: 1.4rem; }
@@ -545,7 +583,7 @@
     /* KPI row */
     .kpi-row {
       display: grid;
-      grid-template-columns: 1.4fr 1fr 1fr;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
       gap: 1px;
       background: var(--line);
       border: 1px solid var(--line);
@@ -910,7 +948,6 @@
 <div class="orb orb-2"></div>
 <div class="orb orb-3"></div>
 <canvas id="particle-canvas"></canvas>
-<div id="cursor-cross"></div>
 
 <header>
   <div class="header-left">
@@ -923,7 +960,7 @@
 <main>
   <div class="page-title-block">
     <h1 class="page-title">Discounted Cash Flow <em>Calculator</em></h1>
-    <p class="page-desc">Type any US ticker to load live financials, then adjust WACC, growth, and margin assumptions to build your own bull, base, and bear case valuations — intrinsic value updates in real time.</p>
+    <p class="page-desc">Type any US ticker to load live financials, then adjust WACC, growth, and margin assumptions to build your own bull, base, and bear case valuations — intrinsic value updates in real time. Business model detection automatically calibrates CapEx, growth, and sector assumptions. Banks, utilities, energy producers, and other DCF-incompatible sectors are flagged with the correct valuation framework instead.</p>
   </div>
 
   <div class="tool-grid">
@@ -991,6 +1028,22 @@
               <div>
                 <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Beta</div>
                 <div id="cc-beta" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div>
+              </div>
+              <div>
+                <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">FCF Yield</div>
+                <div id="cc-fcfy" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div>
+              </div>
+              <div>
+                <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Op Margin</div>
+                <div id="cc-opmgn" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div>
+              </div>
+              <div>
+                <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">P/E (TTM)</div>
+                <div id="cc-pe" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div>
+              </div>
+              <div style="grid-column:1/-1;border-top:1px solid var(--line);padding-top:0.4rem;margin-top:0.2rem;">
+                <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Analyst Consensus Target</div>
+                <div id="cc-target" style="font-family:var(--mono);font-size:12px;color:var(--muted2);"></div>
               </div>
             </div>
             <div id="cc-note" style="margin-top:0.5rem;font-family:var(--mono);font-size:10px;color:var(--yellow);line-height:1.6;display:none;"></div>
@@ -1134,6 +1187,23 @@
     <!-- RIGHT: RESULTS -->
     <div style="display:flex;flex-direction:column;gap:1.25rem;">
 
+      <!-- UNSUPPORTED SECTOR OVERLAY -->
+      <div id="unsupported-overlay" style="display:none;background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--yellow);border-radius:6px;padding:2rem 2rem;flex-direction:column;gap:1.25rem;animation:fadein 0.4s ease both;">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span style="font-size:1.4rem;">⚠</span>
+          <div>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--yellow);margin-bottom:0.3rem;">DCF Not Applicable</div>
+            <div id="unsup-label" style="font-family:var(--serif);font-size:1.4rem;color:var(--text);"></div>
+          </div>
+        </div>
+        <p id="unsup-why" style="font-size:14px;color:var(--muted2);line-height:1.75;max-width:680px;"></p>
+        <div>
+          <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;">Recommended frameworks instead:</div>
+          <div id="unsup-alts" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>
+        </div>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:0.85rem;">The company card above shows live market data for reference. You can still adjust the sliders manually if you want to run a rough sensitivity, but treat outputs with extreme caution.</p>
+      </div>
+
       <!-- KPIs -->
       <div class="kpi-row">
         <div class="kpi-cell">
@@ -1150,6 +1220,11 @@
           <div class="kpi-label">Terminal Value %</div>
           <div class="kpi-value" id="kpi-tvpct">—</div>
           <div class="kpi-sub" id="kpi-tv-sub">of total EV</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-label">Implied EV/EBITDA</div>
+          <div class="kpi-value" id="kpi-evebitda">—</div>
+          <div class="kpi-sub" id="kpi-evebitda-sub">at intrinsic value</div>
         </div>
       </div>
 
@@ -1215,6 +1290,9 @@
     Not investment advice — for educational and portfolio demonstration purposes only.
   </div>
 </main>
+
+<!-- Cursor element must exist before the script block below -->
+<div id="cursor-cross"></div>
 
 <script>
   // ── WORKER URL — replace with your Cloudflare Worker URL ──
@@ -1288,16 +1366,21 @@
         notes.push('Revenue not available — enter manually');
       }
 
-      // Operating margin (EBIT proxy)
+      // Operating margin (EBIT proxy) — handle pre-profit companies explicitly
       const opMgn = Number(d.operatingMargin);
       const profMgn = Number(d.profitMargin);
       if (opMgn > 0) {
         setSlider('ebitMargin', 'val-ebitMargin', (opMgn * 100).toFixed(1), '%');
+      } else if (opMgn < 0) {
+        // Pre-profit: load 0, flag clearly, prompt user to model the path to profitability
+        setSlider('ebitMargin', 'val-ebitMargin', '0', '%');
+        notes.push(`Pre-profit company (operating margin ${(opMgn*100).toFixed(1)}%) — EBIT margin set to 0; set your target margin to model the profitability path`);
       } else if (profMgn > 0) {
         setSlider('ebitMargin', 'val-ebitMargin', Math.min(50, profMgn * 100 * 1.35).toFixed(1), '%');
         notes.push('EBIT margin estimated from net margin — verify manually');
       } else {
-        notes.push('Margin not available — enter manually');
+        setSlider('ebitMargin', 'val-ebitMargin', '0', '%');
+        notes.push('Margin not available — enter target EBIT margin manually');
       }
 
       // Stock price
@@ -1305,9 +1388,40 @@
       if (px > 0) setInput('stockPrice', px.toFixed(2));
 
       // Shares outstanding → millions
-      const shs = Number(d.sharesOutstanding);
+      // Shares outstanding — prefer diluted (accounts for SBC options/RSUs)
+      // ADR sanity check: some foreign ADRs (TSM, NVO, ASML) trade where 1 ADS = N ordinary shares
+      // Yahoo sometimes returns the raw ordinary share count, not ADS-equivalent
+      // Detect this when implied price-per-share from mktcap/shares differs wildly from actual price
+      const shsDiluted = Number(d.sharesFullyDiluted);
+      const shsBasic   = Number(d.sharesOutstanding);
+      const mcapRawForShares = Number(d.marketCap) || 0;
+      const priceRaw   = Number(d.price) || 0;
+      const shsDerived = (mcapRawForShares > 0 && priceRaw > 0) ? mcapRawForShares / priceRaw : 0;
+
+      let shs = shsDiluted > 1e6 ? shsDiluted
+              : shsBasic   > 1e6 ? shsBasic
+              : shsDerived > 1e6 ? shsDerived
+              : 0;
+
+      // ADR ratio check: if mktcap/shares implies a price wildly different from actual price,
+      // the share count is in ordinary shares not ADS units — correct it
+      if (shs > 0 && mcapRawForShares > 0) {
+        const impliedPrice = mcapRawForShares / shs;
+        const priceRatio = impliedPrice / priceRaw;
+        if (priceRatio < 0.1 || priceRatio > 10) {
+          // Share count is off by a large factor — use mktcap/price derived count instead
+          shs = shsDerived;
+          notes.push(`ADR/foreign share count corrected — Yahoo returned ${Math.round((shsDiluted||shsBasic)/1e6)}M ordinary shares; using ${Math.round(shsDerived/1e6)}M ADS-equivalent shares derived from market cap`);
+        }
+      }
+
       if (shs > 0) {
         setInput('shares', Math.round(shs / 1e6));
+        if (shs === shsDerived && shsDiluted > 1e6) {
+          // Already noted above
+        } else if ((shsDiluted > 1e6 ? shsDiluted : shsBasic) > shsBasic * 1.03 && shsDiluted > 1e6) {
+          notes.push(`Diluted share count used (${Math.round(shsDiluted/1e6)}M vs ${Math.round(shsBasic/1e6)}M basic) — SBC dilution included`);
+        }
       } else {
         notes.push('Shares not available — enter manually');
       }
@@ -1316,52 +1430,347 @@
       const debt = Number(d.totalDebt);
       const cash = Number(d.totalCash);
       if (debt >= 0 && cash >= 0) {
-        setInput('netDebt', Math.round((debt - cash) / 1e6));
+        const netDebtVal = Math.round((debt - cash) / 1e6);
+        setInput('netDebt', netDebtVal);
         updateNetDebtLabel();
+        // Flag if net debt looks anomalously large vs revenue — possible data quality issue
+        const revRaw = Number(d.totalRevenue) || 0;
+        if (netDebtVal > 0 && revRaw > 0 && (netDebtVal / (revRaw / 1e6)) > 0.20) {
+          notes.push(`Net debt ($${netDebtVal}M) is large relative to revenue — verify against latest 10-Q; Yahoo sometimes overstates liabilities`);
+        }
       } else {
         notes.push('Debt data not available — enter manually');
       }
 
-      // Revenue growth — seed Yr1-5 from TTM, clamp 0–60%
+      // ── Sector/industry variables — declared early so all subsequent blocks can use them ──
+      const sectorLower = (d.sector || '').toLowerCase();
+      const indLower    = (d.industry || '').toLowerCase();
+      const revBillions = (Number(d.totalRevenue) || 0) / 1e9;
+      const opMgnRaw    = Number(d.operatingMargin) || 0;
+
+      // Revenue growth — seed Yr1-5 from TTM with size and sector aware caps
+      // Consumer Staples/Defensive: TTM often inflated by pricing — real volume growth is 2-4%
+      // Large-caps: sustained >25-30% growth nearly unprecedented at scale
       const revG = Number(d.revenueGrowth);
+      const mcapB = (Number(d.marketCap) || 0) / 1e9;
+      const isConsumerStaples = sectorLower.includes('consumer defensive') || sectorLower.includes('consumer staples');
+      const growthCap = isConsumerStaples ? 8  // staples TTM is pricing-inflated; real growth is 2-4%
+                      : mcapB > 500 ? 25
+                      : mcapB > 200 ? 30
+                      : mcapB > 50  ? 35
+                      : 40;
       if (isFinite(revG)) {
-        const pct = Math.min(60, Math.max(0, revG * 100));
-        setSlider('growth1', 'val-growth1', pct.toFixed(1), '%');
-        notes.push(`Rev growth seeded from TTM (${(revG*100).toFixed(1)}%) — adjust for your forecast`);
+        const rawPct = revG * 100;
+        const cappedPct = Math.min(growthCap, Math.max(0, rawPct));
+        setSlider('growth1', 'val-growth1', cappedPct.toFixed(1), '%');
+        if (isConsumerStaples && rawPct > growthCap) {
+          notes.push(`TTM growth was ${rawPct.toFixed(0)}% — capped at ${growthCap}% for consumer staples (TTM often inflated by price increases; underlying volume growth is typically 2–4%)`);
+        } else if (rawPct > growthCap) {
+          notes.push(`TTM growth was ${rawPct.toFixed(0)}% — seeded at ${growthCap}% (size-adjusted cap); adjust to your forward estimate`);
+        } else {
+          notes.push(`Rev growth seeded from TTM (${rawPct.toFixed(1)}%) — adjust for your forecast`);
+        }
       }
 
+      // Foreign company low-margin warning — statutory margins unreliable for Chinese/non-US names
+      const isNonUS = (d.exchange || '').toUpperCase().includes('HKG') || (d.exchange || '').toUpperCase().includes('HKEX')
+                    || (d.country || '').toLowerCase() !== 'united states' && (d.country || '') !== '';
+      if (isNonUS && opMgnRaw < 0.05 && opMgnRaw >= 0) {
+        notes.push(`Non-US company with ${(opMgnRaw*100).toFixed(1)}% GAAP operating margin — statutory margins for foreign listings often include regulatory adjustments, one-time charges, or investment write-downs that depress reported profitability. Adjust EBIT margin to reflect core business economics.`);
+      }
+
+      // ── Business model detection — must come before WACC so isIpLicensor is available ──
+      const grossMgn = Number(d.grossMargin);
+      const industry = (d.industry || '').toLowerCase();
+      const revRawForDetection = Number(d.totalRevenue) || 0;
+
+      // True IP licensors (ARM, InterDigital): semiconductor industry, gross margin >85%
+      // Fabless designers (NVIDIA, AMD, Qualcomm) have high gross margins (50-80%) but
+      // carry real R&D infrastructure and chip design CapEx — not IP licensors
+      const isIpLicensor   = industry.includes('semiconductor') && grossMgn > 0.85;
+      // Foundry = has own fabs: TSMC (logic foundry, low gross margin), Micron (memory, higher margins)
+      // Memory fabs can't be detected by gross margin alone — use industry keywords
+      const isMemoryChip   = industry.includes('memory') || industry.includes('dram') || industry.includes('nand')
+                           || industry.includes('flash') || (industry.includes('semiconductor') && industry.includes('storage'));
+      const isFoundry      = (industry.includes('semiconductor') && grossMgn < 0.45) || isMemoryChip;
+      const isFablessSemi  = industry.includes('semiconductor') && grossMgn > 0.5 && !isIpLicensor && !isFoundry;
+      const isPureSoftware = industry.includes('software') || industry.includes('saas');
+
       // WACC via CAPM: rf + β × ERP
+      // rf = 4.3% (10-yr treasury), ERP = 4.5% (Damodaran current estimate for US market)
+      // Beta: apply Blume mean-reversion adjustment (2/3 raw + 1/3 market) used by Bloomberg/FactSet
+      // This prevents recent volatility from overstating long-run risk — matches professional practice
       const beta = Number(d.beta);
+      const mcapForWacc = Number(d.marketCap) || 0;
+      const sizePremium = mcapForWacc > 50e9 ? -0.5 : mcapForWacc > 10e9 ? 0 : 0.5;
       if (beta > 0) {
-        const wacc = Math.min(25, Math.max(4, 4.3 + beta * 5.5));
+        // Blume adjustment: adjusted beta = 0.67 × raw beta + 0.33 × 1.0
+        // Caps: floor at 0.8 for stable large-caps, hard cap at 2.0 (no beta justifies >2x WACC)
+        const adjBeta = Math.min(2.0, Math.max(0.8, beta * 0.67 + 0.33));
+        const rawWacc = 4.3 + adjBeta * 4.5 + sizePremium;
+        let wacc = Math.min(15, Math.max(4, rawWacc));
+        if (isIpLicensor && rawWacc > 13) {
+          wacc = Math.min(13, wacc);
+          notes.push(`Beta adjusted via Blume method (raw: ${beta.toFixed(2)} → ${adjBeta.toFixed(2)}) — WACC clamped to ${wacc.toFixed(2)}% for IP licensor`);
+        } else if (beta !== adjBeta) {
+          // Only note if the adjustment was meaningful (>0.3 difference)
+          if (Math.abs(beta - adjBeta) > 0.3) {
+            notes.push(`Beta smoothed ${beta.toFixed(2)} → ${adjBeta.toFixed(2)} via Blume mean-reversion (standard Bloomberg/FactSet methodology)`);
+          }
+        }
         setSlider('wacc', 'val-wacc', wacc.toFixed(2), '%');
       }
 
+      // ── Unsupported sector detection — hard stop before running DCF ──
+      // These sectors have revenue/margin structures incompatible with standard FCF DCF
+      // ── Payments networks and exchanges ARE DCF-compatible — carve them out first ──
+      // Visa, Mastercard, American Express: pure transaction fee model, real FCF, high margins
+      // Exchanges (ICE, CBOE, CME): marketplace model, asset-light, genuine operating leverage
+      // Fintech platforms (SoFi, PayPal, Stripe): technology revenue, not bank revenue
+      const isPaymentsNetwork = indLower.includes('credit service') || indLower.includes('payment')
+                              || indLower.includes('transaction') || indLower.includes('fintech');
+      const isExchange        = indLower.includes('exchange') || indLower.includes('financial data')
+                              || indLower.includes('financial exchange');
+      const isDCFCompatibleFinancial = isPaymentsNetwork || isExchange;
+
+      let unsupportedReason = null;
+
+      if (sectorLower.includes('financial') && !isDCFCompatibleFinancial) {
+        // Banks, insurers, asset managers: revenue = interest income + premiums
+        // EBIT margin meaningless, CapEx irrelevant, regulatory capital not modeled
+        const isBank      = indLower.includes('bank') || indLower.includes('diversified financial')
+                          || indLower.includes('mortgage') || indLower.includes('savings');
+        const isInsurer   = indLower.includes('insur');
+        const isAssetMgr  = indLower.includes('asset management') || indLower.includes('capital market')
+                          || indLower.includes('investment');
+        if (isBank) {
+          unsupportedReason = { type: 'bank', label: 'Bank / Financial Institution',
+            why: 'Bank revenue is net interest income and fee income — not comparable to operating revenue. EBIT margins and CapEx ratios are meaningless. The correct framework is Price/Book vs. Return on Equity (ROE). JPMorgan\'s ROE of ~17% vs cost of equity ~10% implies it deserves a premium to book value.',
+            alts: ['Price / Book vs. ROE', 'Dividend Discount Model (DDM)', 'Excess Return Model'] };
+        } else if (isInsurer) {
+          unsupportedReason = { type: 'insurer', label: 'Insurance Company',
+            why: 'Insurance revenue includes premiums that are offset by claims — the reported operating margin bears no relation to economic earnings. The correct framework is Price/Book vs. Return on Equity, combined with combined ratio analysis.',
+            alts: ['Price / Book vs. ROE', 'Price / Embedded Value', 'Combined Ratio Analysis'] };
+        } else if (isAssetMgr) {
+          unsupportedReason = { type: 'asset-mgr', label: 'Asset Manager / Investment Firm',
+            why: 'Revenue is management and performance fees on AUM — highly cyclical and not comparable to operating revenue. Valuation is driven by AUM growth, fee rates, and market levels.',
+            alts: ['Price / AUM', 'P/E on normalized earnings', 'EV / Fee Revenue'] };
+        } else {
+          unsupportedReason = { type: 'financial', label: 'Financial Services',
+            why: 'Financial sector companies have revenue and margin structures incompatible with standard FCF modeling. Regulatory capital requirements and leverage ratios dominate valuation.',
+            alts: ['Price / Book vs. ROE', 'Dividend Discount Model', 'Earnings-based multiples'] };
+        }
+      } else if (sectorLower.includes('health') && revBillions > 50 && opMgnRaw < 0.10) {
+        // Managed care / health insurance (UNH, CVS, Cigna): revenue = premiums, margins are thin
+        unsupportedReason = { type: 'managed-care', label: 'Managed Care / Health Insurance',
+          why: 'Revenue includes medical premiums paid on behalf of members — most of this flows straight out as claims. The true economic margin is 3–5% of premium revenue. Standard DCF overstates intrinsic value significantly. Use P/E or Price/Cash Earnings with medical loss ratio analysis.',
+          alts: ['P/E on operating earnings', 'Medical Loss Ratio (MLR) analysis', 'EV/EBITDA on adjusted earnings'] };
+
+      } else if (sectorLower.includes('energy') && (
+        indLower.includes('oil') || indLower.includes('gas') || indLower.includes('petroleum')
+        || indLower.includes('integrated') || indLower.includes('upstream') || indLower.includes('exploration')
+        || indLower.includes('refin')
+      )) {
+        unsupportedReason = { type: 'energy', label: 'Oil & Gas / Energy Producer',
+          why: 'Commodity company revenue and margins are driven by oil and gas prices, not operating leverage. A single-year TTM EBIT margin of 5–15% can swing to 20%+ or near-zero across a cycle. Standard DCF from TTM inputs will produce dramatically wrong intrinsic values. The correct framework uses mid-cycle earnings normalization, reserves-based NAV, and yield-based valuation.',
+          alts: ['Mid-cycle EV/EBITDA (5–6×)', 'Reserves-based NAV', 'Dividend + Buyback Yield', 'P/CF (Price to Cash Flow)'] };
+
+      } else if (sectorLower.includes('utilities')) {
+        // Regulated utilities (NEE, DUK, SO, D): valued on rate base and allowed ROE
+        // Revenue is regulated, CapEx is massive (infrastructure), and dividend yield drives valuation
+        // DCF from TTM inputs systematically undervalues because debt is structural, not distress
+        unsupportedReason = { type: 'utility', label: 'Regulated Utility',
+          why: 'Regulated utilities are valued on their rate base (the capital invested in infrastructure that regulators allow them to earn a return on), not free cash flow. Their debt is structural — used to finance grid and generation assets that generate stable regulated returns. A standard DCF dramatically undervalues utilities because it treats infrastructure debt as a liability rather than a revenue-producing asset.',
+          alts: ['Price / Rate Base (EV / RAB)', 'Dividend Discount Model (DDM)', 'Allowed ROE vs. Cost of Equity', 'EV/EBITDA (10–12× for regulated utilities)'] };
+      }
+
+      if (unsupportedReason) {
+        // Show unsupported panel, populate company card, but do NOT run calc()
+        document.getElementById('unsupported-overlay').style.display = 'flex';
+        document.getElementById('unsup-label').textContent = unsupportedReason.label;
+        document.getElementById('unsup-why').textContent = unsupportedReason.why;
+        document.getElementById('unsup-alts').innerHTML = unsupportedReason.alts
+          .map(a => `<span style="font-family:var(--mono);font-size:10px;padding:3px 8px;background:var(--accentdim);color:var(--accent2);border:1px solid rgba(79,142,247,0.2);border-radius:2px;">${a}</span>`)
+          .join('');
+        // Still show company card for reference
+        loadedCompanyData = d;
+      } else {
+        document.getElementById('unsupported-overlay').style.display = 'none';
+      }
+
       // ── Fields Yahoo doesn't provide — set sensible defaults by sector ──
-      // Tax rate: use 21% (US corporate standard)
       setSlider('taxRate', 'val-taxRate', '21', '%');
 
-      // Terminal growth rate: 2.5% default
-      setSlider('tgr', 'val-tgr', '2.5', '%');
-
-      // Revenue growth Yr 6-10: half of Yr 1-5, floored at 3%
-      const revG2 = isFinite(revG) ? Math.max(3, Math.min(20, revG * 50)) : 6;
-      setSlider('growth2', 'val-growth2', revG2.toFixed(1), '%');
-
-      // D&A and CapEx — derive from gross margin if available, else use sector defaults
-      const grossMgn = Number(d.grossMargin);
-      let daDefault = 4, capexDefault = 5;
+      // Terminal growth rate: sector-aware defaults
+      let tgrDefault = 2.5;
       if (d.sector) {
         const s = d.sector.toLowerCase();
-        if (s.includes('tech') || s.includes('software')) { daDefault = 3; capexDefault = 4; }
-        else if (s.includes('energy') || s.includes('utilities')) { daDefault = 8; capexDefault = 12; }
-        else if (s.includes('real estate')) { daDefault = 10; capexDefault = 8; }
-        else if (s.includes('consumer') && grossMgn < 0.3) { daDefault = 3; capexDefault = 6; } // retail
-        else if (s.includes('health') || s.includes('pharma')) { daDefault = 5; capexDefault = 5; }
-        else if (s.includes('industrial') || s.includes('manufac')) { daDefault = 6; capexDefault = 7; }
-        else if (s.includes('communication')) { daDefault = 5; capexDefault = 6; }
+        if (s.includes('tech') || s.includes('software') || s.includes('communication')) tgrDefault = 3.0;
+        else if (s.includes('energy') || s.includes('utilities') || s.includes('industrial')) tgrDefault = 2.0;
+        else if (s.includes('real estate')) tgrDefault = 2.5;
+        else if (s.includes('health') || s.includes('pharma')) tgrDefault = 2.5;
+        else if (s.includes('consumer') && grossMgn > 0.4) tgrDefault = 3.0;
       }
-      setSlider('da', 'val-da', daDefault.toString(), '%');
+      setSlider('tgr', 'val-tgr', tgrDefault.toString(), '%');
+
+      // Revenue growth Yr 6-10: tiered decay
+      let revG2;
+      if (!isFinite(revG)) {
+        revG2 = 6;
+      } else if (revG * 100 > 25) {
+        revG2 = Math.max(8, Math.min(20, revG * 40));
+      } else if (revG * 100 > 10) {
+        revG2 = Math.max(5, Math.min(15, revG * 60));
+      } else {
+        revG2 = Math.max(3, Math.min(10, revG * 75));
+      }
+      setSlider('growth2', 'val-growth2', revG2.toFixed(1), '%');
+
+      // D&A and CapEx — industry-level detection takes priority over sector
+      // Yahoo's sector tags are too broad (Google = "Communication", Amazon = "Consumer Cyclical")
+      // Use industry field for precise detection
+      let daDefault = 4, capexDefault = 5;
+      const ind = industry; // already lowercased above
+      const mcapT = (Number(d.marketCap) || 0) / 1e12; // market cap in trillions
+
+      // Hyperscaler detection: software/tech companies with >$300B market cap
+      // MSFT, META, GOOGL: tech/communication sector, high gross margin, massive datacenter CapEx
+      // AMZN: special case — Consumer Cyclical sector but AWS makes it a hyperscaler
+      const isAmazonStyle = mcapT > 0.5 && sectorLower.includes('consumer')
+                          && (ind.includes('internet') || ind.includes('e-commerce'))
+                          && grossMgn > 0.40; // AWS pulls gross margin above pure retail
+      const isHyperscaler = isAmazonStyle || (mcapT > 0.3 && (
+        ind.includes('software') || ind.includes('internet') || ind.includes('search') ||
+        ind.includes('social') || ind.includes('cloud') || sectorLower.includes('tech') ||
+        sectorLower.includes('communication')
+      ) && grossMgn > 0.55);
+
+      if (isIpLicensor) {
+        daDefault = 2; capexDefault = 1;
+        notes.push(`IP licensor / royalty model detected (gross margin ${(grossMgn*100).toFixed(0)}%) — CapEx seeded at 1%; verify against latest 10-K`);
+
+      } else if (isFoundry) {
+        // TSMC, Samsung Semiconductor: fabricate chips for others, enormous physical CapEx
+        // TSMC spends 25-30% of revenue on new fab construction and equipment
+        daDefault = 8; capexDefault = 26;
+        notes.push(`Semiconductor foundry detected (gross margin ${(grossMgn*100).toFixed(0)}%) — CapEx seeded at 26% (fab construction is extremely capital-intensive); verify against 10-K`);
+
+      } else if (isFablessSemi) {
+        daDefault = 3; capexDefault = 4;
+        notes.push(`Fabless semiconductor — CapEx seeded at 4%; verify against 10-K`);
+
+      } else if (isAmazonStyle) {
+        // Amazon: hyperscaler but CapEx is lower than pure cloud companies (~8% of revenue)
+        // AWS + fulfillment combined — not as intensive as MSFT/META pure datacenter buildout
+        daDefault = 5; capexDefault = 8;
+        notes.push(`Amazon-style hyperscaler detected — CapEx seeded at 8% (AWS + logistics mix); verify against 10-K`);
+
+      } else if (isHyperscaler) {
+        // MSFT, META, GOOG: pure cloud/AI infrastructure buildout requires 12-16% CapEx
+        daDefault = 5; capexDefault = 13;
+        notes.push(`Hyperscaler detected (market cap $${mcapT.toFixed(1)}T, high gross margin) — CapEx seeded at 13% reflecting AI/cloud infrastructure buildout; verify against 10-K`);
+
+      } else if (isPureSoftware || ind.includes('software') || ind.includes('saas')) {
+        daDefault = 3; capexDefault = 3;
+
+      } else if (isPaymentsNetwork || ind.includes('credit service') || ind.includes('payment')) {
+        daDefault = 3; capexDefault = 2;
+        notes.push('Payments network / fintech detected — CapEx seeded at 2% (asset-light fee model); verify against 10-K');
+
+      } else if (ind.includes('semiconductor equipment') || ind.includes('photo') && ind.includes('equipment')) {
+        // ASML, Applied Materials, Lam Research: capital equipment makers, moderate CapEx
+        // They make the machines that fabs buy — asset-lighter than fabs but heavier than fabless
+        daDefault = 4; capexDefault = 5;
+        notes.push('Semiconductor equipment manufacturer — CapEx seeded at 5%; verify against 10-K');
+
+      } else if (
+        // Internet platforms: digital-native with INFRASTRUCTURE-HEAVY CapEx
+        // Must have high gross margin (>55%) — low margin platforms (SPOT, PINS) are asset-light
+        (ind.includes('internet content') || ind.includes('internet information') ||
+         ind.includes('online platform') || ind.includes('search engine') ||
+         (ind.includes('social network') && grossMgn > 0.55) ||
+         (ind.includes('social media') && grossMgn > 0.55) ||
+         (ind.includes('internet') && grossMgn > 0.55 && sectorLower.includes('tech'))) ||
+        (ind.includes('search') && sectorLower.includes('communication') && grossMgn > 0.55) ||
+        (ind.includes('social') && sectorLower.includes('communication') && grossMgn > 0.55)
+      ) {
+        daDefault = 5; capexDefault = 10;
+        notes.push('Internet platform detected — CapEx seeded at 10% (datacenter/infrastructure intensive); verify against 10-K');
+
+      } else if (ind.includes('e-commerce') && !ind.includes('retail')) {
+        daDefault = 5; capexDefault = 8;
+        notes.push('E-commerce platform — CapEx seeded at 8% (logistics + cloud infrastructure); verify against 10-K');
+
+      } else if (ind.includes('adtech') || ind.includes('advertising') || ind.includes('marketing')) {
+        daDefault = 3; capexDefault = 2;
+
+      } else if (ind.includes('streaming') || ind.includes('entertainment') || ind.includes('media')) {
+        daDefault = 4; capexDefault = 2;
+        notes.push('Streaming/media model — physical CapEx seeded at 2%; content investment flows through EBIT margin');
+
+      } else if (d.sector) {
+        const s = d.sector.toLowerCase();
+        if (s.includes('tech') || s.includes('software'))         { daDefault = 3; capexDefault = 4; }
+        else if (s.includes('energy') || s.includes('utilities')) { daDefault = 8; capexDefault = 12; }
+        else if (s.includes('real estate'))                       { daDefault = 10; capexDefault = 8; }
+
+        else if (s.includes('consumer')) {
+          // Consumer sector — split by gross margin tier and industry type
+          if (grossMgn < 0.30) {
+            // Low-margin: grocery, discount retail (TGT, COST, WMT)
+            // Actual CapEx for retailers is 2-4%, not 6%
+            const isGrocery = ind.includes('grocery') || ind.includes('food') || ind.includes('wholesale');
+            daDefault = 3;
+            capexDefault = isGrocery ? 2 : 3; // grocers more asset-light than general retailers
+            notes.push(`Low-margin ${isGrocery ? 'grocery/wholesale' : 'retail'} — CapEx seeded at ${capexDefault}%; verify against 10-K`);
+          } else if (grossMgn < 0.50) {
+            // Mid-margin consumer: restaurants, apparel, specialty retail (SBUX, NKE, COST)
+            const isRestaurant = ind.includes('restaurant') || ind.includes('food service') || ind.includes('hospitality');
+            daDefault = 3;
+            capexDefault = isRestaurant ? 4 : 3;
+            if (isRestaurant) notes.push('Restaurant/foodservice — CapEx seeded at 4%; verify against 10-K');
+          } else {
+            // High-margin consumer: check for franchise model
+            const netDebtToRev = ((Number(d.totalDebt)||0) - (Number(d.totalCash)||0)) / (Number(d.totalRevenue)||1);
+            if (netDebtToRev > 1.5) {
+              daDefault = 3; capexDefault = 2;
+              notes.push('Franchise / asset-light model detected — high debt is intentional leverage, not distress; CapEx seeded at 2%.');
+            } else {
+              daDefault = 3; capexDefault = 2;
+              notes.push('High gross margin consumer brand — CapEx seeded at 2%; verify against 10-K');
+            }
+          }
+        }
+
+        else if (s.includes('health') || s.includes('pharma'))   { daDefault = 5; capexDefault = 5; }
+
+        else if (s.includes('industrial') || s.includes('manufac')) {
+          // Split industrial by industry type — conglomerates are often software-heavy
+          // HON, GE, Emerson: automation/aerospace software, CapEx ~2-3%
+          // CAT, DE, MMM: heavy equipment manufacturing, CapEx ~5-7%
+          const isConglomerate  = ind.includes('conglomerate') || ind.includes('diversified');
+          const isHeavyMfg     = ind.includes('farm') || ind.includes('construction') || ind.includes('machinery')
+                                || ind.includes('heavy') || ind.includes('mining');
+          const isAerospace    = ind.includes('aerospace') || ind.includes('defense');
+          if (isConglomerate) {
+            daDefault = 4; capexDefault = 3;
+            notes.push('Industrial conglomerate — CapEx seeded at 3% (software/services mix); verify against 10-K');
+          } else if (isHeavyMfg) {
+            daDefault = 6; capexDefault = 6;
+          } else if (isAerospace) {
+            daDefault = 5; capexDefault = 5;
+          } else {
+            daDefault = 5; capexDefault = 5;
+          }
+        }
+        else if (s.includes('communication')) {
+          // Fallback for communication sector — use gross margin to distinguish
+          // Pure telecom (AT&T, Verizon): low gross margin, massive infrastructure
+          if (grossMgn < 0.35) { daDefault = 8; capexDefault = 10; notes.push('Telecom/infrastructure — CapEx seeded at 10%'); }
+          else { daDefault = 4; capexDefault = 5; } // generic comm services
+        }
+      }
+      setSlider('da',    'val-da',    daDefault.toString(),    '%');
       setSlider('capex', 'val-capex', capexDefault.toString(), '%');
 
       // NWC: 1.5% for most, higher for retailers
@@ -1372,15 +1781,15 @@
       document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('scenario-label').textContent = `${ticker} LIVE DATA`;
 
-      // Store for gap analysis
-      loadedCompanyData = d;
-      tickerLoaded = true;
-
-      // Capture snapshot for relative bull/bear scenarios, then activate base
-      captureBaseSnapshot();
-      activeScenario = 'base';
-      document.querySelector('.scenario-btn.base').classList.add('active');
-      document.getElementById('scenario-label').textContent = 'BASE CASE';
+      // Only enable DCF calc for supported sectors
+      if (!unsupportedReason) {
+        loadedCompanyData = d;
+        tickerLoaded = true;
+        captureBaseSnapshot();
+        activeScenario = 'base';
+        document.querySelector('.scenario-btn.base').classList.add('active');
+        document.getElementById('scenario-label').textContent = 'BASE CASE';
+      }
 
       // ── Company card ──
       const fmtRaw = v => {
@@ -1410,6 +1819,49 @@
         ? `${(Number(d.revenueGrowth)*100).toFixed(1)}% TTM` : '--';
       document.getElementById('cc-beta').textContent = d.beta != null ? Number(d.beta).toFixed(2) : '--';
 
+      // FCF yield = trailing FCF / market cap
+      const fcfRaw  = Number(d.freeCashflow);
+      const mcapRaw = Number(d.marketCap);
+      const fcfYield = (fcfRaw && mcapRaw) ? (fcfRaw / mcapRaw) * 100 : null;
+      const fcfYieldEl = document.getElementById('cc-fcfy');
+      if (fcfYield != null) {
+        fcfYieldEl.textContent = fcfYield.toFixed(1) + '%';
+        fcfYieldEl.style.color = fcfYield > 4 ? 'var(--green)' : fcfYield < 0 ? 'var(--red)' : 'var(--muted2)';
+      } else {
+        fcfYieldEl.textContent = '--';
+      }
+
+      // Operating margin
+      const opmEl = document.getElementById('cc-opmgn');
+      if (d.operatingMargin != null) {
+        const om = Number(d.operatingMargin) * 100;
+        opmEl.textContent = om.toFixed(1) + '%';
+        opmEl.style.color = om < 0 ? 'var(--red)' : om > 20 ? 'var(--green)' : 'var(--muted2)';
+      } else {
+        opmEl.textContent = '--';
+      }
+
+      // P/E (TTM)
+      const peEl = document.getElementById('cc-pe');
+      if (d.pe != null && Number(d.pe) > 0) {
+        peEl.textContent = Number(d.pe).toFixed(1) + 'x';
+      } else {
+        peEl.textContent = d.pe < 0 ? 'N/M' : '--';
+      }
+
+      // Analyst consensus price target
+      const targetEl = document.getElementById('cc-target');
+      const targetMean = Number(d.targetMeanPrice);
+      const numAnalysts = Number(d.numberOfAnalysts);
+      if (targetMean > 0) {
+        const vsPrice = ((targetMean - Number(d.price)) / Number(d.price)) * 100;
+        const vsStr = isFinite(vsPrice) ? ` (${vsPrice >= 0 ? '+' : ''}${vsPrice.toFixed(1)}% vs current)` : '';
+        targetEl.textContent = `$${targetMean.toFixed(2)}${vsStr}${numAnalysts ? ` · ${numAnalysts} analysts` : ''}`;
+        targetEl.style.color = vsPrice >= 0 ? 'var(--green)' : 'var(--red)';
+      } else {
+        targetEl.textContent = '--';
+      }
+
       const noteEl = document.getElementById('cc-note');
       if (notes.length) {
         noteEl.style.display = 'block';
@@ -1420,21 +1872,52 @@
       card.style.display = 'block';
 
       status.style.color = 'var(--green)';
-      status.textContent = `✓ ${d.companyName || ticker} loaded — verify assumptions before use`;
+      status.textContent = unsupportedReason
+        ? `✓ ${d.companyName || ticker} loaded — DCF not applicable for this sector (see explanation below)`
+        : `✓ ${d.companyName || ticker} loaded — verify assumptions before use`;
 
-      // Animate results panels in
-      document.querySelectorAll('.kpi-cell, .kpi-row').forEach((el, i) => {
-        el.style.animation = 'none';
-        el.offsetHeight; // reflow
-        el.style.animation = `fadein 0.4s ease ${i * 0.05}s both`;
-      });
+      // Show the data-loaded modal unless skipped this session
+      if (!_modalSkippedThisSession) {
+        const badge = document.getElementById('dm-ticker');
+        if (badge) badge.textContent = `● ${ticker} LOADED`;
 
-      calc();
+        // Show a sector-specific note if relevant
+        const sectorNote = document.getElementById('dm-sector-note');
+        const sectorText = document.getElementById('dm-sector-text');
+        if (sectorNote && sectorText) {
+          const noteStr = notes.find(n => n.includes('CapEx seeded') || n.includes('detected') || n.includes('Hyperscaler') || n.includes('Foundry'));
+          if (noteStr) {
+            sectorText.textContent = noteStr.replace(/^[⚠⚑]\s*/, '');
+            sectorNote.style.display = 'flex';
+          } else {
+            sectorNote.style.display = 'none';
+          }
+        }
+
+        setTimeout(() => {
+          const backdrop = document.getElementById('data-modal-backdrop');
+          if (backdrop) backdrop.classList.add('visible');
+        }, 320); // slight delay so the page has time to render first
+      }
+
+      // Only animate and calc for supported sectors
+      if (!unsupportedReason) {
+        document.querySelectorAll('.kpi-cell, .kpi-row').forEach((el, i) => {
+          el.style.animation = 'none';
+          el.offsetHeight;
+          el.style.animation = `fadein 0.4s ease ${i * 0.05}s both`;
+        });
+        calc();
+      }
 
     } catch(err) {
       status.style.color = 'var(--red)';
       if (WORKER_URL.includes('YOUR_WORKER')) {
         status.textContent = '⚠ Worker URL not configured — see setup instructions below';
+      } else if (err.message.includes('500') || err.message.includes('not found') || err.message.includes('No fundamentals')) {
+        status.textContent = `✗ "${ticker}" not found — check the ticker symbol and try again`;
+      } else if (err.message.includes('404')) {
+        status.textContent = `✗ "${ticker}" not found — check the ticker symbol and try again`;
       } else {
         status.textContent = `✗ Error: ${err.message}`;
       }
@@ -1554,18 +2037,27 @@
       return;
     }
 
+    // Read current input values from DOM — safe to call from any scope
+    const getV  = id => { const el = document.getElementById(id); return parseFloat((el?.value||'0').replace(/,/g,'')) || 0; };
+    const baseRev = getV('baseRevenue');
+    const ebitM   = getV('ebitMargin') / 100;
+    const daRate  = getV('da') / 100;
+    const shares  = getV('shares');
+    const ev      = equityVal + (Number(loadedCompanyData?.totalDebt||0) - Number(loadedCompanyData?.totalCash||0));
+
     const d = loadedCompanyData;
     const absUpside = Math.abs(upside);
-    if (absUpside < 15) { panel.style.display = 'none'; return; } // no gap worth explaining
+    if (absUpside < 5) { panel.style.display = 'none'; return; } // no gap worth explaining
 
     const items = [];
-    const de    = Number(d.debtToEquity) || 0;
-    const netD  = Number(d.totalDebt || 0) - Number(d.totalCash || 0);
-    const mcap  = Number(d.marketCap) || 1;
-    const revG  = Number(d.revenueGrowth) || 0;
-    const pe    = Number(d.pe) || 0;
-    const fcf   = Number(d.freeCashflow) || 0;
-    const opMgn = Number(d.operatingMargin) || ebitMargin / 100;
+    const de      = Number(d.debtToEquity) || 0;
+    const netD    = Number(d.totalDebt || 0) - Number(d.totalCash || 0);
+    const mcap    = Number(d.marketCap) || 1;
+    const revG    = Number(d.revenueGrowth) || 0;
+    const pe      = Number(d.pe) || 0;
+    const fcf     = Number(d.freeCashflow) || 0;
+    const opMgn   = Number(d.operatingMargin) || ebitMargin / 100;
+    const grossMgn = Number(d.grossMargin) || 0;
     const negativeFCFs = fcfs.filter(f => f < 0).length;
 
     const fmtB = v => {
@@ -1576,21 +2068,59 @@
       return `${sign}$${(abs/1e6).toFixed(0)}M`;
     };
 
-    if (upside < -15) {
+    if (upside < -5) {
       // Stock trading at PREMIUM to DCF — explain why market pays more
+
+      // Structural warning for extreme premiums (>70%) — DCF fundamentally can't bridge this
+      if (absUpside > 70) items.push({ type:'warn', icon:'🔭', text: `<strong>Structural DCF limitation:</strong> A ${absUpside.toFixed(0)}% gap at this magnitude typically means the market is pricing in value beyond a 10-year horizon — platform dominance, winner-take-all dynamics, or option value on markets that don't yet exist. A standard DCF will always undershoot these names. The sensitivity table shows the range of defensible inputs; use it to understand what growth and margin assumptions <em>would</em> justify the price, not whether the stock is right or wrong.` });
+
       if (revG > 0.25) items.push({ type:'info', icon:'⚡', text: `<strong>Hypergrowth premium:</strong> With ${(revG*100).toFixed(0)}% TTM revenue growth, the market is pricing in an extended high-growth runway that a 10-year DCF inherently undervalues. Exponential compounders often look overvalued on DCF.` });
       if (pe > 35) items.push({ type:'info', icon:'🏰', text: `<strong>Moat/brand premium:</strong> A trailing P/E of ${pe.toFixed(0)}× suggests the market assigns significant value to brand, platform lock-in, or pricing power — intangibles a DCF can't quantify.` });
+      // Royalty/platform model: high gross margin + high P/E = market pricing in margin expansion
+      if (grossMgn > 0.65 && pe > 50) items.push({ type:'info', icon:'⚙️', text: `<strong>Royalty/platform model premium:</strong> With ${(grossMgn*100).toFixed(0)}% gross margins, this is likely an IP licensor or platform where incremental revenue is near-pure profit. The market prices in significant margin expansion as scale increases — today's EBIT margin understates the mature-state economics. Try raising the EBIT margin slider toward 40–55% to model the long-run royalty stack.` });
       if (de > 40 && netD > 0) items.push({ type:'warn', icon:'⚖️', text: `<strong>Debt load reduces equity value:</strong> Net debt of ${fmtB(netD)} is subtracted directly from DCF value. The market may be pricing in future deleveraging or assumes the debt is manageable relative to cash generation.` });
       if (opMgn < 0.12) items.push({ type:'warn', icon:'📈', text: `<strong>Margin expansion story:</strong> At ${(opMgn*100).toFixed(1)}% operating margin, the market is likely pricing in a transformation or restructuring thesis — future margins significantly higher than today's. The DCF uses current margins.` });
       if (negativeFCFs > 0) items.push({ type:'warn', icon:'🔄', text: `<strong>Near-term FCF drag:</strong> ${negativeFCFs} year${negativeFCFs>1?'s':''} of projected negative FCF reduces DCF value significantly. The market may be pricing in a profitability inflection point beyond the model's horizon.` });
       if (revG < 0.05 && pe > 25) items.push({ type:'info', icon:'💰', text: `<strong>Recurring revenue / dividend premium:</strong> Low-growth companies often trade at premiums due to predictable cash flows, dividends, or share buyback programs that support the stock price but don't appear in FCF projections.` });
-      // Always add the universal note for large premiums
-      if (absUpside > 40) items.push({ type:'info', icon:'💡', text: `<strong>Try raising growth or margin assumptions</strong> to see what it takes to justify the current price — the Bull scenario is a good starting point. The WACC × TGR sensitivity table shows the full range.` });
+      // Universal note for large premiums under 70% (structural note already covers >70%)
+      if (absUpside > 40 && absUpside <= 70) items.push({ type:'info', icon:'💡', text: `<strong>Try raising growth or margin assumptions</strong> to see what it takes to justify the current price — the Bull scenario is a good starting point. The WACC × TGR sensitivity table shows the full range.` });
     } else {
-      // Stock trading at DISCOUNT to DCF — explain why model says it's undervalued
+      // ── WHY THE UPSIDE? — DCF shows stock is undervalued ──
+      const fcfYieldPct = mcap > 0 ? (fcf / mcap) * 100 : 0;
+
+      // Net cash boosts equity value
       if (netD < 0) items.push({ type:'pos', icon:'🏦', text: `<strong>Net cash adds to value:</strong> ${fmtB(Math.abs(netD))} net cash position is added to DCF equity value. A cash-rich company can return capital, fund growth, or acquire without diluting shareholders.` });
-      if (revG > 0.15) items.push({ type:'pos', icon:'📊', text: `<strong>Growth may be underpriced:</strong> At ${(revG*100).toFixed(0)}% TTM growth, the market may not yet be pricing in the full compounding effect. Check the Bull case to see the upside scenario.` });
-      if (fcf > 0 && (fcf / mcap) > 0.04) items.push({ type:'pos', icon:'💸', text: `<strong>High FCF yield:</strong> Free cash flow yield of ${((fcf/mcap)*100).toFixed(1)}% is strong. High FCF relative to market cap is a classic value signal — the company generates significant cash per dollar of market value.` });
+
+      // High FCF yield — classic value signal
+      if (fcfYieldPct > 4) items.push({ type:'pos', icon:'💸', text: `<strong>High FCF yield:</strong> Free cash flow yield of ${fcfYieldPct.toFixed(1)}% is strong. High FCF relative to market cap is a classic value signal — the company generates significant cash per dollar of market value.` });
+
+      // Low P/E relative to growth
+      if (pe > 0 && revG > 0) {
+        const peg = pe / (revG * 100);
+        if (peg < 1.5) items.push({ type:'pos', icon:'📐', text: `<strong>Attractive PEG ratio:</strong> At ${peg.toFixed(1)}× (P/E of ${pe.toFixed(0)}× / ${(revG*100).toFixed(0)}% growth), the stock appears cheap relative to its growth rate. A PEG below 1.5× is often a value signal.` });
+      }
+
+      // Strong margins relative to sector
+      if (opMgn > 0.25) items.push({ type:'pos', icon:'📈', text: `<strong>High operating margins:</strong> At ${(opMgn*100).toFixed(1)}% operating margin, the business generates strong earnings per dollar of revenue. High-margin businesses compound equity value faster than peers.` });
+
+      // Growth underpriced
+      if (revG > 0.12) items.push({ type:'pos', icon:'📊', text: `<strong>Growth may be underpriced:</strong> At ${(revG*100).toFixed(0)}% TTM growth, the market may not yet be pricing in the full compounding effect. Check the Bull case to see the upside scenario.` });
+
+      // Market multiple below model
+      if (price > 0 && shares > 0) {
+        const mktEV = price * shares + netD;
+        const y1Ebitda = (baseRev * (ebitM + daRate));
+        const mktMult = y1Ebitda > 0 ? mktEV / y1Ebitda : 0;
+        const ivMult  = y1Ebitda > 0 ? ev   / y1Ebitda : 0;
+        if (mktMult > 0 && ivMult > mktMult * 1.15) {
+          items.push({ type:'pos', icon:'🔢', text: `<strong>Market multiple looks cheap:</strong> The market is pricing ${mktMult.toFixed(1)}× EV/EBITDA while the model implies ${ivMult.toFixed(1)}×. If the company can sustain current margins, today's price looks inexpensive relative to earnings power.` });
+        }
+      }
+
+      // Large net debt warning even in upside case
+      if (netD > 0 && netD > baseRev * 0.3) items.push({ type:'warn', icon:'⚖️', text: `<strong>Debt reduces upside:</strong> Net debt of ${fmtB(netD)} is subtracted from DCF equity value. Verify this figure against the latest 10-Q — Yahoo sometimes overstates liabilities, which would make the true upside even larger.` });
+
+      // Sanity check for very large upside
       if (absUpside > 40) items.push({ type:'warn', icon:'⚠️', text: `<strong>Large upside — check your assumptions:</strong> A ${absUpside.toFixed(0)}% discount could reflect genuinely conservative inputs, or it may signal that the default D&A/CapEx/growth assumptions need adjustment for this specific business.` });
     }
 
@@ -1601,6 +2131,15 @@
 
     const dir = upside < 0 ? 'Market premium to DCF' : 'DCF premium to market';
     badge.innerHTML = `<span style="color:var(--muted)">${dir}</span>`;
+
+    // Update panel title dynamically
+    const panelTitle = panel.querySelector('.panel-title');
+    if (panelTitle) {
+      panelTitle.innerHTML = upside < 0
+        ? '<span></span>Why the Gap?'
+        : '<span></span>Why the Upside?';
+    }
+
     body.innerHTML = items.map((item, i) => `
       <div class="gap-item ${item.type}" style="animation-delay:${i*0.06}s">
         <span class="gap-icon">${item.icon}</span>
@@ -1709,6 +2248,31 @@
     document.getElementById('kpi-ev-sub').style.color = equityVal < 0 ? 'var(--red)' : '';
     document.getElementById('kpi-tvpct').textContent = isFinite(tvPct) ? tvPct.toFixed(1) + '%' : '—';
 
+    // ── Implied EV/EBITDA at intrinsic value ──
+    // EBITDA in year 1 = EBIT + D&A = (rev * ebitM) + (rev * daRate)
+    const y1Ebitda = revenues[0] * (ebitM + daRate);
+    const evEbitda = (y1Ebitda > 0 && equityVal > 0) ? ev / y1Ebitda : null;
+    const evEbitdaEl  = document.getElementById('kpi-evebitda');
+    const evEbitdaSub = document.getElementById('kpi-evebitda-sub');
+    if (evEbitda != null && isFinite(evEbitda)) {
+      evEbitdaEl.textContent = evEbitda.toFixed(1) + 'x';
+      // Color-code: >30x aggressive, 10-30x normal, <10x value
+      evEbitdaEl.className = 'kpi-value ' + (evEbitda > 30 ? 'down' : evEbitda < 10 ? 'up' : '');
+      // Also show market-implied multiple for comparison
+      if (price > 0 && shares > 0) {
+        const mktEV = price * shares + netDebt;
+        const mktMultiple = mktEV / y1Ebitda;
+        evEbitdaSub.textContent = isFinite(mktMultiple)
+          ? `market implies ${mktMultiple.toFixed(1)}x`
+          : 'at intrinsic value';
+      } else {
+        evEbitdaSub.textContent = 'at intrinsic value';
+      }
+    } else {
+      evEbitdaEl.textContent = '—';
+      evEbitdaSub.textContent = equityVal < 0 ? 'model N/M' : 'load a ticker';
+    }
+
     // ── GAP ANALYSIS ──
     runGapAnalysis(ivPerShare, price, upside, equityVal, fcfs, get('ebitMargin'), get('wacc'));
 
@@ -1771,9 +2335,9 @@
       `;
     }).join('');
 
-    // Bridge pill
+    // Bridge pill — only show if we have a valid finite upside (shares and price both loaded)
     const pillEl = document.getElementById('bridge-annotation');
-    if (baseRev > 0) {
+    if (baseRev > 0 && isFinite(upside) && shares > 0 && price > 0) {
       pillEl.style.display = '';
       pillEl.textContent = upside >= 0
         ? `↑ ${fmtPct(upside)} upside`
@@ -1909,7 +2473,27 @@
   const BLANK_LABEL_IDS = ['val-ebitMargin','val-taxRate','val-da','val-capex','val-nwc','val-growth1','val-growth2','val-tgr','val-wacc'];
   const BLANK_INPUT_IDS = ['baseRevenue','netDebt','shares','stockPrice'];
 
+  let _modalSkippedThisSession = false;
+
+  function dismissDataModal(skipSession = false) {
+    const backdrop = document.getElementById('data-modal-backdrop');
+    if (backdrop) backdrop.classList.remove('visible');
+    if (skipSession) _modalSkippedThisSession = true;
+  }
+
+  // Close modal on backdrop click (outside the card)
+  const _modalBackdrop = document.getElementById('data-modal-backdrop');
+  if (_modalBackdrop) {
+    _modalBackdrop.addEventListener('click', function(e) {
+      if (e.target === this) dismissDataModal();
+    });
+  }
+
   function setBlankState() {
+    // Reset unsupported overlay
+    const overlay = document.getElementById('unsupported-overlay');
+    if (overlay) overlay.style.display = 'none';
+
     // KPIs
     document.getElementById('kpi-iv').textContent = '—';
     document.getElementById('kpi-iv').className = 'kpi-value';
@@ -1972,7 +2556,7 @@
   setBlankState();
   // ── CROSSHAIR CURSOR ──
   const cross = document.getElementById('cursor-cross');
-  document.addEventListener('mousemove', e => {
+  window.addEventListener('mousemove', e => {
     cross.style.left = e.clientX + 'px';
     cross.style.top  = e.clientY + 'px';
   });
@@ -2040,5 +2624,26 @@
     draw();
   })();
 </script>
+  <!-- DATA LOADED MODAL -->
+  <div id="data-modal-backdrop">
+    <div id="data-modal">
+      <div class="dm-ticker-badge" id="dm-ticker">● AAPL LOADED</div>
+      <div class="dm-title">Data loaded — review before you model.</div>
+      <div class="dm-sub">Live financials were pulled from Yahoo Finance and seeded into the assumptions. This is a starting point, not a finished model. A few things to keep in mind:</div>
+      <div class="dm-checklist">
+        <div class="dm-check"><div class="dm-icon">↗</div><span><strong>Revenue growth</strong> is seeded from TTM — adjust it to your forward estimate, not just last year's number.</span></div>
+        <div class="dm-check"><div class="dm-icon">%</div><span><strong>EBIT margin</strong> reflects the most recent trailing period. If the company is in a turnaround or growth phase, today's margin isn't the right assumption.</span></div>
+        <div class="dm-check"><div class="dm-icon">$</div><span><strong>Net debt</strong> is sourced from balance sheet data that Yahoo occasionally overstates. Cross-check against the latest 10-Q if the output looks wrong.</span></div>
+        <div class="dm-check"><div class="dm-icon">⚡</div><span><strong>WACC</strong> is estimated via CAPM with Blume-adjusted beta. It's a reasonable starting point — but cost of capital is a judgment call, not a lookup.</span></div>
+        <div class="dm-check" id="dm-sector-note" style="display:none;"><div class="dm-icon" style="background:rgba(251,191,36,0.15);color:#d97706;">!</div><span id="dm-sector-text" style="color:var(--yellow);"></span></div>
+      </div>
+      <div class="dm-footer">
+        <button class="dm-btn" onclick="dismissDataModal()">Got it — start modeling</button>
+        <button class="dm-skip" onclick="dismissDataModal(true)">Don't show again</button>
+      </div>
+    </div>
+  </div>
+
+
 </body>
 </html>
