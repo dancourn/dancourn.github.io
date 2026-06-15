@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucite — M&amp;A Accretion / Dilution</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15130d;          /* the desk */
+    --ink-2:#1d1a12;        /* raised panel */
+    --ink-3:#26221733;      /* input wells */
+    --line:#3a3424;         /* hairlines on dark */
+    --bone:#ece6d6;         /* primary light */
+    --bone-dim:#a99f86;     /* secondary */
+    --bone-faint:#6f6850;   /* tertiary */
+    --brass:#c6a24c;
+    --brass-hi:#efd592;
+    --brass-lo:#7e6325;
+    --accretive:#67a883;
+    --accretive-hi:#9fd4b4;
+    --dilutive:#bd6049;
+    --dilutive-hi:#e0967f;
+    --radius:14px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--bone);
+    background:var(--ink);
+    line-height:1.5;
+    font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+  }
+  /* the desk: warm radial light + faint grain */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 78% -10%, #2c2716 0%, transparent 55%),
+      radial-gradient(90% 80% at 8% 110%, #221d10 0%, transparent 50%),
+      var(--ink);
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 28px}
+
+  /* ---------- loading screen ---------- */
+  #loader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(120% 100% at 50% 32%, #2e2917 0%, #16140e 58%, #100e09 100%);
+    transition:opacity .85s var(--ease), visibility .85s;}
+  #loader.done{opacity:0;visibility:hidden;pointer-events:none}
+  .ld-inner{display:flex;flex-direction:column;align-items:center}
+  .ld-seal{width:62px;height:62px;border-radius:9px;display:grid;place-items:center;margin-bottom:22px;
+    background:linear-gradient(150deg,#d9b765,#a07f2f 48%,#caa454);
+    box-shadow:0 4px 18px #00000066, inset 0 1px 0 #f4dd9a, inset 0 -2px 6px #6e531c;
+    opacity:0;transform:translateY(8px) scale(.9);animation:ldSeal .7s var(--ease) .1s forwards}
+  .ld-seal span{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:38px;color:#2a2008;text-shadow:0 1px 0 #eccf85;margin-top:2px}
+  .ld-word{position:relative;display:flex;gap:.12em;font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:46px;letter-spacing:.2em;color:var(--bone);padding-left:.2em;overflow:hidden}
+  .ld-word span{display:inline-block;opacity:0;transform:translateY(14px);animation:ldLetter .6s var(--ease) forwards}
+  .ld-word span:nth-child(1){animation-delay:.35s}
+  .ld-word span:nth-child(2){animation-delay:.43s}
+  .ld-word span:nth-child(3){animation-delay:.51s}
+  .ld-word span:nth-child(4){animation-delay:.59s}
+  .ld-word span:nth-child(5){animation-delay:.67s}
+  .ld-word span:nth-child(6){animation-delay:.75s}
+  .ld-shine{position:absolute;top:0;left:-40%;width:34%;height:100%;pointer-events:none;
+    background:linear-gradient(100deg,transparent,#fff5d9c0,transparent);
+    transform:translateX(-60%) skewX(-12deg);opacity:0;animation:ldShine 1s var(--ease) 1.15s}
+  .ld-line{height:1px;width:0;margin:22px 0 16px;
+    background:linear-gradient(90deg,transparent,var(--brass),transparent);
+    animation:ldLine .8s var(--ease) .85s forwards}
+  .ld-sub{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--brass);
+    opacity:0;animation:ldSub .7s var(--ease) 1.15s forwards}
+  @keyframes ldSeal{to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes ldLetter{to{opacity:1;transform:translateY(0)}}
+  @keyframes ldLine{to{width:230px}}
+  @keyframes ldSub{to{opacity:1}}
+  @keyframes ldShine{0%{opacity:0;transform:translateX(-60%) skewX(-12deg)}
+    20%{opacity:1}100%{opacity:0;transform:translateX(420%) skewX(-12deg)}}
+
+  /* drifting brass light */
+  #dust{position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%}
+
+  /* breathing glow behind the tombstone */
+  .tomb-col{position:sticky;top:28px}
+  .aura{position:absolute;z-index:0;left:50%;top:46%;width:120%;height:80%;transform:translate(-50%,-50%);
+    pointer-events:none;border-radius:50%;
+    background:radial-gradient(closest-side, var(--aura,#c6a24c) 0%, transparent 72%);
+    opacity:.18;filter:blur(46px);
+    animation:breathe 7.5s ease-in-out infinite;transition:background .8s ease}
+  @keyframes breathe{0%,100%{opacity:.13;transform:translate(-50%,-50%) scale(.94)}
+    50%{opacity:.26;transform:translate(-50%,-50%) scale(1.06)}}
+
+  /* ---------- masthead ---------- */
+  header{padding:46px 0 30px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .mark{display:flex;align-items:center;gap:16px}
+  .seal{
+    width:52px;height:52px;flex:none;border-radius:7px;position:relative;
+    background:linear-gradient(150deg,#d9b765,#a07f2f 48%,#caa454);
+    box-shadow:0 2px 10px #00000066, inset 0 1px 0 #f4dd9a, inset 0 -2px 5px #6e531c;
+    display:grid;place-items:center;
+  }
+  .seal span{
+    font-family:'Cormorant Garamond',serif;font-weight:700;font-size:30px;color:#2a2008;
+    text-shadow:0 1px 0 #eccf85;line-height:1;margin-top:2px;
+  }
+  .mark h1{
+    font-family:'Cormorant Garamond',serif;font-weight:600;font-size:38px;letter-spacing:.16em;
+    color:var(--bone);line-height:1;text-transform:uppercase;
+  }
+  .mark p{font-size:11.5px;letter-spacing:.42em;text-transform:uppercase;color:var(--brass);margin-top:7px;font-weight:600}
+  .dateline{text-align:right;padding-right:2px}
+  .dl-eye{font-family:'Inter',sans-serif;font-size:9.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--brass)}
+  .dl-date{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:var(--bone);letter-spacing:.02em;margin:3px 0 2px;line-height:1}
+  .dl-ref{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.18em;color:var(--bone-faint)}
+
+  .rule{height:1px;background:linear-gradient(90deg,transparent,var(--brass-lo) 12%,var(--brass) 50%,var(--brass-lo) 88%,transparent);opacity:.55}
+
+  /* ---------- main grid ---------- */
+  .stage{display:grid;grid-template-columns:1fr 1fr;gap:38px;padding:38px 0 70px;align-items:start}
+
+  /* ---------- the deal ticket (inputs) ---------- */
+  .ticket{
+    background:linear-gradient(180deg,#211d14,#1a160f);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:6px;
+    box-shadow:0 24px 60px -28px #000, inset 0 1px 0 #ffffff0a;
+  }
+  .ticket-inner{border:1px solid #ffffff0d;border-radius:10px;padding:26px 26px 30px}
+  .ticket-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px}
+  .ticket-head h2{font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:600;letter-spacing:.06em;color:var(--bone)}
+  .ticket-head em{font-style:normal;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
+  .ticket-sub{font-size:12.5px;color:var(--bone-dim);margin-bottom:22px}
+
+  .group{margin-top:24px}
+  .group:first-of-type{margin-top:18px}
+  .glabel{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+  .glabel .num{font-family:'Inter',sans-serif;font-size:10px;color:var(--ink);background:var(--brass);
+    padding:2px 6px;border-radius:3px;letter-spacing:.05em;font-weight:600}
+  .glabel h3{font-family:'Inter',sans-serif;font-weight:600;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dim)}
+  .glabel .ln{flex:1;height:1px;background:var(--line)}
+
+  .names{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field{position:relative}
+  .field > label{display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--bone-faint);margin-bottom:6px;font-weight:600}
+  input[type=text]{
+    width:100%;background:#0f0d08;border:1px solid var(--line);border-radius:8px;
+    color:var(--bone);font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;letter-spacing:.02em;
+    padding:9px 12px;transition:border-color .2s,box-shadow .2s;
+  }
+  input[type=text]:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px #c6a24c22}
+
+  .num-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+  .num-field label{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:var(--bone-dim);margin-bottom:6px;letter-spacing:.01em}
+  .num-field label small{color:var(--bone-faint);font-size:9.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+  .num-field .val{font-family:'Inter',sans-serif;font-size:13px;color:var(--bone);font-weight:600}
+  .num-field .val small{color:var(--bone-faint);font-size:10px}
+  .derived-field .derived-readout{display:flex;background:linear-gradient(180deg,#241f12,#191510);
+    border:1px solid var(--brass-lo);border-radius:8px;overflow:hidden}
+  .dr{flex:1;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:7px 14px;min-height:44px}
+  .dr b{font-size:8.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-faint)}
+  .dr > span{font-size:15px;font-weight:700;color:var(--brass-hi);line-height:1}
+  .dr + .dr{border-left:1px solid var(--brass-lo)}
+  .input-well{display:flex;align-items:center;background:#0f0d08;border:1px solid var(--line);border-radius:8px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+  .input-well:focus-within{border-color:var(--brass);box-shadow:0 0 0 3px #c6a24c22}
+  .input-well .pre{font-family:'Inter',sans-serif;font-size:13px;color:var(--bone-faint);padding:0 6px 0 13px;flex:none;user-select:none}
+  .input-well .post{font-family:'Inter',sans-serif;font-size:13px;color:var(--bone-faint);padding:0 14px 0 0;flex:none;user-select:none}
+  .input-well input[type=number]{
+    flex:1;min-width:0;background:transparent;border:none;color:var(--bone);
+    font-family:'Inter',sans-serif;font-size:14px;font-weight:600;padding:11px 14px;text-align:right;
+  }
+  .input-well input[type=number]:not(:last-child){padding-right:6px}
+  .input-well input[type=number]:focus{outline:none}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+
+  /* sliders */
+  .slider-field{margin-top:2px}
+  .slider-field .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+  .slider-field .top label{font-size:11.5px;color:var(--bone-dim);letter-spacing:.02em}
+  .slider-field .top .v{font-family:'Inter',sans-serif;font-size:16px;color:var(--brass-hi);font-weight:700;letter-spacing:.01em}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:3px;background:var(--line);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#f4dd9a,#b78f38);border:none;box-shadow:0 1px 4px #0008, inset 0 1px 0 #fff6;transition:transform .12s}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f4dd9a,#b78f38);box-shadow:0 1px 4px #0008}
+
+  /* consideration bar */
+  .mix-bar{height:30px;border-radius:7px;overflow:hidden;display:flex;border:1px solid var(--line);margin:4px 0 18px;box-shadow:inset 0 2px 6px #0006}
+  .mix-bar .seg{display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;
+    color:#0f0d08;transition:flex-basis .45s var(--ease),background .3s;white-space:nowrap;overflow:hidden;letter-spacing:.03em}
+  .seg.stock{background:linear-gradient(180deg,#dcbb6a,#bd9335)}
+  .seg.cash{background:linear-gradient(180deg,#b8c4a6,#90a079)}
+  .seg.debt{background:linear-gradient(180deg,#caa08e,#a8745e)}
+  .mix-legend{display:flex;gap:18px;font-size:11px;color:var(--bone-dim);margin-bottom:6px}
+  .mix-legend span{display:flex;align-items:center;gap:6px}
+  .mix-legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+  /* ---------- the tombstone ---------- */
+  .tomb-col{position:sticky;top:28px}
+  .lucite{
+    position:relative;z-index:1;border-radius:18px;padding:46px 40px 30px;overflow:hidden;
+    background:linear-gradient(160deg,rgba(236,230,214,.10),rgba(236,230,214,.03) 45%,rgba(255,255,255,.02));
+    border:1px solid #ece6d622;
+    box-shadow:
+      0 40px 90px -40px #000,
+      0 2px 0 #ffffff18 inset,
+      0 -30px 60px -50px #c6a24c40 inset;
+    backdrop-filter:blur(3px) saturate(1.05);
+    -webkit-backdrop-filter:blur(3px) saturate(1.05);
+  }
+  /* refraction edge */
+  .lucite::before{
+    content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none;
+    background:linear-gradient(135deg,#ffffff14,transparent 30%,transparent 70%,#00000022);
+    mix-blend-mode:screen;
+  }
+  /* specular sweep */
+  .lucite::after{
+    content:"";position:absolute;top:-60%;left:-30%;width:55%;height:220%;pointer-events:none;
+    background:linear-gradient(100deg,transparent,#fff7e08c,transparent);
+    transform:translateX(-220%) rotate(8deg);opacity:0;
+  }
+  .lucite.flash::after{animation:sweep 1.05s var(--ease)}
+  @keyframes sweep{0%{transform:translateX(-220%) rotate(8deg);opacity:0}
+    18%{opacity:.9}55%{opacity:.55}100%{transform:translateX(360%) rotate(8deg);opacity:0}}
+
+  .eyebrow{text-align:center;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.4em;
+    text-transform:uppercase;color:var(--brass);margin-bottom:26px}
+  .parties{text-align:center}
+  .parties .pa,.parties .pt{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:30px;line-height:1.12;
+    letter-spacing:.02em;color:var(--bone);
+    text-shadow:0 1px 0 #00000080, 0 -1px 0 #ffffff14;}
+  .parties .verb{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:16px;
+    color:var(--bone-dim);margin:7px 0;letter-spacing:.02em}
+  .consid{text-align:center;font-family:'Inter',sans-serif;font-size:11px;color:var(--bone-dim);
+    margin:18px auto 0;letter-spacing:0;line-height:1.7;max-width:100%}
+  .consid b{color:var(--brass-hi);font-weight:500}
+
+  .tomb-rule{height:1px;margin:26px 0;background:linear-gradient(90deg,transparent,#ece6d633 20%,#ece6d633 80%,transparent)}
+
+  /* the verdict, engraved */
+  .verdict{text-align:center;margin:6px 0 4px}
+  .verdict .word{
+    font-family:'Cormorant Garamond',serif;font-weight:700;font-size:21px;letter-spacing:.34em;
+    text-transform:uppercase;padding-left:.34em;
+    color:var(--brass);
+    text-shadow:0 1px 1px #00000099, 0 -1px 0 #ffffff20;
+    transition:color .4s;
+  }
+  .verdict .figure{
+    font-family:'Cormorant Garamond',serif;font-weight:600;font-size:74px;line-height:1;margin-top:6px;
+    letter-spacing:.01em;color:var(--brass-hi);
+    text-shadow:
+      0 2px 1px #000000aa,
+      0 -1px 0 #ffffff1f,
+      0 0 30px var(--glow,#c6a24c44);
+    transition:color .4s, text-shadow .4s;
+  }
+  .verdict.up .word{color:var(--accretive)}
+  .verdict.up .figure{color:var(--accretive-hi);--glow:#67a88355}
+  .verdict.down .word{color:var(--dilutive)}
+  .verdict.down .figure{color:var(--dilutive-hi);--glow:#bd604955}
+  .verdict .sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:15px;color:var(--bone-dim);margin-top:12px;letter-spacing:.02em}
+
+  /* engraved register */
+  .register{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:1px;
+    background:#ece6d614;border:1px solid #ece6d614;border-radius:10px;overflow:hidden}
+  .reg-cell{background:linear-gradient(180deg,#1a160e,#15120c);padding:13px 15px}
+  .reg-cell .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-faint);margin-bottom:5px}
+  .reg-cell .vv{font-family:'Inter',sans-serif;font-size:16px;font-weight:500;color:var(--bone)}
+  .reg-cell .vv small{font-size:10.5px;color:var(--bone-dim);font-weight:400}
+
+  .tomb-foot{display:flex;justify-content:space-between;align-items:center;margin-top:22px;
+    font-family:'Inter',sans-serif;font-size:9.5px;letter-spacing:.08em;color:var(--bone-faint)}
+  .tomb-foot .engr{color:var(--brass);letter-spacing:.2em}
+
+  .note{position:relative;z-index:1;background:#bd60491a;border:1px solid #bd604955;border-radius:8px;padding:10px 13px;margin-top:18px;
+    font-size:12px;color:var(--dilutive-hi);line-height:1.5;display:none}
+  .note.show{display:block}
+
+  /* sensitivity strip */
+  .sens{position:relative;z-index:1;margin-top:22px;background:linear-gradient(180deg,#1a160e,#15120c);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .sens h4{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;letter-spacing:.04em;margin-bottom:3px}
+  .sens p{font-size:11.5px;color:var(--bone-faint);margin-bottom:16px}
+  .spark{position:relative;height:96px;width:100%}
+  .spark svg{width:100%;height:100%;overflow:visible}
+  .spark .zero{stroke:#ece6d626;stroke-width:1;stroke-dasharray:3 4}
+  .spark .curve{fill:none;stroke:var(--brass);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;
+    filter:drop-shadow(0 2px 4px #0008)}
+  .spark .cur{fill:var(--brass-hi);stroke:#15120c;stroke-width:2}
+  .spark .axlab{font-family:'Inter',sans-serif;font-size:9px;fill:var(--bone-faint)}
+  .sens-foot{display:flex;justify-content:space-between;margin-top:12px;font-family:'Inter',sans-serif;font-size:12px;color:var(--bone-dim);font-weight:500}
+  .sens-foot b{color:var(--brass-hi);font-weight:700}
+
+  /* methodology */
+  .method{padding:34px 0 80px}
+  .method-card{background:linear-gradient(180deg,#1a160e,#15120c);border:1px solid var(--line);border-radius:var(--radius);padding:34px 38px 38px;position:relative;overflow:hidden}
+  .method-card::before{content:"";position:absolute;left:0;top:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--brass) 50%,transparent);opacity:.5}
+  .method-top{display:flex;align-items:baseline;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .method-card h3{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;letter-spacing:.04em}
+  .method-tag{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);
+    border:1px solid var(--brass-lo);border-radius:20px;padding:5px 12px;white-space:nowrap}
+  .method-card .lead{color:var(--bone-dim);font-size:14px;line-height:1.6;margin:10px 0 30px;max-width:74ch}
+  .steps{list-style:none;display:grid;grid-template-columns:repeat(2,1fr);gap:30px 48px;counter-reset:none}
+  .steps li{position:relative;padding-top:18px;border-top:1px solid var(--line)}
+  .step-n{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--brass);letter-spacing:.1em;display:block;margin-bottom:8px}
+  .steps h5{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:.02em;color:var(--bone);margin-bottom:8px}
+  .steps p{font-size:13.5px;color:var(--bone-dim);line-height:1.66;max-width:46ch}
+  .acc{color:var(--accretive-hi);font-weight:600}
+  .dil{color:var(--dilutive-hi);font-weight:600}
+
+  /* try a real deal */
+  .realdeal{padding:0 0 40px}
+  .rd-card{background:linear-gradient(180deg,#1c1810,#15120c);border:1px solid var(--line);border-radius:var(--radius);
+    padding:30px 34px 34px;position:relative;overflow:hidden}
+  .rd-card::before{content:"";position:absolute;left:0;top:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,var(--brass) 50%,transparent);opacity:.5}
+  .rd-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .rd-eye{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--brass);margin-bottom:5px}
+  .rd-card h3{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;letter-spacing:.03em;color:var(--bone)}
+  .rd-btn{flex:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:.02em;color:#1a1408;
+    background:linear-gradient(180deg,#e6c66f,#bd9333);border:1px solid #d8b659;border-radius:9px;padding:11px 18px;cursor:pointer;
+    box-shadow:0 4px 14px -4px #c6a24c80, inset 0 1px 0 #f6e4a6;
+    transition:transform .12s var(--ease), box-shadow .2s}
+  .rd-btn:hover{transform:translateY(-1px);box-shadow:0 7px 20px -5px #c6a24ca0, inset 0 1px 0 #f8e9b0}
+  .rd-btn:active{transform:translateY(0)}
+  .rd-sub{color:var(--bone-dim);font-size:13.5px;line-height:1.6;margin:12px 0 26px;max-width:78ch}
+  .rd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .rd-col{background:linear-gradient(180deg,#1a160e,#15120c);padding:16px 18px}
+  .rd-col-h{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);font-weight:600;margin-bottom:12px}
+  .rd-col ul{list-style:none}
+  .rd-col li{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #ffffff08}
+  .rd-col li:last-child{border-bottom:none}
+  .rd-col li span{font-size:12.5px;color:var(--bone-dim)}
+  .rd-col li b{font-size:14px;font-weight:600;color:var(--bone)}
+  .rd-take{font-size:13.5px;line-height:1.65;color:var(--bone-dim);margin-top:22px;max-width:84ch}
+  .rd-take .acc{color:var(--accretive-hi);font-weight:700}
+  .rd-note{display:block;margin-top:8px;font-size:11.5px;color:var(--bone-faint)}
+
+  footer.site{padding:26px 0 50px;text-align:center;font-size:11px;color:var(--bone-faint);font-family:'Inter',sans-serif;letter-spacing:.04em}
+  footer.site a{color:var(--brass)}
+
+  @media (max-width:920px){
+    .stage{grid-template-columns:1fr;gap:30px}
+    .tomb-col{position:static}
+    .steps{grid-template-columns:1fr;gap:0}
+    .steps li{padding:18px 0}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 18px}
+    .mark h1{font-size:30px}
+    .verdict .figure{font-size:58px}
+    .num-grid{grid-template-columns:1fr}
+    .names{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .lucite.flash::after{animation:none}
+    .aura{animation:none}
+    *{transition-duration:.01ms !important}
+  }
+  :focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="loader" aria-hidden="true">
+  <div class="ld-inner">
+    <div class="ld-seal"><span>L</span></div>
+    <div class="ld-word"><span>L</span><span>U</span><span>C</span><span>I</span><span>T</span><span>E</span><i class="ld-shine"></i></div>
+    <div class="ld-line"></div>
+    <div class="ld-sub">Accretion / Dilution</div>
+  </div>
+</div>
+<canvas id="dust" aria-hidden="true"></canvas>
+<div class="wrap">
+
+  <header>
+    <div class="mark">
+      <div class="seal"><span>L</span></div>
+      <div>
+        <h1>Lucite</h1>
+        <p>Accretion / Dilution</p>
+      </div>
+    </div>
+    <div class="dateline">
+      <div class="dl-eye">Deal Memorandum</div>
+      <div class="dl-date" id="dateline-date">—</div>
+      <div class="dl-ref" id="dateline-ref">REF · LCT—0000</div>
+    </div>
+  </header>
+  <div class="rule"></div>
+
+  <div class="stage">
+
+    <!-- ===================== DEAL TICKET ===================== -->
+    <section class="ticket" aria-label="Deal terms">
+      <div class="ticket-inner">
+        <div class="ticket-head">
+          <h2>The Deal Ticket</h2>
+          <em>Terms</em>
+        </div>
+        <p class="ticket-sub">Set the parties and structure. The tombstone engraves itself as you go.</p>
+
+        <!-- Parties -->
+        <div class="group">
+          <div class="glabel"><span class="num">01</span><h3>Parties</h3><span class="ln"></span></div>
+          <div class="names">
+            <div class="field">
+              <label>Acquirer</label>
+              <input type="text" id="acqName" value="Meridian Industries" maxlength="22" autocomplete="off">
+            </div>
+            <div class="field">
+              <label>Target</label>
+              <input type="text" id="tgtName" value="Calder Corp." maxlength="22" autocomplete="off">
+            </div>
+          </div>
+        </div>
+
+        <!-- Acquirer financials -->
+        <div class="group">
+          <div class="glabel"><span class="num">02</span><h3>Acquirer Standalone</h3><span class="ln"></span></div>
+          <div class="num-grid">
+            <div class="num-field">
+              <label>Share price</label>
+              <div class="input-well"><span class="pre">$</span><input type="number" id="acqPrice" value="84.00" step="0.5" min="0"></div>
+            </div>
+            <div class="num-field">
+              <label>Shares outstanding <small>millions</small></label>
+              <div class="input-well"><input type="number" id="acqShares" value="220" step="1" min="0.01"></div>
+            </div>
+            <div class="num-field">
+              <label>Net income <small>millions</small></label>
+              <div class="input-well"><span class="pre">$</span><input type="number" id="acqNI" value="760" step="5"></div>
+            </div>
+            <div class="num-field derived-field">
+              <label>Implied</label>
+              <div class="derived-readout">
+                <span class="dr"><b>EPS</b> <span id="acqEpsVal">—</span></span>
+                <span class="dr"><b>P/E</b> <span id="acqPeVal">—</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Target financials -->
+        <div class="group">
+          <div class="glabel"><span class="num">03</span><h3>Target Standalone</h3><span class="ln"></span></div>
+          <div class="num-grid">
+            <div class="num-field">
+              <label>Share price</label>
+              <div class="input-well"><span class="pre">$</span><input type="number" id="tgtPrice" value="41.00" step="0.5" min="0"></div>
+            </div>
+            <div class="num-field">
+              <label>Shares outstanding <small>millions</small></label>
+              <div class="input-well"><input type="number" id="tgtShares" value="95" step="1" min="0.01"></div>
+            </div>
+            <div class="num-field" style="grid-column:1 / -1">
+              <label>Net income <small>millions</small></label>
+              <div class="input-well"><span class="pre">$</span><input type="number" id="tgtNI" value="180" step="5"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Premium -->
+        <div class="group">
+          <div class="glabel"><span class="num">04</span><h3>Offer</h3><span class="ln"></span></div>
+          <div class="slider-field">
+            <div class="top"><label>Premium to target's price</label><span class="v" id="premV">30%</span></div>
+            <input type="range" id="premium" min="-20" max="80" value="30" step="1">
+          </div>
+          <div class="consid" style="text-align:left;margin-top:12px;color:var(--bone-dim)">
+            Offer price <b id="offerPx">$53.30</b> / share &nbsp;·&nbsp; equity value <b id="equityVal">$5,064M</b>
+          </div>
+        </div>
+
+        <!-- Consideration -->
+        <div class="group">
+          <div class="glabel"><span class="num">05</span><h3>Consideration</h3><span class="ln"></span></div>
+          <div class="mix-legend">
+            <span><i style="background:#cda647"></i>Stock</span>
+            <span><i style="background:#9aaa7e"></i>Cash</span>
+            <span><i style="background:#b3816c"></i>Debt</span>
+          </div>
+          <div class="mix-bar" id="mixBar" aria-hidden="true"></div>
+          <div class="slider-field" style="margin-top:14px">
+            <div class="top"><label>Paid in acquirer stock</label><span class="v" id="stockV">70%</span></div>
+            <input type="range" id="stockMix" min="0" max="100" value="70" step="1">
+          </div>
+          <div class="slider-field" style="margin-top:18px">
+            <div class="top"><label>Of the cash portion, funded by debt</label><span class="v" id="debtV">33%</span></div>
+            <input type="range" id="debtMix" min="0" max="100" value="33" step="1">
+          </div>
+        </div>
+
+        <!-- Assumptions -->
+        <div class="group">
+          <div class="glabel"><span class="num">06</span><h3>Assumptions</h3><span class="ln"></span></div>
+          <div class="num-grid">
+            <div class="num-field">
+              <label>Pre-tax synergies <small>millions</small></label>
+              <div class="input-well"><span class="pre">$</span><input type="number" id="synergy" value="60" step="5" min="0"></div>
+            </div>
+            <div class="num-field">
+              <label>Tax rate</label>
+              <div class="input-well"><input type="number" id="tax" value="25" step="1" min="0" max="60"><span class="post">%</span></div>
+            </div>
+            <div class="num-field">
+              <label>Cost of new debt</label>
+              <div class="input-well"><input type="number" id="debtRate" value="6.5" step="0.25" min="0"><span class="post">%</span></div>
+            </div>
+            <div class="num-field">
+              <label>Yield on cash used</label>
+              <div class="input-well"><input type="number" id="cashRate" value="4.0" step="0.25" min="0"><span class="post">%</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== TOMBSTONE ===================== -->
+    <div class="tomb-col">
+      <div class="aura" id="aura" aria-hidden="true"></div>
+      <div class="lucite" id="lucite">
+        <div class="eyebrow">Pro Forma · No Action Required</div>
+        <div class="parties">
+          <div class="pa" id="t-acq">Meridian Industries</div>
+          <div class="verb">has agreed to acquire</div>
+          <div class="pt" id="t-tgt">Calder Corp.</div>
+        </div>
+        <div class="consid">
+          <span id="t-consid">$53.30 per share · 70% stock / 20% cash / 10% debt</span>
+        </div>
+
+        <div class="tomb-rule"></div>
+
+        <div class="verdict" id="verdict">
+          <div class="word" id="v-word">ACCRETIVE</div>
+          <div class="figure" id="v-figure">+0.0%</div>
+          <div class="sub" id="v-sub">to acquirer EPS, first full year</div>
+        </div>
+
+        <div class="register">
+          <div class="reg-cell"><div class="k">Pro forma EPS</div><div class="vv" id="r-eps">$3.45</div></div>
+          <div class="reg-cell"><div class="k">Standalone EPS</div><div class="vv" id="r-base">$3.45</div></div>
+          <div class="reg-cell"><div class="k">Accretion / share</div><div class="vv" id="r-delta">+$0.00</div></div>
+          <div class="reg-cell"><div class="k">Synergies to break even</div><div class="vv" id="r-be">$0M</div></div>
+          <div class="reg-cell"><div class="k">Deal P/E paid</div><div class="vv" id="r-dpe">—</div></div>
+          <div class="reg-cell"><div class="k">Acquirer P/E</div><div class="vv" id="r-ape">—</div></div>
+        </div>
+
+        <div class="tomb-foot">
+          <span id="t-date">—</span>
+          <span class="engr">ENGRAVED BY LUCITE</span>
+        </div>
+      </div>
+
+      <div class="note" id="warn"></div>
+
+      <!-- sensitivity -->
+      <div class="sens">
+        <h4>Sensitivity to premium</h4>
+        <p>EPS impact as the offer premium moves, holding structure fixed.</p>
+        <div class="spark"><svg id="spark" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+        <div class="sens-foot">
+          <span>Break-even premium: <b id="bePrem">—</b></span>
+          <span>Current: <b id="curPrem">30%</b></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===================== METHODOLOGY ===================== -->
+  <section class="method">
+    <div class="method-card">
+      <div class="method-top">
+        <h3>Inside the calculation</h3>
+        <span class="method-tag">First-year EPS bridge</span>
+      </div>
+      <p class="lead">Lucite runs a first-year accretion/dilution bridge — the standard way a deal's earnings impact is estimated before it closes. Four steps take the terms on the left to the verdict on the right.</p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h5>Purchase price</h5>
+          <p>The offer takes the target's share price and adds the premium. Multiplied by the target's shares, that is the total equity price the acquirer pays — divided into stock, cash, and debt by the consideration sliders.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h5>New shares</h5>
+          <p>The stock portion is divided by the acquirer's share price to find how many new shares it issues. These add to the existing count, so a stock-heavy deal dilutes the buyer's earnings more.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h5>Pro forma earnings</h5>
+          <p>Both companies' net income combine, plus after-tax synergies, less the after-tax interest on new debt and the after-tax yield surrendered on cash spent.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h5>The verdict</h5>
+          <p>The combined earnings per share are set against the acquirer's standalone EPS. Higher is <span class="acc">accretive</span>; lower is <span class="dil">dilutive</span>. As a rule of thumb, an all-stock deal adds to earnings when the buyer trades at a higher multiple than the one it pays for the target.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================== TRY A REAL DEAL ===================== -->
+  <section class="realdeal">
+    <div class="rd-card">
+      <div class="rd-top">
+        <div>
+          <div class="rd-eye">Try a real deal</div>
+          <h3>Microsoft buys Activision Blizzard</h3>
+        </div>
+        <button class="rd-btn" id="loadDeal" type="button">Load this deal&nbsp;↑</button>
+      </div>
+      <p class="rd-sub">January 2022 · $95.00 per share, all cash · $68.7B · the largest gaming deal in history. Drop these numbers in — or hit the button — and watch the tombstone land accretive.</p>
+      <div class="rd-grid">
+        <div class="rd-col">
+          <div class="rd-col-h">Acquirer — Microsoft</div>
+          <ul>
+            <li><span>Share price</span><b>$300</b></li>
+            <li><span>Shares outstanding</span><b>7,540M</b></li>
+            <li><span>Net income</span><b>$72,700M</b></li>
+          </ul>
+        </div>
+        <div class="rd-col">
+          <div class="rd-col-h">Target — Activision Blizzard</div>
+          <ul>
+            <li><span>Share price</span><b>$65</b></li>
+            <li><span>Shares outstanding</span><b>780M</b></li>
+            <li><span>Net income</span><b>$2,700M</b></li>
+          </ul>
+        </div>
+        <div class="rd-col">
+          <div class="rd-col-h">Deal terms</div>
+          <ul>
+            <li><span>Premium</span><b>45%</b></li>
+            <li><span>Consideration</span><b>100% cash</b></li>
+            <li><span>Tax rate</span><b>13%</b></li>
+            <li><span>Yield on cash</span><b>2%</b></li>
+          </ul>
+        </div>
+      </div>
+      <p class="rd-take">Expect about <b class="acc">+2% accretive</b> — and that's the lesson. Microsoft is so large that even a $74B purchase barely moves its earnings per share. It edges accretive because Microsoft's ~31× P/E sits above the ~27× it pays for Activision's earnings, and the cash it spent was earning almost nothing. <span class="rd-note">The tool shows ~$74B equity value; the famous $68.7B headline nets out Activision's own cash.</span></p>
+    </div>
+  </section>
+
+  <footer class="site">
+    Lucite — illustrative model · figures are first-year estimates, not investment advice ·
+    <a href="https://dancourn.github.io" target="_blank" rel="noopener">dancourn.github.io</a>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const ids = ["acqName","tgtName","acqPrice","acqShares","acqNI","tgtPrice","tgtShares","tgtNI",
+    "premium","stockMix","debtMix","synergy","tax","debtRate","cashRate"];
+  const el = {}; ids.forEach(i=>el[i]=$(i));
+
+  const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+  const fmtUSD = (v,dec=2) => (v<0?"-":"") + "$" + Math.abs(v).toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:dec});
+  const fmtM = v => fmtUSD(v,0).replace(/\.00$/,"") + "M";
+  const fmtPct = (v,dec=1,sign=true) => (sign&&v>0?"+":"") + v.toFixed(dec) + "%";
+  const fmtX = v => v.toFixed(1) + "x";
+
+  // ---- core engine ----
+  function compute(premPct){
+    const acqPrice=num(el.acqPrice.value), acqShares=num(el.acqShares.value), acqNI=num(el.acqNI.value);
+    const tgtPrice=num(el.tgtPrice.value), tgtShares=num(el.tgtShares.value), tgtNI=num(el.tgtNI.value);
+    const prem = (premPct!==undefined?premPct:num(el.premium.value))/100;
+    const stockPct = num(el.stockMix.value)/100;
+    const debtOfCash = num(el.debtMix.value)/100;
+    const synergy=num(el.synergy.value), tax=num(el.tax.value)/100;
+    const debtRate=num(el.debtRate.value)/100, cashRate=num(el.cashRate.value)/100;
+
+    const offerPx = tgtPrice*(1+prem);
+    const equityValue = offerPx*tgtShares;                 // $M
+    const stock$ = equityValue*stockPct;
+    const cashRemainder = equityValue*(1-stockPct);
+    const debt$ = cashRemainder*debtOfCash;
+    const cash$ = cashRemainder*(1-debtOfCash);
+
+    const newShares = acqPrice>0 ? stock$/acqPrice : 0;     // M
+    const pfShares = acqShares + newShares;
+
+    const baseNI = acqNI + tgtNI
+      - debt$*debtRate*(1-tax)
+      - cash$*cashRate*(1-tax);
+    const pfNI = baseNI + synergy*(1-tax);
+
+    const baseEPS = acqShares>0 ? acqNI/acqShares : 0;
+    const pfEPS = pfShares>0 ? pfNI/pfShares : 0;
+    const accrPct = baseEPS!==0 ? (pfEPS/baseEPS - 1)*100 : 0;
+    const accr$ = pfEPS - baseEPS;
+
+    // synergies to break-even: solve baseNI + X(1-t) = baseEPS * pfShares
+    const beSyn = (1-tax)!==0 ? (baseEPS*pfShares - baseNI)/(1-tax) : 0;
+
+    const acqPE = baseEPS>0 ? acqPrice/baseEPS : NaN;
+    const dealPE = tgtNI>0 ? equityValue/tgtNI : NaN;
+
+    return {acqPrice,acqShares,acqNI,baseEPS,offerPx,equityValue,stockPct,cash$,debt$,stock$,
+      newShares,pfShares,pfNI,pfEPS,accrPct,accr$,beSyn,acqPE,dealPE,prem};
+  }
+
+  // ---- break-even premium (binary search on accretion=0) ----
+  function breakevenPremium(){
+    const f = p => compute(p).accrPct;
+    let lo=-50, hi=200, flo=f(lo), fhi=f(hi);
+    if(flo*fhi>0) return null;             // no sign change in range
+    for(let i=0;i<40;i++){ const mid=(lo+hi)/2, fm=f(mid); if(flo*fm<=0){hi=mid;fhi=fm;} else {lo=mid;flo=fm;} }
+    return (lo+hi)/2;
+  }
+
+  // ---- mix bar ----
+  function paintMix(stockPct, cashPct, debtPct){
+    const bar=$("mixBar"); bar.innerHTML="";
+    const segs=[["stock",stockPct],["cash",cashPct],["debt",debtPct]];
+    segs.forEach(([cls,pct])=>{
+      const d=document.createElement("div");
+      d.className="seg "+cls; d.style.flexBasis=pct+"%";
+      d.textContent = pct>=11 ? Math.round(pct)+"%" : "";
+      bar.appendChild(d);
+    });
+  }
+
+  // ---- sensitivity sparkline ----
+  function drawSpark(curPrem, bePrem){
+    const svg=$("spark"); const W=320,H=96, padX=8, padY=12;
+    const pmin=-20, pmax=80, N=40;
+    const pts=[]; let ymin=Infinity,ymax=-Infinity;
+    for(let i=0;i<=N;i++){ const p=pmin+(pmax-pmin)*i/N; const a=compute(p).accrPct; pts.push([p,a]); if(a<ymin)ymin=a; if(a>ymax)ymax=a; }
+    const span=Math.max(ymax-ymin,2); ymin-=span*0.12; ymax+=span*0.12;
+    const X=p=>padX+(p-pmin)/(pmax-pmin)*(W-2*padX);
+    const Y=a=>padY+(1-(a-ymin)/(ymax-ymin))*(H-2*padY);
+    let d="";
+    pts.forEach(([p,a],i)=>{ d+=(i?"L":"M")+X(p).toFixed(1)+" "+Y(a).toFixed(1)+" "; });
+    const zeroY = (ymin<=0&&ymax>=0)?Y(0):null;
+    let svgStr="";
+    if(zeroY!==null) svgStr+=`<line class="zero" x1="${padX}" y1="${zeroY.toFixed(1)}" x2="${W-padX}" y2="${zeroY.toFixed(1)}"/>`;
+    svgStr+=`<path class="curve" d="${d}"/>`;
+    const cx=X(curPrem), cy=Y(compute(curPrem).accrPct);
+    svgStr+=`<circle class="cur" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4.5"/>`;
+    svgStr+=`<text class="axlab" x="${padX}" y="${H-1}">${pmin}%</text>`;
+    svgStr+=`<text class="axlab" x="${W-padX}" y="${H-1}" text-anchor="end">+${pmax}%</text>`;
+    svg.innerHTML=svgStr;
+  }
+
+  let flashTimer=null;
+  function flash(){
+    const l=$("lucite"); l.classList.remove("flash"); void l.offsetWidth; l.classList.add("flash");
+  }
+
+  // ---- count-up for the hero figure ----
+  let raf=null, shownPct=0;
+  function animateFigure(target){
+    if(window.matchMedia("(prefers-reduced-motion:reduce)").matches){ shownPct=target; renderFigure(target); return; }
+    cancelAnimationFrame(raf);
+    const start=shownPct, t0=performance.now(), dur=520;
+    function step(t){ const k=Math.min(1,(t-t0)/dur); const e=1-Math.pow(1-k,3);
+      const v=start+(target-start)*e; renderFigure(v); if(k<1) raf=requestAnimationFrame(step); else shownPct=target; }
+    raf=requestAnimationFrame(step);
+  }
+  function renderFigure(v){ $("v-figure").textContent = fmtPct(v,1); }
+
+  // ---- main render ----
+  function render(doFlash){
+    const r=compute();
+    const acqName=el.acqName.value.trim()||"Acquirer", tgtName=el.tgtName.value.trim()||"Target";
+
+    // derived acquirer eps / p-e readout
+    $("acqEpsVal").textContent = fmtUSD(r.baseEPS,2);
+    $("acqPeVal").textContent = isFinite(r.acqPE) ? fmtX(r.acqPE) : "n/m";
+
+    // offer line
+    $("offerPx").textContent = fmtUSD(r.offerPx,2);
+    $("equityVal").textContent = fmtM(r.equityValue);
+
+    // consideration percentages of total
+    const ev=r.equityValue||1;
+    const stockPct = r.stockPct*100;
+    const cashPct = r.cash$/ev*100;
+    const debtPct = r.debt$/ev*100;
+    paintMix(stockPct, cashPct, debtPct);
+
+    // tombstone
+    $("t-acq").textContent=acqName; $("t-tgt").textContent=tgtName;
+    $("t-consid").innerHTML = fmtUSD(r.offerPx,2)+" per share &nbsp;·&nbsp; "
+      + Math.round(stockPct)+"% stock / "+Math.round(cashPct)+"% cash / "+Math.round(debtPct)+"% debt";
+
+    const v=$("verdict");
+    const accretive = r.accrPct>=0;
+    v.classList.toggle("up", accretive && Math.abs(r.accrPct)>=0.05);
+    v.classList.toggle("down", !accretive && Math.abs(r.accrPct)>=0.05);
+    if(Math.abs(r.accrPct)<0.05){ v.classList.remove("up","down"); }
+    $("v-word").textContent = Math.abs(r.accrPct)<0.05 ? "NEUTRAL" : (accretive?"ACCRETIVE":"DILUTIVE");
+    animateFigure(r.accrPct);
+
+    // ambient glow follows the verdict
+    const aura=$("aura");
+    if(Math.abs(r.accrPct)<0.05) aura.style.setProperty("--aura","#c6a24c");
+    else aura.style.setProperty("--aura", accretive?"#67a883":"#bd6049");
+
+    // register
+    $("r-eps").textContent=fmtUSD(r.pfEPS,2);
+    $("r-base").textContent=fmtUSD(r.baseEPS,2);
+    $("r-delta").innerHTML=(r.accr$>=0?"+":"")+fmtUSD(r.accr$,2).replace("$-","-$");
+    $("r-be").textContent = r.beSyn<=0 ? "—" : fmtM(r.beSyn);
+    $("r-dpe").textContent = isFinite(r.dealPE)? fmtX(r.dealPE) : "n/m";
+    $("r-ape").textContent = isFinite(r.acqPE)? fmtX(r.acqPE) : "n/m";
+
+    // sensitivity
+    const be = breakevenPremium();
+    $("bePrem").textContent = be===null ? "—" : Math.round(be)+"%";
+    $("curPrem").textContent = Math.round(r.prem*100)+"%";
+    drawSpark(r.prem*100, be);
+
+    // guardrail note
+    const warn=$("warn"); let msg="";
+    if(r.acqNI<=0) msg="Acquirer net income is zero or negative, so standalone EPS and the accretion % aren't meaningful. Enter a positive figure to engrave a verdict.";
+    else if(r.acqPrice<=0) msg="Acquirer share price must be positive — it sets the stock paid and the new shares issued.";
+    if(msg){ warn.textContent=msg; warn.classList.add("show"); } else { warn.classList.remove("show"); }
+
+    if(doFlash) flash();
+  }
+
+  // ---- slider readouts ----
+  function syncReadouts(){
+    $("premV").textContent = Math.round(num(el.premium.value))+"%";
+    $("stockV").textContent = Math.round(num(el.stockMix.value))+"%";
+    $("debtV").textContent = Math.round(num(el.debtMix.value))+"%";
+  }
+
+  // ---- wire up ----
+  ids.forEach(i=>{
+    const node=el[i];
+    const ev = (node.type==="range"||node.type==="text") ? "input" : "input";
+    node.addEventListener("input", ()=>{ syncReadouts(); render(true); });
+    if(node.type==="number") node.addEventListener("change", ()=>render(true));
+  });
+
+  // dates
+  const now=new Date();
+  const opts={year:"numeric",month:"long",day:"numeric"};
+  const ds=now.toLocaleDateString("en-US",opts);
+  $("dateline-date").textContent = now.toLocaleDateString("en-US",{year:"numeric",month:"2-digit",day:"2-digit"});
+  $("dateline-ref").textContent = "REF · LCT—" + String(now.getMonth()+1).padStart(2,"0") + String(now.getDate()).padStart(2,"0");
+  $("t-date").textContent = ds;
+
+  syncReadouts();
+  render(true);
+
+  // ---------- load a real deal (Microsoft / Activision) ----------
+  (function realDeal(){
+    const btn=$("loadDeal"); if(!btn) return;
+    btn.addEventListener("click", ()=>{
+      el.acqName.value="Microsoft";
+      el.tgtName.value="Activision Blizzard";
+      el.acqPrice.value=300;  el.acqShares.value=7540; el.acqNI.value=72700;
+      el.tgtPrice.value=65;   el.tgtShares.value=780;  el.tgtNI.value=2700;
+      el.premium.value=45;    el.stockMix.value=0;     el.debtMix.value=0;
+      el.synergy.value=0;     el.tax.value=13;         el.cashRate.value=2;
+      syncReadouts();
+      render(true);
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  })();
+
+  // ---------- loading screen dismissal ----------
+  (function loader(){
+    const ld=$("loader"); if(!ld) return;
+    const reduce=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+    let done=false;
+    function dismiss(){
+      if(done) return; done=true;
+      ld.classList.add("done");
+      setTimeout(()=>{ ld.style.display="none"; }, 900);
+      setTimeout(()=>{ flash(); }, 260);   // re-engrave on reveal
+    }
+    if(reduce){ ld.style.display="none"; return; }
+    // hold through the reveal sequence, then lift
+    setTimeout(dismiss, 2150);
+    // safety net in case timers are throttled
+    window.addEventListener("load", ()=>setTimeout(dismiss, 2150));
+  })();
+
+  // ---------- ambient brass dust ----------
+  (function dust(){
+    const cv=$("dust"), ctx=cv.getContext("2d");
+    const reduce=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+    let w,h,dpr,parts=[];
+    function size(){
+      dpr=Math.min(window.devicePixelRatio||1,2);
+      w=cv.clientWidth; h=cv.clientHeight;
+      cv.width=w*dpr; cv.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    function seed(){
+      const n=Math.round(Math.min(70, w*h/24000));
+      parts=[];
+      for(let i=0;i<n;i++){
+        parts.push({
+          x:Math.random()*w, y:Math.random()*h,
+          r:Math.random()*1.6+0.4,
+          vx:(Math.random()-0.5)*0.12,
+          vy:-(Math.random()*0.18+0.05),
+          a:Math.random()*0.5+0.15,
+          tw:Math.random()*Math.PI*2,
+          ts:Math.random()*0.018+0.006
+        });
+      }
+    }
+    function frame(){
+      ctx.clearRect(0,0,w,h);
+      for(const p of parts){
+        p.x+=p.vx; p.y+=p.vy; p.tw+=p.ts;
+        if(p.y<-6){p.y=h+6;p.x=Math.random()*w;}
+        if(p.x<-6)p.x=w+6; if(p.x>w+6)p.x=-6;
+        const flick=p.a*(0.55+0.45*Math.sin(p.tw));
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle="rgba(225,196,120,"+flick.toFixed(3)+")";
+        ctx.shadowColor="rgba(225,196,120,0.6)"; ctx.shadowBlur=6;
+        ctx.fill();
+      }
+      ctx.shadowBlur=0;
+      raf2=requestAnimationFrame(frame);
+    }
+    let raf2=null;
+    function start(){ size(); seed(); if(reduce){ frame.call(null); cancelAnimationFrame(raf2); ctx.clearRect(0,0,w,h);
+        // draw a few static motes for texture, no motion
+        for(const p of parts){ ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+          ctx.fillStyle="rgba(225,196,120,"+(p.a*0.5).toFixed(3)+")"; ctx.fill(); } return; }
+      cancelAnimationFrame(raf2); frame(); }
+    window.addEventListener("resize",()=>{ clearTimeout(window.__dz); window.__dz=setTimeout(start,180); });
+    start();
+  })();
+})();
+</script>
+</body>
+</html>
