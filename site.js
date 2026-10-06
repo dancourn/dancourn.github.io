@@ -136,6 +136,51 @@
   }
   $('#themeBtn').addEventListener('click', toggleTheme);
 
+  /* ───────────────── PRICE LINE ─────────────────
+     Scroll progress drawn as NBIS's real path since my call: [days after Jul 21 2025, weekly close].
+     Source: Yahoo Finance daily history (pulled Oct 6 2026); day 17 is Aug 7 2025, the first close above the $60 target.
+     The live quote, once it arrives, extends the line to today. */
+  const PriceLine = (() => {
+    const PATH = [[0,52.37],[4,51.37],[11,52],[17,65.31],[18,68.78],[25,71.62],[32,68.98],[39,68.32],[46,65.47],[53,90.41],[60,99.31],[67,107.7],[74,127.98],[81,129.58],[88,113.44],[95,117.26],[102,130.82],[109,111.28],[116,83.54],[123,83.26],[130,94.87],[137,98.04],[144,87.69],[151,89.46],[158,87.59],[165,89.95],[172,97.93],[179,108.73],[186,94.5],[193,85.19],[200,86.1],[207,98.01],[214,97.92],[221,91.19],[228,89.33],[235,112.95],[242,117.62],[249,100.82],[263,144.97],[270,157.14],[277,147.16],[284,154.49],[291,177.05],[298,219.94],[305,214.77],[312,231.09],[319,227.81],[326,232.36],[340,240.3],[354,219.65],[361,177.71],[368,187.77],[375,190.41],[382,187.97],[389,277.68],[396,219.13],[403,209.18],[410,226.39],[417,224.55],[424,223.54],[431,237.33],[438,242.81],[442,249.87]];
+    const CALL_DAY = Date.UTC(2025, 6, 21), TARGET = 60, VH = 24;
+    const pts = PATH.slice();
+    const head = $('#plHead'), tag = $('#plTag'), box = head.parentElement;
+    let lo, hi, span;
+    const X = d => d / span * 1000;
+    const Y = v => VH - 2 - (v - lo) / (hi - lo) * (VH - 4);
+    function draw() {
+      span = pts[pts.length - 1][0];
+      lo = Math.min(...pts.map(p => p[1]), TARGET) * 0.9; hi = Math.max(...pts.map(p => p[1])) * 1.02;
+      const d = pts.map(([day, v], i) => `${i ? 'L' : 'M'}${X(day).toFixed(1)} ${Y(v).toFixed(2)}`).join('');
+      $('#plLine').setAttribute('d', d);
+      $('#plArea').setAttribute('d', `${d}L1000 ${VH}L0 ${VH}Z`);
+      const ty = Y(TARGET).toFixed(2);
+      $('#plTarget').setAttribute('y1', ty); $('#plTarget').setAttribute('y2', ty);
+    }
+    const dateOf = day => new Date(CALL_DAY + day * 864e5).toLocaleDateString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' }).replace(' ', " '");
+    // move the glowing head to scroll position p and label it with the price at that point in time
+    let lastP = 0;
+    function at(p) {
+      lastP = p;
+      const day = p * span;
+      let i = 1; while (i < pts.length - 1 && pts[i][0] < day) i++;
+      const [d0, v0] = pts[i - 1], [d1, v1] = pts[i];
+      const v = v0 + (v1 - v0) * Math.min(1, Math.max(0, (day - d0) / ((d1 - d0) || 1)));
+      head.style.transform = `translate(${(p * box.clientWidth).toFixed(1)}px, ${(Y(v) / VH * box.clientHeight).toFixed(1)}px)`;
+      head.classList.toggle('is-right', p > 0.8);
+      tag.textContent = `NBIS $${v.toFixed(2)} · ${dateOf(day)}`;
+    }
+    function live(price) {
+      const today = Math.floor((Date.now() - CALL_DAY) / 864e5);
+      if (today <= pts[pts.length - 1][0]) pts[pts.length - 1] = [pts[pts.length - 1][0], price];
+      else pts.push([today, price]);
+      draw();
+      at(lastP);
+    }
+    draw();
+    return { at, live };
+  })();
+
   /* ───────────────── NAV ───────────────── */
   const menuBtn = $('#menuBtn'), drawer = $('#drawerNav');
   function setMenu(open) { drawer.dataset.open = String(open); menuBtn.setAttribute('aria-expanded', String(open)); }
@@ -180,6 +225,7 @@
     const p = h > 0 ? Math.min(1, y / h) : 0;
     prog.style.transform = `scaleX(${p})`;
     root.style.setProperty('--sp', p.toFixed(4));
+    PriceLine.at(p);
     nav.classList.toggle('is-scrolled', y > 8);
     spy();
     const c = compact ? y > 90 : y > 140;
@@ -644,6 +690,14 @@
       });
     }
 
+    // the tape glows green or red with the S&P 500's day (SPY); no data, no glow
+    Quotes.on(data => {
+      const spx = data.SPY, tape = $('#tape');
+      if (!spx || isNaN(spx.pct)) { delete tape.dataset.mood; tape.removeAttribute('title'); return; }
+      tape.dataset.mood = spx.pct >= 0 ? 'up' : 'down';
+      tape.title = `S&P 500 (SPY) ${spx.pct >= 0 ? 'up' : 'down'} ${Math.abs(spx.pct).toFixed(2)}% on the day${spx.stale ? ' (last known)' : ''}`;
+    });
+
     // last good prices, so a slow or offline feed still shows something honest
     try {
       const cached = JSON.parse(store.get('dc-quotes') || 'null');
@@ -777,6 +831,7 @@
       : `<span class="${q.pct >= 0 ? 'up' : 'down'}">${q.pct >= 0 ? '+' : ''}${q.pct.toFixed(2)}% today</span> · ${sinceCall >= 0 ? '+' : ''}${sinceCall.toFixed(1)}% since call`;
     const cell = $('#nbisCell');
     cell.classList.remove('flash'); void cell.offsetWidth; cell.classList.add('flash');
+    if (!q.stale) PriceLine.live(q.price);
     renderFF(q.price);
     $('#ffFoot').innerHTML = `Today <b>$${fmtPx(q.price)}</b> is <b>${vsTgt >= 0 ? '+' : ''}${vsTgt.toFixed(1)}%</b> vs. the $60 target and <b>${sinceCall >= 0 ? '+' : ''}${sinceCall.toFixed(1)}%</b> since the call${q.stale ? ' (last known price)' : ''}. Bars are implied value per share by method; the shaded band is my bear-to-bull range.`;
   });
