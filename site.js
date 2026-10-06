@@ -1034,9 +1034,15 @@
   const h = location.hash.slice(1);
   if (h && (h.startsWith('case-') || TASKS.some(t => t.id === h))) setTimeout(() => Reader.open(h), 400);
 
-  /* print: open every role so the printout is complete */
-  window.addEventListener('beforeprint', () => $$('details.xp').forEach(d => { d.dataset.wasOpen = d.open; d.open = true; }));
-  window.addEventListener('afterprint', () => $$('details.xp').forEach(d => { d.open = d.dataset.wasOpen === 'true'; }));
+  /* coursework: a link to #coursework opens the library first, so the jump lands on an open list */
+  const courses = $('#coursework');
+  document.addEventListener('click', e => { if (e.target.closest('a[href="#coursework"]')) courses.open = true; });
+  if (location.hash === '#coursework') courses.open = true;
+  courses.addEventListener('toggle', () => Sound.play(courses.open ? 'open' : 'close'));
+
+  /* print: open every role and the coursework so the printout is complete */
+  window.addEventListener('beforeprint', () => $$('details.xp, details.courses').forEach(d => { d.dataset.wasOpen = d.open; d.open = true; }));
+  window.addEventListener('afterprint', () => $$('details.xp, details.courses').forEach(d => { d.open = d.dataset.wasOpen === 'true'; }));
   $$('details.xp').forEach(d => d.addEventListener('toggle', () => Sound.play(d.open ? 'open' : 'close')));
 
   console.log('%cDC%c  Thanks for reading the source. Hiring for FP&A or corporate finance? ' + EMAIL,

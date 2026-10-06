@@ -729,6 +729,38 @@ button { font: inherit; color: inherit; }
 .contact dd { margin: 0; overflow-wrap: anywhere; }
 .contact dd a { text-decoration: none; border-bottom: 1px solid var(--line-2); }
 .contact dd a:hover { border-color: var(--accent); }
+
+/* coursework library: one quiet line until opened; skill cards' "Coursework" links open it */
+.courses { margin-top: var(--sp-block); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); scroll-margin-top: calc(var(--nav-h-compact) + 24px); }
+.courses summary { list-style: none; display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap; padding: 18px 20px; cursor: pointer; }
+.courses summary::-webkit-details-marker { display: none; }
+.courses-h { font-family: var(--display); font-weight: 800; font-size: 24px; line-height: 1; text-transform: uppercase; }
+.courses-n { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.courses-chev { display: grid; place-items: center; margin-left: auto; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line-2); color: var(--fg-2); font-size: 16px; transition: transform 0.3s var(--ease), color 0.2s, border-color 0.2s; }
+.courses[open] .courses-chev { transform: rotate(45deg); color: var(--accent); border-color: var(--accent); }
+.courses summary:hover .courses-chev { border-color: var(--accent); }
+.courses-body { padding: 0 20px 22px; border-top: 1px solid var(--line); }
+.courses-note { margin: 16px 0 0; max-width: 70ch; font-size: 14.5px; color: var(--fg-2); }
+.course-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px var(--sp-col); }
+.course-group h4 { display: flex; justify-content: space-between; align-items: baseline; margin: 26px 0 4px; padding-bottom: 8px; border-bottom: 1px solid var(--line-2); font-family: var(--mono); font-weight: 500; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.course-group h4 span { color: var(--muted); }
+.course-group ul { list-style: none; margin: 0; padding: 0; }
+.course-group li { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 12px; padding: 11px 0; border-bottom: 1px dashed var(--line); }
+.course-group li:last-child { border-bottom: 0; }
+.course-group li b { font-family: var(--mono); font-weight: 600; font-size: 12.5px; color: var(--accent); white-space: nowrap; padding-top: 1px; }
+.c-t { display: block; font-weight: 600; font-size: 15px; line-height: 1.35; color: var(--fg); }
+.c-t em { font-style: normal; font-weight: 400; color: var(--muted); }
+.c-d { display: block; margin-top: 3px; font-size: 14px; line-height: 1.5; color: var(--fg-2); }
+.c-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.c-tags i { font-style: normal; padding: 1px 8px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--blue) 40%, transparent); background: color-mix(in srgb, var(--blue) 10%, transparent); font-family: var(--mono); font-size: 11.5px; color: var(--fg-2); }
+@media (max-width: 860px) { .course-groups { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) {
+  .courses summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 16px; }
+  .courses-chev { grid-column: 2; grid-row: 1 / span 2; margin: 0; }
+  .courses-body { padding: 0 16px 18px; }
+  .course-group li { grid-template-columns: 70px minmax(0, 1fr); gap: 10px; }
+  .c-tags i { font-size: 12px; }
+}
 .contact-actions { display: grid; gap: 8px; }
 .contact .btn { width: 100%; }
 
