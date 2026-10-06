@@ -238,8 +238,8 @@ button { font: inherit; color: inherit; }
   .nav.is-compact .nav-inner { grid-template-columns: minmax(0, 1fr); }
   .nav.is-compact .nav-links {
     display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 12px; justify-content: flex-start;
-    mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 24px), transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 52px), transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 52px), transparent);
   }
   .nav.is-compact .nav-links::-webkit-scrollbar { display: none; }
   .nav.is-compact .nav-links a { padding: 6px 12px; font-size: 13.5px; }
@@ -529,7 +529,7 @@ button { font: inherit; color: inherit; }
 .rs-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: var(--sp-block) var(--sp-col); align-items: center; }
 .rs-top p { margin: 0; max-width: 66ch; color: var(--fg-2); }
 .rs-top strong { color: var(--fg); font-weight: 600; }
-.nebius { width: 100%; filter: var(--logo-filter); opacity: 0.9; }
+.nebius { width: 100%; justify-self: center; filter: var(--logo-filter); opacity: 0.9; }
 .callrec { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); margin-top: var(--sp-block); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); overflow: hidden; }
 .callrec > div { padding: 16px 18px; border-left: 1px solid var(--line); min-width: 0; }
 .callrec > div:first-child { border-left: 0; }
@@ -986,6 +986,27 @@ button { font: inherit; color: inherit; }
   .case-stage.is-peeled .case-shot { position: absolute; inset: 0; }
   .case:nth-child(odd) .hood { padding-left: 14%; }
   .case:nth-child(even) .hood { padding-right: 14%; }
+}
+
+/* bigger tap areas for small links, without changing how they look */
+.contact dd a, .deck-head a { position: relative; }
+.contact dd a::before, .deck-head a::before { content: ""; position: absolute; inset: -11px -6px; }
+
+/* phone polish: even grids instead of ragged wraps, thumb-sized targets, labels no smaller than 12px */
+@media (max-width: 860px) {
+  .cases.has-stage .case:not(.is-stage) { opacity: 0.8; filter: none; } /* you read one card at a time on a phone */
+  #fbBody.ws { max-height: 440px; }                                    /* the paused desk stays a compact card */
+}
+@media (max-width: 600px) {
+  .ctas, .case-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ctas .btn, .case-actions .btn { justify-content: center; text-align: center; }
+  .deck-head .label { order: 1; }
+  .deck-head a { order: 2; }
+  .chapters { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .chapters button { min-height: 40px; padding: 0 4px; font-size: 12px; }
+  .proof { gap: 8px; }
+  .proof a { padding: 7px 12px; font-size: 12px; }
+  .proof span, .model-specs dt { font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

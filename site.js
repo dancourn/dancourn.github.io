@@ -751,10 +751,16 @@
         <text class="val" x="${X(lo) - 6}" y="${cy + 4}" text-anchor="end">$${lo.toFixed(2)}</text>
         <text class="val" x="${X(hi) + 6}" y="${cy + 4}">$${hi.toFixed(2)}</text></g>`;
     });
+    // tags sit on one of two rows; each takes its preferred row unless that would overlap a tag already placed
+    // (on a narrow chart the call and target prices are only a few pixels apart)
+    const placed = [];
     const tag = (x, y, text, cls, tcls, anchor) => {
       const w = text.length * 6.9 + 12;
       let rx = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
       rx = Math.max(0, Math.min(W - w, rx));
+      const clash = row => placed.some(p => p.y === row && rx < p.x + p.w + 4 && p.x < rx + w + 4);
+      if (clash(y)) y = y === 0 ? 24 : 0;
+      placed.push({ x: rx, y, w });
       return `<rect class="${cls}" x="${rx}" y="${y}" width="${w}" height="18" rx="3"/><text class="tag-t ${tcls}" x="${rx + w / 2}" y="${y + 13}" text-anchor="middle">${text}</text>`;
     };
     s += `<line class="ln-call" x1="${X(CALL.px)}" x2="${X(CALL.px)}" y1="${top - 26}" y2="${yEnd + 4}"/>`;
