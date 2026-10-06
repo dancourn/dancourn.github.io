@@ -614,18 +614,36 @@
   });
 
   /* ───────────────── QUOTES (shared by the tape, the call record and the football field) ───────────────── */
-  const SYMS = ['NBIS', 'SPY', 'QQQ', 'AAPL', 'MSFT', 'NVDA', 'TSLA', 'META', 'GOOG', 'AMZN', 'NFLX', 'JPM', 'GS', 'AMD', 'PLTR', 'COIN', 'BTC-USD'];
-  const LABELS = { 'BTC-USD': 'BTC' };
+  // NBIS (my call, read by the research section) and the S&P 500 (drives the tape's glow) are always on;
+  // the rest rotate through a finance-desk pool, 13 at a time, so a refresh is 15 requests and every name gets a turn
+  const PINNED = ['NBIS', '^GSPC'];
+  const POOL = ['^IXIC', '^DJI', '^TNX', 'CL=F', 'GC=F', 'EURUSD=X', 'BTC-USD', 'IWM',
+    'AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOG', 'META', 'JPM', 'GS', 'BAC', 'MS', 'BRK-B', 'V', 'MA',
+    'JNJ', 'UNH', 'LLY', 'XOM', 'CVX', 'CAT', 'WMT', 'COST', 'TSLA', 'AMD', 'PLTR', 'NFLX'];
+  const WINDOW = 13;
+  const LABELS = { '^GSPC': 'S&P 500', '^IXIC': 'Nasdaq', '^DJI': 'Dow', '^TNX': '10Y yield', 'CL=F': 'WTI crude', 'GC=F': 'Gold',
+    'EURUSD=X': 'EUR/USD', 'BTC-USD': 'Bitcoin', 'IWM': 'Russell 2000', 'BRK-B': 'BRK.B' };
   const Quotes = { data: {}, subs: [], on(f) { this.subs.push(f); }, emit() { this.subs.forEach(f => f(this.data)); } };
   const fmtPx = p => (p == null || isNaN(p)) ? '-' : p >= 1000 ? p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : p.toFixed(2);
+  // the 10-year is a yield, not a price; currencies trade to four decimals
+  const fmtTape = (sym, p) => (p == null || isNaN(p)) ? '-' : sym === '^TNX' ? p.toFixed(2) + '%' : sym.endsWith('=X') ? p.toFixed(4) : fmtPx(p);
 
   (function tape() {
     const track = $('#tapeTrack');
+    // each visit starts one window further along, so returning visitors see different names
+    let at = (parseInt(store.get('dc-tape-at'), 10) || 0) % POOL.length;
+    store.set('dc-tape-at', String((at + WINDOW) % POOL.length));
+    const windowAt = i => PINNED.concat(Array.from({ length: WINDOW }, (_, k) => POOL[(i + k) % POOL.length]));
+    let syms = windowAt(at);
     const item = (sym, copy) => `<a class="tk${sym === 'NBIS' ? ' is-call' : ''}" data-sym="${sym}" href="https://finance.yahoo.com/quote/${encodeURIComponent(sym)}" target="_blank" rel="noopener"${copy ? ' aria-hidden="true" tabindex="-1"' : ''}>
       <span class="tk-sym">${LABELS[sym] || sym}</span><span class="tk-px">···</span><span class="tk-ch"></span></a>`;
-    track.innerHTML = SYMS.map(s => item(s, false)).join('') + SYMS.map(s => item(s, true)).join('');
     function sizeTape() { track.style.setProperty('--tape-dur', Math.max(40, (track.scrollWidth / 2) / 46) + 's'); }
-    sizeTape();
+    function build() {
+      track.innerHTML = syms.map(s => item(s, false)).join('') + syms.map(s => item(s, true)).join('');
+      syms.forEach(s => { if (Quotes.data[s]) paint(s, Quotes.data[s]); });
+      sizeTape();
+    }
+    window.addEventListener('resize', sizeTape);
     window.addEventListener('resize', sizeTape);
 
     const pauseBtn = $('#tapePause');
@@ -640,7 +658,7 @@
     function paint(sym, q, flash) {
       $$(`.tk[data-sym="${sym}"]`, track).forEach(a => {
         const up = q.pct >= 0;
-        a.querySelector('.tk-px').textContent = fmtPx(q.price);
+        a.querySelector('.tk-px').textContent = fmtTape(sym, q.price);
         const ch = a.querySelector('.tk-ch');
         ch.textContent = isNaN(q.pct) ? '' : `${up ? '▲' : '▼'} ${up ? '+' : ''}${q.pct.toFixed(2)}%`;
         ch.className = 'tk-ch ' + (up ? 'up' : 'down');
@@ -648,22 +666,23 @@
       });
     }
 
-    // the tape glows green or red with the S&P 500's day (SPY); no data, no glow
+    // the tape glows green or red with the S&P 500's day; no data, no glow
     Quotes.on(data => {
-      const spx = data.SPY, tape = $('#tape');
+      const spx = data['^GSPC'], tape = $('#tape');
       if (!spx || isNaN(spx.pct)) { delete tape.dataset.mood; tape.removeAttribute('title'); return; }
       tape.dataset.mood = spx.pct >= 0 ? 'up' : 'down';
-      tape.title = `S&P 500 (SPY) ${spx.pct >= 0 ? 'up' : 'down'} ${Math.abs(spx.pct).toFixed(2)}% on the day${spx.stale ? ' (last known)' : ''}`;
+      tape.title = `S&P 500 ${spx.pct >= 0 ? 'up' : 'down'} ${Math.abs(spx.pct).toFixed(2)}% on the day${spx.stale ? ' (last known)' : ''}`;
     });
 
     // last good prices, so a slow or offline feed still shows something honest
     try {
       const cached = JSON.parse(store.get('dc-quotes') || 'null');
       if (cached && cached.data) {
-        Object.entries(cached.data).forEach(([s, q]) => { Quotes.data[s] = Object.assign({}, q, { stale: true, asOf: cached.t }); paint(s, q); });
-        Quotes.emit();
+        Object.entries(cached.data).forEach(([s, q]) => { Quotes.data[s] = Object.assign({}, q, { stale: true, asOf: cached.t }); });
       }
     } catch (e) {}
+    build();
+    if (Object.keys(Quotes.data).length) Quotes.emit();
 
     async function fetchOne(sym) {
       try {
@@ -673,11 +692,16 @@
         return { price: Number(d.price), pct: Number(d.changePct) * 100 };
       } catch (e) { return null; }
     }
+    let first = true;
     async function refresh() {
-      const res = await Promise.all(SYMS.map(fetchOne));
+      // after the first load, move the window along and only swap the names in once their prices are back
+      const next = first ? syms : windowAt(at = (at + WINDOW) % POOL.length);
+      first = false;
+      const res = await Promise.all(next.map(fetchOne));
+      if (next !== syms) { syms = next; build(); }
       let ok = 0, moved = 0;
       res.forEach((q, i) => {
-        const s = SYMS[i];
+        const s = syms[i];
         if (!q) return;
         ok++;
         const prev = Quotes.data[s];
@@ -687,13 +711,18 @@
         paint(s, q, flash);
       });
       if (ok) {
-        const save = {}; SYMS.forEach(s => { if (Quotes.data[s] && !Quotes.data[s].stale) save[s] = { price: Quotes.data[s].price, pct: Quotes.data[s].pct }; });
+        // fresh prices overwrite their own entries; names outside this window keep their last good price,
+        // so a name rotating in never starts blank
+        let save = {};
+        try { save = (JSON.parse(store.get('dc-quotes') || 'null') || {}).data || {}; } catch (e) {}
+        Object.entries(Quotes.data).forEach(([s, q]) => { if (!q.stale) save[s] = { price: q.price, pct: q.pct }; });
         store.set('dc-quotes', JSON.stringify({ t: Date.now(), data: save }));
         if (moved) Sound.play(moved > 0 ? 'up' : 'down');
       } else {
         const anyCached = Object.keys(Quotes.data).length;
         $('#tapeState').textContent = anyCached ? 'Delayed · feed offline' : 'Feed offline';
-        if (!anyCached) $$('.tk-px', track).forEach(x => { x.textContent = '-'; });
+        // names with no known price say so instead of looking like they're still loading
+        $$('.tk', track).forEach(a => { if (!Quotes.data[a.dataset.sym]) a.querySelector('.tk-px').textContent = '-'; });
       }
       Quotes.emit();
       sizeTape();
