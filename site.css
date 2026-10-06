@@ -29,6 +29,11 @@
   --shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
   --scrim: rgba(3, 6, 14, 0.66);
   --logo-filter: none;
+  --name-glow-1: rgba(91, 132, 255, 0.38);
+  --name-glow-2: rgba(232, 191, 106, 0.4);
+  --rays-blend: screen;
+  --rays-opacity: 0.75;
+  --world-alpha: 1;
   color-scheme: dark;
 
   --display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
@@ -82,6 +87,11 @@
     --shadow: 0 30px 70px -36px rgba(20, 34, 80, 0.35);
     --scrim: rgba(12, 19, 40, 0.38);
     --logo-filter: invert(1) brightness(0.2);
+    --name-glow-1: rgba(47, 91, 216, 0.1);
+    --name-glow-2: rgba(140, 96, 12, 0.16);
+    --rays-blend: multiply;
+    --rays-opacity: 0.35;
+    --world-alpha: 0.75;
     color-scheme: light;
   }
 }
@@ -113,6 +123,11 @@
   --shadow: 0 30px 70px -36px rgba(20, 34, 80, 0.35);
   --scrim: rgba(12, 19, 40, 0.38);
   --logo-filter: invert(1) brightness(0.2);
+  --name-glow-1: rgba(47, 91, 216, 0.1);
+  --name-glow-2: rgba(140, 96, 12, 0.16);
+  --rays-blend: multiply;
+  --rays-opacity: 0.35;
+  --world-alpha: 0.75;
   color-scheme: light;
 }
 
@@ -284,30 +299,57 @@ button { font: inherit; color: inherit; }
 .hero-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 20px; font-family: var(--mono); font-size: 13px; color: var(--fg-2); }
 .hero-meta .dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; }
 .name {
-  margin: 0; font-family: var(--display); font-weight: 800; font-size: var(--fs-name);
+  position: relative; margin: 0; font-family: var(--display); font-weight: 800; font-size: var(--fs-name);
   line-height: 0.84; letter-spacing: -0.005em; text-transform: uppercase; cursor: default;
 }
 .name-line { display: block; white-space: nowrap; }
+.name-line:first-child { text-shadow: 0 0 46px var(--name-glow-1); }
 .name-line + .name-line {
   background: linear-gradient(100deg, var(--accent) 20%, color-mix(in srgb, var(--accent) 55%, #fff) 50%, var(--accent) 80%);
   background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: sheen 7s ease-in-out infinite;
+  animation: sheen 7s ease-in-out infinite; filter: drop-shadow(0 0 28px var(--name-glow-2));
 }
 @keyframes sheen { 0%, 60% { background-position: 100% 0; } 100% { background-position: -120% 0; } }
-.name .ch { display: inline-block; }
-.name .ch.is-flipping { opacity: 0.55; }
+/* split-flap letters swing on a hinge (site.js NAME BOARD). A letter in motion sits on its own render layer,
+   which the gold line's clipped gradient can't paint, so it wears solid gold until it lands. */
+.name .ch { display: inline-block; transform-origin: 50% 54%; }
+.name-line + .name-line .ch.is-anim { color: var(--accent); }
+.name .ch.is-landed { animation: land 0.7s var(--ease); }
+@keyframes land { from { text-shadow: 0 0 26px var(--accent); } to { text-shadow: none; } }
+/* a beam of light crosses the name once every letter has landed */
+.name::after {
+  content: ""; position: absolute; inset: -8% -4%; pointer-events: none; opacity: 0; mix-blend-mode: overlay;
+  background: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, 0.55) 50%, transparent 62%); background-size: 260% 100%; background-position: 160% 0;
+}
+.name.is-sweeping::after { animation: nameSweep 1.5s var(--ease) forwards; }
+@keyframes nameSweep { 0% { opacity: 1; background-position: 160% 0; } 80% { opacity: 1; } 100% { opacity: 0; background-position: -70% 0; } }
 .lede { max-width: 58ch; margin: 28px 0 0; font-size: 1.1875rem; line-height: 1.6; color: var(--fg-2); text-wrap: pretty; }
 .lede strong { color: var(--fg); font-weight: 600; }
 .status { display: flex; align-items: center; gap: 10px; margin: 18px 0 0; font-family: var(--mono); font-size: 13px; color: var(--muted); }
 .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 4px var(--up-soft); flex-shrink: 0; }
 .ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
 
-.id-card { position: relative; border-radius: 14px; padding: 10px; background: var(--surface); border: 1px solid var(--line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+/* the ID card tilts toward the pointer like a hologram (site.js HOLO CARD); its gold/blue edge keeps turning */
+@property --ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+.id-card {
+  position: relative; border-radius: 14px; padding: 10px; background: var(--surface); border: 1px solid var(--line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: var(--shadow);
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.6s var(--ease);
+}
+.id-card.is-tilting { transition: transform 0.1s linear; }
 .id-card::before {
   content: ""; position: absolute; inset: -1px; border-radius: 15px; padding: 1px; pointer-events: none;
-  background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 70%, transparent), transparent 40%, transparent 60%, color-mix(in srgb, var(--blue) 70%, transparent));
+  background: conic-gradient(from var(--ang), color-mix(in srgb, var(--accent) 85%, transparent), transparent 22%, transparent 34%, color-mix(in srgb, var(--blue) 85%, transparent) 50%, transparent 66%, transparent 78%, color-mix(in srgb, var(--accent) 85%, transparent));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: edge 9s linear infinite;
 }
+@keyframes edge { to { --ang: 360deg; } }
+.id-card::after {
+  content: ""; position: absolute; inset: 0; border-radius: 14px; pointer-events: none; opacity: 0; transition: opacity 0.5s; mix-blend-mode: soft-light;
+  background: radial-gradient(380px circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.18), transparent 46%),
+    linear-gradient(115deg, transparent 28%, color-mix(in srgb, var(--accent) 16%, transparent) 44%, color-mix(in srgb, var(--blue) 16%, transparent) 56%, transparent 72%);
+  background-size: 100% 100%, 260% 260%; background-position: 0 0, var(--gx, 50%) var(--gy, 50%);
+}
+.id-card.is-tilting::after { opacity: 1; }
 .portrait { margin: 0; border-radius: 9px; overflow: hidden; aspect-ratio: 480 / 560; background: var(--surface-2); }
 .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; transition: transform 1.2s var(--ease); }
 .id-card:hover .portrait img { transform: scale(1.035); }
@@ -834,6 +876,22 @@ button { font: inherit; color: inherit; }
   .colophon .hint-touch { display: flex; }
   #readerClose .kbd { display: none; }
 }
+/* ───────── effects ───────── */
+/* one continuous 3D world: a wireframe market surface rendered behind the page (site.js WORLD) */
+.world {
+  position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.4s var(--ease);
+  -webkit-mask-image: linear-gradient(180deg, transparent 6%, #000 38%, #000 88%, transparent); mask-image: linear-gradient(180deg, transparent 6%, #000 38%, #000 88%, transparent);
+}
+.world.is-on { opacity: 1; }
+/* light rays falling from the top left of the hero */
+.rays {
+  position: absolute; inset: -12% -4% 0 -4%; pointer-events: none; opacity: var(--rays-opacity); mix-blend-mode: var(--rays-blend); filter: blur(18px);
+  background: conic-gradient(from 196deg at 8% -14%, transparent 0deg, var(--glow-3) 7deg, transparent 15deg, transparent 23deg, color-mix(in srgb, var(--accent) 11%, transparent) 29deg, transparent 37deg, transparent 49deg, var(--glow-1) 57deg, transparent 70deg);
+  transform-origin: 8% -14%; -webkit-mask-image: linear-gradient(#000 25%, transparent 92%); mask-image: linear-gradient(#000 25%, transparent 92%);
+  animation: rays 16s ease-in-out infinite alternate;
+}
+@keyframes rays { from { transform: rotate(-3deg); } to { transform: rotate(5deg); } }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
@@ -846,8 +904,10 @@ button { font: inherit; color: inherit; }
 @media print {
   :root { --bg: #fff; --surface: #fff; --surface-solid: #fff; --surface-2: #fff; --fg: #000; --fg-2: #222; --muted: #555; --line: #ccc; --line-2: #999; --accent: #000; --accent-ink: #fff; }
   body { padding: 0; font-size: 11pt; }
-  .bg, .nav, .tape, .path, .ctas, .case-shot, .deck, .ff, .reader, .scrim, .toast, .colophon, .skip, .case-actions, .workshop, .hero-grid-bg { display: none !important; }
-  .name-line + .name-line { color: #000; background: none; }
+  .bg, .nav, .tape, .path, .ctas, .case-shot, .deck, .ff, .reader, .scrim, .toast, .colophon, .skip, .case-actions, .workshop, .hero-grid-bg, .rays { display: none !important; }
+  .name-line + .name-line { color: #000; background: none; filter: none; }
+  .name-line:first-child { text-shadow: none; }
+  .id-card { transform: none; }
   .section { padding-top: 24pt; }
   .name { font-size: 48pt; }
   a { text-decoration: none; }

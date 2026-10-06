@@ -96,8 +96,9 @@
       store.set('dc-sound', v ? 'on' : 'off');
       const b = $('#soundBtn');
       b.setAttribute('aria-pressed', String(v));
-      b.querySelector('.snd-on').hidden = !v;
-      b.querySelector('.snd-off').hidden = v;
+      // SVG paths have no .hidden property, so set the attribute itself
+      b.querySelector('.snd-on').toggleAttribute('hidden', !v);
+      b.querySelector('.snd-off').toggleAttribute('hidden', v);
       b.title = v ? 'Sound on' : 'Sound off';
     }
     return { play, setEnabled, get enabled() { return enabled; }, toggle() { setEnabled(!enabled); if (enabled) play('chime'); toast(enabled ? 'Sound on' : 'Sound off'); } };
@@ -129,6 +130,7 @@
     const next = effectiveTheme() === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     store.set('dc-theme', next);
+    World.recolor();
     Sound.play('theme');
     $('#themeBtn').title = next === 'dark' ? 'Dark theme' : 'Light theme';
   }
@@ -224,9 +226,24 @@
   /* ───────────────── NAME BOARD ─────────────────
      A split-flap settle on the name. Each cell is locked to its final glyph width so nothing jitters. */
   const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ$%0123456789';
+  // every turn swings the letter on a hinge; .is-anim keeps a moving letter painted (see .name .ch in site.css)
+  function hinge(el, land) {
+    if (!el.animate) return;
+    el._moving = (el._moving || 0) + 1;
+    el.classList.add('is-anim');
+    const a = el.animate(land
+      ? [{ transform: 'perspective(600px) rotateX(-95deg)', filter: 'brightness(1.8)' }, { transform: 'perspective(600px) rotateX(12deg)', offset: 0.7 }, { transform: 'none', filter: 'none' }]
+      : [{ transform: 'perspective(600px) rotateX(-80deg)', filter: 'brightness(1.4)' }, { transform: 'none', filter: 'none' }],
+      { duration: land ? 420 : 90, easing: land ? 'cubic-bezier(.2,.9,.3,1.2)' : 'linear' });
+    a.onfinish = a.oncancel = () => { if (--el._moving === 0) el.classList.remove('is-anim'); };
+  }
+  function sweepName() {
+    const n = $('#name');
+    n.classList.remove('is-sweeping'); void n.offsetWidth; n.classList.add('is-sweeping');
+  }
   function flapName() {
     const lines = $$('#name .name-line');
-    let flapsQueued = 0;
+    let flapsQueued = 0, pending = 0;
     lines.forEach((line, li) => {
       const word = line.dataset.text.toUpperCase();
       line.innerHTML = word.split('').map(c => `<span class="ch">${c}</span>`).join('');
@@ -239,21 +256,41 @@
         const final = cell.textContent;
         const settle = 260 + i * 70 + li * 160 + Math.random() * 80;
         const start = performance.now();
+        pending++;
         cell.classList.add('is-flipping');
         (function step(now) {
           if (now - start >= settle) {
             cell.textContent = final;
             cell.classList.remove('is-flipping');
+            hinge(cell, true);
+            cell.classList.remove('is-landed'); void cell.offsetWidth; cell.classList.add('is-landed');
             if (flapsQueued++ % 2 === 0) Sound.play('flap');
+            if (--pending === 0) sweepName();
             return;
           }
           cell.textContent = GLYPHS[(Math.random() * GLYPHS.length) | 0];
+          hinge(cell, false);
           setTimeout(() => requestAnimationFrame(step), 48);
         })(start);
       });
     });
   }
-  function startName() { flapName(); }
+  // the six key stats flip into place left to right, the same way the name does
+  function flipStats() {
+    if (reduced) return;
+    $$('.keystats dd').forEach((dd, r) => {
+      const final = dd.textContent, start = performance.now(), settle = 500 + r * 110;
+      (function step(now) {
+        const p = (now - start) / settle;
+        if (p >= 1) { dd.textContent = final; return; }
+        const keep = Math.floor(p * final.length);
+        dd.textContent = final.split('').map((c, i) => i < keep || !/[a-z0-9]/i.test(c) ? c
+          : /\d/.test(c) ? (Math.random() * 10) | 0 : GLYPHS[(Math.random() * 26) | 0].toLowerCase()).join('');
+        setTimeout(() => requestAnimationFrame(step), 45);
+      })(start);
+    });
+  }
+  function startName() { flapName(); flipStats(); }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(startName); else startName();
   $('#name').addEventListener('click', flapName);
 
@@ -268,6 +305,110 @@
     });
     hero.addEventListener('pointerleave', () => hero.classList.remove('is-lit'));
   }
+
+  /* ───────────────── HOLO CARD: the ID card leans toward the pointer and catches the light ───────────────── */
+  if (finePointer && !reduced) {
+    const card = $('.id-card');
+    card.addEventListener('pointermove', e => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      card.style.setProperty('--ry', `${((px - 0.5) * 14).toFixed(2)}deg`);
+      card.style.setProperty('--rx', `${((0.5 - py) * 12).toFixed(2)}deg`);
+      card.style.setProperty('--gx', `${(px * 100).toFixed(1)}%`);
+      card.style.setProperty('--gy', `${(py * 100).toFixed(1)}%`);
+      card.classList.add('is-tilting');
+    });
+    card.addEventListener('pointerleave', () => {
+      card.classList.remove('is-tilting');
+      card.style.setProperty('--rx', '0deg'); card.style.setProperty('--ry', '0deg');
+    });
+  }
+
+  /* ───────────────── WORLD ─────────────────
+     A wireframe "market surface" rendered behind the whole page. It keeps rolling and reshapes for the section
+     you're reading (the nav's activeId): a calm swell, the NBIS ridge, a flat ledger grid. Lines near the pointer
+     light up gold. Pauses while the tab is hidden; one still frame under reduced motion. */
+  const World = (() => {
+    const cv = $('#world');
+    if (!cv || !cv.getContext) return { recolor() {} };
+    const ctx = cv.getContext('2d');
+    // swell: rolling surface, ridge: the gold ridge climbing to the back, sharp: ridge width (smaller is spikier),
+    // glow: line strength, mesh: strength of the cross lines that turn the surface into a grid
+    const SHAPES = {
+      hero:       { swell: 1,    ridge: 0.7,  sharp: 0.025, glow: 1,    mesh: 0.1 },
+      path:       { swell: 0.8,  ridge: 0.35, sharp: 0.03,  glow: 0.55, mesh: 0.08 },
+      projects:   { swell: 0.55, ridge: 0.2,  sharp: 0.03,  glow: 0.45, mesh: 0.07 },
+      journal:    { swell: 0.5,  ridge: 0.25, sharp: 0.03,  glow: 0.45, mesh: 0.07 },
+      research:   { swell: 0.35, ridge: 1.6,  sharp: 0.006, glow: 0.65, mesh: 0.08 },
+      experience: { swell: 0.04, ridge: 0,    sharp: 0.03,  glow: 0.45, mesh: 0.24 },
+      skills:     { swell: 0.35, ridge: 0.15, sharp: 0.03,  glow: 0.45, mesh: 0.1 },
+      about:      { swell: 0.9,  ridge: 0.45, sharp: 0.025, glow: 0.6,  mesh: 0.08 }
+    };
+    const cur = Object.assign({}, SHAPES.hero);
+    let W = 0, H = 0, cols = 70, rows = 30, near = [232, 191, 106], far = [91, 132, 255], alpha = 1;
+    let mx = -9999, my = -9999, running = false, raf = 0;
+    const hex = h => { h = h.trim().replace('#', ''); if (h.length === 3) h = h.replace(/./g, c => c + c); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+    function recolor() {
+      const cs = getComputedStyle(root);
+      near = hex(cs.getPropertyValue('--accent')); far = hex(cs.getPropertyValue('--blue'));
+      alpha = parseFloat(cs.getPropertyValue('--world-alpha')) || 1;
+      if (!running) draw(performance.now());
+    }
+    function size() {
+      const small = innerWidth < 700, dpr = Math.min(window.devicePixelRatio || 1, small ? 1.25 : 1.5);
+      cols = small ? 44 : 70; rows = small ? 22 : 30;
+      W = cv.clientWidth; H = cv.clientHeight;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    const height = (x, z, t, s) => s.swell * (0.065 * Math.sin(3.1 * x + t * 0.5 + z * 3.7) + 0.04 * Math.sin(6.3 * x - t * 0.37 + z * 8.1) + 0.03 * Math.sin(9.7 * z + t * 0.42))
+      + (0.1 + 0.16 * z) * s.ridge * Math.exp(-((x - 0.42 + z * 0.55) ** 2) / s.sharp) * (0.75 + 0.25 * Math.sin(t * 0.35));
+    const proj = (x, y, z) => { const d = z * 3.1 + 0.85, k = Math.min(W, 1500) * 0.6 / d; return [W * 0.6 + x * k * 2.1, H * 0.36 + (0.5 - y) * k]; };
+    function draw(now) {
+      const t = now / 1000;
+      const target = SHAPES[activeId] || SHAPES.hero;
+      for (const k in cur) cur[k] += (target[k] - cur[k]) * (reduced ? 1 : 0.035);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.clearRect(0, 0, W, H);
+      ctx.lineWidth = 1;
+      const pts = [];
+      for (let r = 0; r < rows; r++) {
+        const z = r / (rows - 1), row = [];
+        for (let c = 0; c < cols; c++) { const x = -1 + 2 * c / (cols - 1); row.push(proj(x, height(x, z, t, cur), z)); }
+        pts.push(row);
+      }
+      for (let r = rows - 1; r >= 0; r--) {            // back to front, blue far away to gold up close
+        const z = r / (rows - 1), k = Math.pow(1 - z, 1.3);
+        const col = near.map((v, i) => Math.round(far[i] + (v - far[i]) * k));
+        ctx.strokeStyle = `rgba(${col},${((0.05 + 0.5 * Math.pow(1 - z, 1.8)) * cur.glow * alpha).toFixed(3)})`;
+        ctx.beginPath(); pts[r].forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+      }
+      ctx.strokeStyle = `rgba(${far},${(cur.mesh * alpha).toFixed(3)})`;
+      for (let c = 0; c < cols; c += 3) {
+        ctx.beginPath(); for (let r = 0; r < rows; r++) { const [x, y] = pts[r][c]; r ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+      }
+      if (mx > -999) {                                  // pointer light: brightens only the lines already drawn
+        ctx.globalCompositeOperation = 'source-atop';
+        const g = ctx.createRadialGradient(mx, my, 0, mx, my, 220);
+        g.addColorStop(0, `rgba(${near},0.95)`); g.addColorStop(1, `rgba(${near},0)`);
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      }
+    }
+    function loop(now) { draw(now); if (running) raf = requestAnimationFrame(loop); }
+    function start() { if (running || reduced || document.hidden) return; running = true; raf = requestAnimationFrame(loop); }
+    function stop() { running = false; cancelAnimationFrame(raf); }
+    size(); recolor(); draw(performance.now());
+    cv.classList.add('is-on');
+    window.addEventListener('resize', () => { size(); if (!running) draw(performance.now()); });
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', recolor);
+    if (finePointer) {
+      window.addEventListener('pointermove', e => { mx = e.clientX; my = e.clientY; }, { passive: true });
+      document.addEventListener('pointerleave', () => { mx = my = -9999; });
+    }
+    start();
+    return { recolor };
+  })();
 
   /* ───────────────── TIMELINE ─────────────────
      Arrows step through the cards; the bar underneath is a real scrollbar (drag the thumb, click the track, or use arrow keys). */
