@@ -616,10 +616,25 @@ button { font: inherit; color: inherit; }
 .chapters button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 4px 12px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); cursor: pointer; }
 .chapters button.is-on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
 .deck-head a { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--accent); }
-.stage { position: relative; background: #fff; aspect-ratio: 16 / 9; overflow: hidden; }
-.stage img { width: 100%; height: 100%; object-fit: contain; }
+/* the deck in 3D: the current slide centred on a lit stage, its neighbours angled away on either side */
+.stage {
+  position: relative; aspect-ratio: 16 / 9; overflow: hidden; perspective: 1600px;
+  background: radial-gradient(ellipse 70% 80% at 50% 45%, color-mix(in srgb, var(--blue) 16%, var(--surface-solid)), var(--surface-solid) 75%);
+}
+.stage #slideImg, .stage .slide-side { position: absolute; height: auto; aspect-ratio: 16 / 9; object-fit: contain; background: #fff; border-radius: 6px; }
+.stage #slideImg { z-index: 2; left: 13%; top: 13%; width: 74%; box-shadow: 0 34px 70px -24px rgba(0, 0, 0, 0.75), 0 0 0 1px var(--line-2); }
+.stage .slide-side { z-index: 1; top: 23%; width: 54%; opacity: 0.4; filter: brightness(0.75) saturate(0.6); cursor: pointer; transition: opacity 0.3s; }
+.stage .slide-side.prev { left: -24%; transform: rotateY(38deg); transform-origin: right center; }
+.stage .slide-side.next { right: -24%; transform: rotateY(-38deg); transform-origin: left center; }
+.stage .slide-side:hover { opacity: 0.65; }
+@media (max-width: 600px) {
+  .stage #slideImg { left: 9%; top: 9%; width: 82%; }
+  .stage .slide-side { top: 25%; width: 50%; }
+  .stage .slide-side.prev { left: -36%; }
+  .stage .slide-side.next { right: -36%; }
+}
 .stage-btn {
-  position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%;
+  position: absolute; z-index: 3; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%;
   border: 1px solid rgba(0, 0, 0, 0.15); background: rgba(255, 255, 255, 0.92); color: #111; cursor: pointer;
   display: grid; place-items: center; font-size: 18px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
 }
@@ -988,6 +1003,14 @@ button { font: inherit; color: inherit; }
   .case:nth-child(odd) .hood { padding-left: 14%; }
   .case:nth-child(even) .hood { padding-right: 14%; }
 }
+
+/* research: the football field draws in with light the first time you reach it; the live line pulses on each new price */
+.ff .bar { transform-box: fill-box; transform-origin: left center; }
+.ff-chart.is-waiting .bar { transform: scaleX(0); }
+.ff-chart.is-intro .bar { animation: ffGrow 0.9s var(--ease) both; animation-delay: calc(var(--i, 0) * 90ms); }
+@keyframes ffGrow { from { transform: scaleX(0); } }
+.ff-chart.is-pulse .ln-live { animation: livePulse 1.6s ease-out; }
+@keyframes livePulse { from { stroke-width: 7; opacity: 0.5; } to { stroke-width: 2; opacity: 1; } }
 
 /* bigger tap areas for small links, without changing how they look */
 .contact dd a, .deck-head a { position: relative; }

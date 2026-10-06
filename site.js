@@ -727,7 +727,9 @@
     const step = max <= 120 ? (narrow ? 20 : 10) : max <= 240 ? (narrow ? 40 : 20) : (narrow ? 100 : 50);
     const X = v => L + (v / max) * (R - L);
     let s = `<svg viewBox="0 0 ${W} ${H}" role="img" text-rendering="geometricPrecision" aria-label="Football field: implied NBIS value per share by method, with price at call $51.97, target $60${live ? ', and today ' + fmtPx(live) : ''}">`;
-    s += `<defs><linearGradient id="ffBar" x1="0" x2="1" y1="0" y2="0"><stop offset="0" class="ffg0"/><stop offset="1" class="ffg1"/></linearGradient></defs>`;
+    s += `<defs><linearGradient id="ffBar" x1="0" x2="1" y1="0" y2="0"><stop offset="0" class="ffg0"/><stop offset="1" class="ffg1"/></linearGradient>`
+      // sized to the whole chart: the vertical price lines have zero-width boxes, so a relative filter region would erase them
+      + `<filter id="ffGlow" filterUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
     // zebra rows sit under everything so each method reads as one line
     FF_ROWS.forEach((r, i) => { if (i % 2 === 0) s += `<rect class="row-bg" x="0" y="${top + i * rowH + 3}" width="${W}" height="${rowH - 6}" rx="6"/>`; });
     for (let v = 0; v <= max; v += step) {
@@ -741,13 +743,13 @@
       if (narrow) {
         const y0 = top + i * rowH;
         s += `<g class="bar-row"><text class="lbl" x="${L + 4}" y="${y0 + 20}">${esc(name)}</text>
-          <rect class="bar" x="${X(lo)}" y="${y0 + 28}" width="${X(hi) - X(lo)}" height="14" rx="3"/></g>`;
+          <rect class="bar" style="--i:${i}" filter="url(#ffGlow)" x="${X(lo)}" y="${y0 + 28}" width="${X(hi) - X(lo)}" height="14" rx="3"/></g>`;
         narrowVals += `<text class="val val-n" x="${R}" y="${y0 + 20}" text-anchor="end">$${lo.toFixed(2)} – $${hi.toFixed(2)}</text>`;
         return;
       }
       const cy = top + i * rowH + rowH / 2;
       s += `<g class="bar-row"><text class="lbl" x="12" y="${cy - 2}">${esc(name)}</text><text class="lbl-sub" x="12" y="${cy + 13}">${esc(sub)}</text>
-        <rect class="bar" x="${X(lo)}" y="${cy - 8}" width="${X(hi) - X(lo)}" height="16" rx="3"/>
+        <rect class="bar" style="--i:${i}" filter="url(#ffGlow)" x="${X(lo)}" y="${cy - 8}" width="${X(hi) - X(lo)}" height="16" rx="3"/>
         <text class="val" x="${X(lo) - 6}" y="${cy + 4}" text-anchor="end">$${lo.toFixed(2)}</text>
         <text class="val" x="${X(hi) + 6}" y="${cy + 4}">$${hi.toFixed(2)}</text></g>`;
     });
@@ -765,12 +767,12 @@
     };
     s += `<line class="ln-call" x1="${X(CALL.px)}" x2="${X(CALL.px)}" y1="${top - 26}" y2="${yEnd + 4}"/>`;
     s += tag(X(CALL.px) - 1, 0, 'CALL $51.97', 'tag-bg-call', 'tag-t-call', 'end');
-    s += `<line class="ln-target" x1="${X(CALL.target)}" x2="${X(CALL.target)}" y1="${top - 26}" y2="${yEnd + 4}"/>`;
+    s += `<line class="ln-target" filter="url(#ffGlow)" x1="${X(CALL.target)}" x2="${X(CALL.target)}" y1="${top - 26}" y2="${yEnd + 4}"/>`;
     s += tag(X(CALL.target) + 1, 0, 'PT $60.00', 'tag-bg-target', '', 'start');
     if (live) {
       const dn = live < CALL.px ? ' is-down' : '';
       const lx = X(live);
-      s += `<line class="ln-live${dn}" x1="${lx}" x2="${lx}" y1="${top - 6}" y2="${yEnd + 4}"/>`;
+      s += `<line class="ln-live${dn}" filter="url(#ffGlow)" x1="${lx}" x2="${lx}" y1="${top - 6}" y2="${yEnd + 4}"/>`;
       s += tag(lx, 24, 'NOW $' + fmtPx(live), 'tag-bg-live' + dn, '', 'middle');
     }
     s += narrowVals + '</svg>';
@@ -779,6 +781,18 @@
   let ffW = 0;
   new ResizeObserver(() => { const w = $('#ffChart').clientWidth; if (Math.abs(w - ffW) > 4) { ffW = w; renderFF(ffLive); } }).observe($('#ffChart'));
   renderFF(null);
+  // bars draw in with light the first time the chart is reached; re-renders after that stay put
+  const ffBox = $('#ffChart');
+  if (!reduced && 'IntersectionObserver' in window) {
+    ffBox.classList.add('is-waiting');
+    const ffIo = new IntersectionObserver(es => {
+      if (!es[0].isIntersecting) return;
+      ffIo.disconnect();
+      ffBox.classList.replace('is-waiting', 'is-intro');
+      setTimeout(() => ffBox.classList.remove('is-intro'), 2000);
+    }, { threshold: 0.35 });
+    ffIo.observe(ffBox);
+  }
   Quotes.on(data => {
     const q = data.NBIS;
     if (!q) {
@@ -796,6 +810,7 @@
     const cell = $('#nbisCell');
     cell.classList.remove('flash'); void cell.offsetWidth; cell.classList.add('flash');
     renderFF(q.price);
+    if (!q.stale) { ffBox.classList.remove('is-pulse'); void ffBox.offsetWidth; ffBox.classList.add('is-pulse'); }
     $('#ffFoot').innerHTML = `Today <b>$${fmtPx(q.price)}</b> is <b>${vsTgt >= 0 ? '+' : ''}${vsTgt.toFixed(1)}%</b> vs. the $60 target and <b>${sinceCall >= 0 ? '+' : ''}${sinceCall.toFixed(1)}%</b> since the call${q.stale ? ' (last known price)' : ''}. Bars are implied value per share by method; the shaded band is my bear-to-bull range.`;
   });
 
@@ -804,11 +819,20 @@
   const pad2 = n => String(n).padStart(2, '0');
   let slide = 1;
   const thumbs = $('#thumbs');
-  thumbs.innerHTML = SLIDES.map((t, i) => `<button type="button" data-s="${i + 1}" aria-label="Slide ${i + 1}: ${esc(t)}"><img src="t-${pad2(i + 1)}.jpg" alt="" width="200" height="113"></button>`).join('');
+  thumbs.innerHTML = SLIDES.map((t, i) => `<button type="button" data-s="${i + 1}" aria-label="Slide ${i + 1}: ${esc(t)}"><img src="t-${pad2(i + 1)}.jpg" alt="" loading="lazy" width="200" height="113"></button>`).join('');
+  const wrapSlide = k => ((k - 1 + SLIDES.length) % SLIDES.length) + 1;
   function showSlide(n, sound) {
-    slide = ((n - 1 + SLIDES.length) % SLIDES.length) + 1;
+    const dir = n === slide ? 0 : n > slide ? 1 : -1;   // which side the new slide turns in from
+    slide = wrapSlide(n);
     const img = $('#slideImg');
     img.src = `s-${pad2(slide)}.jpg`;
+    // the neighbours sit angled on either side (lazy, so nothing loads until the deck is near)
+    $('#slideSidePrev').src = `s-${pad2(wrapSlide(slide - 1))}.jpg`;
+    $('#slideSideNext').src = `s-${pad2(wrapSlide(slide + 1))}.jpg`;
+    if (dir && !reduced && img.animate) {
+      img.animate([{ transform: `translateX(${dir * 14}%) rotateY(${dir * -32}deg)`, opacity: 0.35 }, { transform: 'none', opacity: 1 }],
+        { duration: 560, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    }
     img.alt = `Slide ${slide}: ${SLIDES[slide - 1]}`;
     $('#slideCount').textContent = `${pad2(slide)} / ${SLIDES.length}`;
     $('#slideTitle').textContent = SLIDES[slide - 1];
@@ -817,10 +841,11 @@
     if (on) thumbs.scrollTo({ left: on.offsetLeft - thumbs.clientWidth / 2 + on.clientWidth / 2, behavior: reduced ? 'auto' : 'smooth' });
     const ch = [3, 16, 21, 27];
     $$('#chapters button').forEach((b, i) => b.classList.toggle('is-on', slide >= ch[i] && (i === ch.length - 1 || slide < ch[i + 1])));
-    [slide + 1, slide - 1].forEach(k => { if (k >= 1 && k <= SLIDES.length) { const p = new Image(); p.src = `s-${pad2(k)}.jpg`; } });
     if (sound) Sound.play('slide');
   }
   showSlide(1);
+  $('#slideSidePrev').addEventListener('click', () => showSlide(slide - 1, true));
+  $('#slideSideNext').addEventListener('click', () => showSlide(slide + 1, true));
   $('#slidePrev').addEventListener('click', () => showSlide(slide - 1, true));
   $('#slideNext').addEventListener('click', () => showSlide(slide + 1, true));
   thumbs.addEventListener('click', e => { const b = e.target.closest('button'); if (b) showSlide(+b.dataset.s, true); });
