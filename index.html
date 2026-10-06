@@ -340,18 +340,28 @@
         <p class="eyebrow">Projects</p>
         <h2 class="section-title" id="h-projects">Live finance tools</h2>
       </div>
-      <p class="section-sub">Three tools I designed and shipped, each one live in the browser. I used Claude Code to write the code; the finance logic, edge cases and checks are mine.</p>
+      <p class="section-sub">Three tools I designed and shipped. Each one works in your browser right now, with nothing to download. I used Claude Code to write the code; the finance logic, edge cases and checks are mine.</p>
     </div>
 
     <p class="notice"><span class="notice-ic" aria-hidden="true">i</span><span><strong>A note on accuracy.</strong> These tools run on free and low-cost data sources, without premium AI API keys or paid market-data feeds, so some figures can be delayed, incomplete or approximate. They're built to show the method, not to be relied on for investment decisions.</span></p>
 
     <div class="cases">
       <article class="case rise" id="proj-fpa">
-        <a class="case-shot" href="https://dancourn.github.io/fpa-dashboard.html" target="_blank" rel="noopener" aria-label="Open the FP&amp;A dashboard live demo">
-          <div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">dancourn.github.io/fpa-dashboard</span></div>
-          <img src="tool-fpa.jpg" alt="FP&amp;A Expected vs. Actuals dashboard showing $133.1M expected, $139.4M actual and insight callouts" loading="lazy" width="1440" height="900"></div>
-          <span class="open-tag">Open live ↗</span>
-        </a>
+        <div class="case-stage">
+          <a class="case-shot" href="https://dancourn.github.io/fpa-dashboard.html" target="_blank" rel="noopener" aria-label="Open the FP&amp;A dashboard live demo">
+            <div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">dancourn.github.io/fpa-dashboard</span></div>
+            <img src="tool-fpa.jpg" alt="FP&amp;A Expected vs. Actuals dashboard showing $133.1M expected, $139.4M actual and insight callouts" loading="lazy" width="1440" height="900"></div>
+            <span class="open-tag">Open live ↗</span>
+          </a>
+          <div class="mini" data-mini="fpa" aria-hidden="true"></div>
+          <div class="hood" id="hood-fpa" role="region" aria-label="How the FP&amp;A dashboard works" inert>
+            <p class="hood-k">Under the hood</p>
+            <h4>Favorable or unfavorable</h4>
+            <code>Revenue: (Actual − Plan) ÷ Plan</code>
+            <code>Costs: (Plan − Actual) ÷ Plan</code>
+            <p>Positive is favorable either way, so a revenue beat and a cost underrun both read green. Net variance is revenue beats minus cost overruns.</p>
+          </div>
+        </div>
         <div class="case-body">
           <div class="case-meta"><span class="chip chip-live">Live</span><span class="chip">HTML/JS</span><span class="chip">FP&amp;A</span></div>
           <h3 class="case-name">Expected vs. Actuals</h3>
@@ -364,6 +374,7 @@
           </ul>
           <div class="case-actions">
             <button class="btn btn-primary btn-sm" type="button" data-case="case-fpa">Read the case study</button>
+            <button class="btn btn-sm" type="button" data-peel="hood-fpa" aria-controls="hood-fpa" aria-expanded="false">Under the hood</button>
             <a class="btn btn-sm" href="https://dancourn.github.io/fpa-dashboard.html" target="_blank" rel="noopener">Live demo ↗</a>
             <a class="btn btn-sm btn-quiet" href="https://dancourn.github.io/fpa_sample_data.xlsx" target="_blank" rel="noopener">Sample data ↓</a>
           </div>
@@ -371,11 +382,23 @@
       </article>
 
       <article class="case rise" id="proj-dcf">
-        <a class="case-shot" href="https://dancourn.github.io/dcf-calculator.html" target="_blank" rel="noopener" aria-label="Open the Valence DCF calculator">
-          <div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">dancourn.github.io/dcf-calculator</span></div>
-          <img src="tool-dcf.jpg" alt="Valence DCF calculator with ticker input, assumptions panel and 10-year FCF projection" loading="lazy" width="1440" height="900"></div>
-          <span class="open-tag">Open live ↗</span>
-        </a>
+        <div class="case-stage">
+          <a class="case-shot" href="https://dancourn.github.io/dcf-calculator.html" target="_blank" rel="noopener" aria-label="Open the Valence DCF calculator">
+            <div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">dancourn.github.io/dcf-calculator</span></div>
+            <img src="tool-dcf.jpg" alt="Valence DCF calculator with ticker input, assumptions panel and 10-year FCF projection" loading="lazy" width="1440" height="900"></div>
+            <span class="open-tag">Open live ↗</span>
+          </a>
+          <div class="mini" data-mini="dcf" aria-hidden="true"></div>
+          <div class="hood" id="hood-dcf" role="region" aria-label="How Valence works" inert>
+            <p class="hood-k">Under the hood</p>
+            <h4>Cost of capital and value</h4>
+            <code>WACC ≈ 4.3% + β<sub>adj</sub> × 4.5% ± size premium</code>
+            <code>β<sub>adj</sub> = 0.67 × β + 0.33, held between 0.8 and 2.0</code>
+            <code>FCF = NOPAT + D&amp;A − CapEx − ΔNWC</code>
+            <code>Terminal value = FCF<sub>10</sub> × (1 + g) ÷ (WACC − g)</code>
+            <p>WACC comes from CAPM with a Blume-adjusted beta; ten years of free cash flow and a perpetuity terminal value are discounted at it.</p>
+          </div>
+        </div>
         <div class="case-body">
           <div class="case-meta"><span class="chip chip-live">Live</span><span class="chip">Interactive</span><span class="chip">Valuation</span></div>
           <h3 class="case-name">Valence</h3>
@@ -388,6 +411,7 @@
           </ul>
           <div class="case-actions">
             <button class="btn btn-primary btn-sm" type="button" data-case="case-dcf">Read the case study</button>
+            <button class="btn btn-sm" type="button" data-peel="hood-dcf" aria-controls="hood-dcf" aria-expanded="false">Under the hood</button>
             <a class="btn btn-sm" href="https://dancourn.github.io/dcf-calculator.html" target="_blank" rel="noopener">Live demo ↗</a>
             <a class="btn btn-sm btn-quiet" href="https://github.com/dancourn/dancourn.github.io/blob/main/dcf-calculator.html" target="_blank" rel="noopener">Source ↗</a>
           </div>
@@ -395,11 +419,22 @@
       </article>
 
       <article class="case rise" id="proj-ma">
-        <a class="case-shot" href="https://dancourn.github.io/accretion-dilution.html" target="_blank" rel="noopener" aria-label="Open the Lucite accretion/dilution model">
-          <div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">dancourn.github.io/accretion-dilution</span></div>
-          <img src="tool-ma.jpg" alt="Lucite accretion/dilution model showing a deal tombstone with +2.7% accretive verdict" loading="lazy" width="1440" height="900"></div>
-          <span class="open-tag">Open live ↗</span>
-        </a>
+        <div class="case-stage">
+          <a class="case-shot" href="https://dancourn.github.io/accretion-dilution.html" target="_blank" rel="noopener" aria-label="Open the Lucite accretion/dilution model">
+            <div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">dancourn.github.io/accretion-dilution</span></div>
+            <img src="tool-ma.jpg" alt="Lucite accretion/dilution model showing a deal tombstone with +2.7% accretive verdict" loading="lazy" width="1440" height="900"></div>
+            <span class="open-tag">Open live ↗</span>
+          </a>
+          <div class="mini" data-mini="ma" aria-hidden="true"></div>
+          <div class="hood" id="hood-ma" role="region" aria-label="How Lucite works" inert>
+            <p class="hood-k">Under the hood</p>
+            <h4>The EPS bridge</h4>
+            <code>New shares = stock paid ÷ buyer's share price</code>
+            <code>Pro forma NI = NI<sub>buyer</sub> + NI<sub>target</sub> − after-tax interest on new debt − after-tax interest lost on cash + after-tax synergies</code>
+            <code>Accretion = pro forma EPS ÷ standalone EPS − 1</code>
+            <p>Pro forma EPS divides that net income by the buyer's shares plus the new ones, so the answer holds for any stock, cash and debt mix.</p>
+          </div>
+        </div>
         <div class="case-body">
           <div class="case-meta"><span class="chip chip-live">Live</span><span class="chip">Interactive</span><span class="chip">M&amp;A</span></div>
           <h3 class="case-name">Lucite</h3>
@@ -412,6 +447,7 @@
           </ul>
           <div class="case-actions">
             <button class="btn btn-primary btn-sm" type="button" data-case="case-ma">Read the case study</button>
+            <button class="btn btn-sm" type="button" data-peel="hood-ma" aria-controls="hood-ma" aria-expanded="false">Under the hood</button>
             <a class="btn btn-sm" href="https://dancourn.github.io/accretion-dilution.html" target="_blank" rel="noopener">Live demo ↗</a>
             <a class="btn btn-sm btn-quiet" href="https://github.com/dancourn/dancourn.github.io/blob/main/accretion-dilution.html" target="_blank" rel="noopener">Source ↗</a>
           </div>

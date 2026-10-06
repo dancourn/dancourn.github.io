@@ -828,6 +828,101 @@
   let deckVisible = false;
   new IntersectionObserver(es => es.forEach(e => { deckVisible = e.intersectionRatio > 0.4; }), { threshold: [0, 0.4, 0.8] }).observe($('#deck'));
 
+  /* ───────────────── PROJECTS ─────────────────
+     Screens float in 3D and turn with the scroll, the tool nearest the middle of the screen takes the stage,
+     each one carries a mini render of its real numbers, and "Under the hood" opens the formulas behind it. */
+  (function projects() {
+    const wrap = $('.cases');
+    if (!wrap) return;
+    const cases = $$('.case', wrap);
+    const head = (t, s) => `<p class="mini-h"><b>${t}</b><span>${s}</span></p>`;
+    const svg = body => `<svg viewBox="0 0 260 112">${body}</svg>`;
+    // FP&A dashboard built-in demo, full year by department; costs are sign-flipped so + is favorable (dashboard's own rule)
+    const VAR = [['Revenue', 4.8], ['COGS', -0.6], ['R&D', -8.8], ['S&M', -3.1], ['G&A', -1.0], ['CapEx', -1.9]];
+    // my NBIS model, slide 24: implied $/share by WACC (rows) and terminal growth (columns), perpetuity method
+    const WACC = [9, 9.5, 10, 11, 12], TGR = [2.8, 3.0, 3.3, 3.5];
+    const GRID = [[77.30, 80.34, 83.65, 87.26], [69.49, 71.99, 74.69, 77.62], [62.88, 64.96, 67.19, 69.60], [52.34, 53.83, 55.40, 57.08], [44.41, 45.49, 46.64, 47.86]];
+    // Lucite's engine on its Microsoft / Activision example ($M): all cash, 2% yield given up on cash, 13% tax, no synergies
+    const accretion = prem => ((72700 + 2700 - 65 * (1 + prem / 100) * 780 * 0.02 * (1 - 0.13)) / 72700 - 1) * 100;
+    const build = {
+      fpa() {
+        const cx = 150, k = 9;
+        let b = `<line class="axis" x1="${cx}" x2="${cx}" y1="0" y2="110"/>`;
+        VAR.forEach(([d, v], i) => {
+          const y = 4 + i * 18, w = Math.abs(v) * k, pos = v >= 0;
+          b += `<text x="0" y="${y + 9}">${esc(d)}</text>`
+            + `<rect class="bar ${pos ? 'pos' : 'neg'}" style="--i:${i}" x="${pos ? cx : cx - w}" y="${y}" width="${w}" height="11" rx="2"/>`
+            + `<text class="num ${pos ? 'pos' : 'neg'}" x="258" y="${y + 9}" text-anchor="end">${pos ? '+' : '−'}${Math.abs(v).toFixed(1)}%</text>`;
+        });
+        return head('Variance vs. plan', 'Dashboard demo, FY') + svg(b);
+      },
+      dcf() {
+        const x0 = 40, cw = 55, y0 = 16, rh = 19, lo = 44.41, hi = 87.26;
+        let b = TGR.map((g, j) => `<text class="hd" x="${x0 + j * cw + cw / 2}" y="10" text-anchor="middle">g ${g.toFixed(1)}%</text>`).join('');
+        GRID.forEach((row, i) => {
+          const y = y0 + i * rh;
+          b += `<text class="hd" x="${x0 - 6}" y="${y + 12.5}" text-anchor="end">${WACC[i].toFixed(1)}%</text>`;
+          row.forEach((v, j) => {
+            const n = i * 4 + j, a = (0.08 + 0.42 * (v - lo) / (hi - lo)).toFixed(2);
+            b += `<rect class="cell${i === 2 && j === 1 ? ' cell-base' : ''}" style="--i:${n};--a:${a}" x="${x0 + j * cw + 1}" y="${y}" width="${cw - 2}" height="${rh - 2}" rx="2"/>`
+              + `<text class="cell-t" style="--i:${n}" x="${x0 + j * cw + cw / 2}" y="${y + 12}" text-anchor="middle">$${v.toFixed(2)}</text>`;
+          });
+        });
+        return head('WACC × growth', 'My NBIS model, $/sh') + svg(b);
+      },
+      ma() {
+        const X = p => 30 + (p + 20) / 100 * 220, Y = a => 8 + (2.9 - a) / 1.5 * 88;
+        let d = '';
+        for (let p = -20; p <= 80; p += 5) d += `${p === -20 ? 'M' : 'L'}${X(p).toFixed(1)} ${Y(accretion(p)).toFixed(1)}`;
+        const a45 = accretion(45), x = X(45).toFixed(1), y = Y(a45).toFixed(1);
+        return head('Accretion vs. premium', 'MSFT / ATVI') + svg(
+          `<line class="grid" x1="30" x2="250" y1="${Y(2.5)}" y2="${Y(2.5)}"/><line class="grid" x1="30" x2="250" y1="${Y(1.5)}" y2="${Y(1.5)}"/>`
+          + `<text class="hd" x="26" y="${Y(2.5) + 3}" text-anchor="end">+2.5%</text><text class="hd" x="26" y="${Y(1.5) + 3}" text-anchor="end">+1.5%</text>`
+          + `<line class="axis" x1="30" x2="250" y1="96" y2="96"/><path class="curve" pathLength="1" d="${d}"/>`
+          + `<line class="mark late" x1="${x}" x2="${x}" y1="${y}" y2="96"/><circle class="dot late" cx="${x}" cy="${y}" r="3.5"/>`
+          + `<text class="num pos late" x="${+x + 6}" y="${y - 6}">+${a45.toFixed(2)}% at 45%</text>`
+          + `<text class="hd" x="30" y="109">−20% premium</text><text class="hd" x="250" y="109" text-anchor="end">+80%</text>`);
+      }
+    };
+    $$('.mini', wrap).forEach(m => { if (build[m.dataset.mini]) m.innerHTML = build[m.dataset.mini](); });
+    wrap.classList.add('js-mini');
+
+    // stage lighting + scroll-turned screens
+    let staged = null, queued = false;
+    function stage() {
+      queued = false;
+      const mid = window.innerHeight / 2;
+      let best = null, bestD = Infinity;
+      cases.forEach(c => {
+        const r = c.getBoundingClientRect(), center = r.top + r.height / 2;
+        if (!reduced) c.style.setProperty('--t', Math.max(-1, Math.min(1, (center - mid) / window.innerHeight)).toFixed(3));
+        const d = Math.abs(center - mid);
+        if (r.bottom > window.innerHeight * 0.2 && r.top < window.innerHeight * 0.8 && d < bestD) { bestD = d; best = c; }
+      });
+      if (best === staged) return;
+      if (staged) staged.classList.remove('is-stage');
+      staged = best;
+      wrap.classList.toggle('has-stage', !!best);
+      if (best) { best.classList.add('is-stage'); best.classList.remove('is-played'); void best.offsetWidth; best.classList.add('is-played'); }
+    }
+    window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(stage); } }, { passive: true });
+    window.addEventListener('resize', stage);
+    stage();
+
+    // under the hood: the screen swings open like a door
+    $$('[data-peel]').forEach(btn => {
+      const hood = document.getElementById(btn.dataset.peel), box = hood.closest('.case-stage');
+      btn.addEventListener('click', () => {
+        const open = !box.classList.contains('is-peeled');
+        box.classList.toggle('is-peeled', open);
+        hood.toggleAttribute('inert', !open);
+        btn.setAttribute('aria-expanded', String(open));
+        btn.textContent = open ? 'Back to the tool' : 'Under the hood';
+        Sound.play(open ? 'open' : 'close');
+      });
+    });
+  })();
+
   /* ───────────────── SKILL CARDS: a soft light that follows the pointer ───────────────── */
   if (finePointer && !reduced) {
     $$('.skill-card').forEach(card => card.addEventListener('pointermove', e => {
