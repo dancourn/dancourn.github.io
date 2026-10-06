@@ -330,7 +330,8 @@ button { font: inherit; color: inherit; }
 @keyframes nameSweep { 0% { opacity: 1; background-position: 160% 0; } 80% { opacity: 1; } 100% { opacity: 0; background-position: -70% 0; } }
 .lede { max-width: 58ch; margin: 28px 0 0; font-size: 1.1875rem; line-height: 1.6; color: var(--fg-2); text-wrap: pretty; }
 .lede strong { color: var(--fg); font-weight: 600; }
-.status { display: flex; align-items: center; gap: 10px; margin: 18px 0 0; font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.status { display: flex; align-items: flex-start; gap: 10px; margin: 18px 0 0; font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--muted); }
+.status .live-dot { margin-top: 0.42em; } /* markers line up with the first line of text, even when it wraps */
 .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 4px var(--up-soft); flex-shrink: 0; }
 .ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
 
@@ -999,7 +1000,7 @@ button { font: inherit; color: inherit; }
 }
 @media (max-width: 600px) {
   .ctas, .case-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ctas .btn, .case-actions .btn { justify-content: center; text-align: center; }
+  .ctas .btn, .case-actions .btn { justify-content: center; text-align: center; padding-inline: 8px; }
   .deck-head .label { order: 1; }
   .deck-head a { order: 2; }
   .chapters { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
