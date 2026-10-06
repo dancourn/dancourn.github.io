@@ -633,11 +633,11 @@
   const pad2 = n => String(n).padStart(2, '0');
   let slide = 1;
   const thumbs = $('#thumbs');
-  thumbs.innerHTML = SLIDES.map((t, i) => `<button type="button" data-s="${i + 1}" aria-label="Slide ${i + 1}: ${esc(t)}"><img src="assets/img/nbis/t-${pad2(i + 1)}.jpg" alt="" width="200" height="113"></button>`).join('');
+  thumbs.innerHTML = SLIDES.map((t, i) => `<button type="button" data-s="${i + 1}" aria-label="Slide ${i + 1}: ${esc(t)}"><img src="t-${pad2(i + 1)}.jpg" alt="" width="200" height="113"></button>`).join('');
   function showSlide(n, sound) {
     slide = ((n - 1 + SLIDES.length) % SLIDES.length) + 1;
     const img = $('#slideImg');
-    img.src = `assets/img/nbis/s-${pad2(slide)}.jpg`;
+    img.src = `s-${pad2(slide)}.jpg`;
     img.alt = `Slide ${slide}: ${SLIDES[slide - 1]}`;
     $('#slideCount').textContent = `${pad2(slide)} / ${SLIDES.length}`;
     $('#slideTitle').textContent = SLIDES[slide - 1];
@@ -646,7 +646,7 @@
     if (on) thumbs.scrollTo({ left: on.offsetLeft - thumbs.clientWidth / 2 + on.clientWidth / 2, behavior: reduced ? 'auto' : 'smooth' });
     const ch = [3, 16, 21, 27];
     $$('#chapters button').forEach((b, i) => b.classList.toggle('is-on', slide >= ch[i] && (i === ch.length - 1 || slide < ch[i + 1])));
-    [slide + 1, slide - 1].forEach(k => { if (k >= 1 && k <= SLIDES.length) { const p = new Image(); p.src = `assets/img/nbis/s-${pad2(k)}.jpg`; } });
+    [slide + 1, slide - 1].forEach(k => { if (k >= 1 && k <= SLIDES.length) { const p = new Image(); p.src = `s-${pad2(k)}.jpg`; } });
     if (sound) Sound.play('slide');
   }
   showSlide(1);
