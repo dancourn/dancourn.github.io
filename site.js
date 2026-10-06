@@ -231,7 +231,9 @@
       const word = line.dataset.text.toUpperCase();
       line.innerHTML = word.split('').map(c => `<span class="ch">${c}</span>`).join('');
       const cells = $$('.ch', line);
-      cells.forEach(c => { c.style.width = c.getBoundingClientRect().width + 'px'; c.style.textAlign = 'center'; });
+      // locked in em, not px, so the cells rescale with the name's fluid font-size on resize or rotation
+      const em = parseFloat(getComputedStyle(line).fontSize);
+      cells.forEach(c => { c.style.width = c.getBoundingClientRect().width / em + 'em'; c.style.textAlign = 'center'; });
       if (reduced) return;
       cells.forEach((cell, i) => {
         const final = cell.textContent;
