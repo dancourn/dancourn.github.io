@@ -337,11 +337,21 @@
     });
   })();
 
-  /* ───────────────── WORK JOURNAL ───────────────── */
+  /* ───────────────── FP&A TRAINING DESK ───────────────── */
   const TASKS = typeof FB_TASKS !== 'undefined' ? FB_TASKS : [];
   const PHASES = typeof FB_PHASES !== 'undefined' ? FB_PHASES : [];
   const COMPANY = typeof FB_COMPANY !== 'undefined' ? FB_COMPANY : {};
+  const statusChip = active => active ? '<span class="chip chip-wip">In progress</span>' : '<span class="chip chip-live">Completed</span>';
   (function renderJournal() {
+    // paused: reuse the Coming soon card look (blurred, inert, "In progress" overlay)
+    if (COMPANY.status === 'paused') {
+      $('#fbBody').classList.add('ws', 'is-soon');
+      const inner = $('#fbInner');
+      inner.classList.add('ws-blur');
+      inner.inert = true;
+      inner.setAttribute('aria-hidden', 'true');
+      $('#fbSoon').hidden = false;
+    }
     const done = TASKS.filter(t => t.status === 'done');
     const scored = done.filter(t => t.score != null);
     $('#fbStats').hidden = done.length === 0;
@@ -363,7 +373,7 @@
       return `<button class="entry rise" type="button" data-case="${esc(t.id)}" id="${esc(t.id)}">
         <div class="entry-num"><small>Task</small>${esc(t.num)}</div>
         <div>
-          <div class="entry-meta"><span class="chip">${esc(t.category)}</span>${active ? '<span class="chip chip-wip">In progress</span>' : '<span class="chip chip-live">Completed</span>'}</div>
+          <div class="entry-meta"><span class="chip">${esc(t.category)}</span>${statusChip(active)}</div>
           <h3 class="entry-title">${esc(t.title)}</h3>
           <p class="entry-blurb">${esc(t.blurb)}</p>
         </div>
@@ -380,8 +390,8 @@
     const score = t.score != null ? `<div><h5>Review score</h5><div class="big-score">${esc(t.score)}<small>/10</small></div></div>` : '';
     const links = (t.links || []).length ? `<div><h5>Deliverables</h5><div class="links">${t.links.map(l => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join('')}</div></div>` : '';
     return `<h2 id="readerTitle">${esc(t.title)}</h2>
-      <p class="reader-kind">Corvane Systems (fictional) · ${esc(t.category)}</p>
-      <div class="case-meta">${active ? '<span class="chip chip-wip">In progress</span>' : '<span class="chip chip-live">Completed</span>'}<span class="chip">Mock assignment</span></div>
+      <p class="reader-kind">Quillmere Systems (fictional) · ${esc(t.category)}</p>
+      <div class="case-meta">${statusChip(active)}<span class="chip">Mock assignment</span></div>
       ${block('The ask', t.ask)}${block('My approach', t.approach)}${block('Key finding', t.finding)}${review}${pending}
       <div class="reader-facts"><div><h5>Skills</h5><div class="pills">${(t.skills || []).map(s => `<span class="chip">${esc(s)}</span>`).join('')}</div></div>${score}${links}</div>`;
   }
@@ -402,7 +412,7 @@
       } else {
         const t = TASKS.find(x => x.id === id);
         body.innerHTML = journalHTML(t);
-        $('#readerLabel').textContent = `Mock work journal · Task ${t.num}`;
+        $('#readerLabel').textContent = `FP&A Training Desk · Task ${t.num}`;
       }
       body.scrollTop = 0;
       const g = group(id), i = g.indexOf(id);

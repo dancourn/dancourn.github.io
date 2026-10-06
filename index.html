@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Libre+Franklin:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <link rel="stylesheet" href="site.css">
 <style>
-  /* Corvane tear sheet (Work Journal): header band, 2x2 KPI grid, role/build footer strip. Loads after site.css. */
+  /* Quillmere tear sheet (Training Desk): header band, 2x2 KPI grid, role/build footer strip. Loads after site.css. */
   .co-card {
     position: relative; overflow: hidden; isolation: isolate; border-radius: var(--radius);
     background: radial-gradient(300px circle at 100% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 62%), var(--surface);
@@ -145,7 +145,7 @@
     <ul class="nav-links" id="navLinks">
       <li><a href="#path">Timeline</a></li>
       <li><a href="#projects">Projects</a></li>
-      <li><a href="#journal">Work Journal</a></li>
+      <li><a href="#journal">Training Desk</a></li>
       <li><a href="#research">Research</a></li>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#skills">Skills</a></li>
@@ -168,7 +168,7 @@
 <div class="drawer-nav" id="drawerNav" data-open="false">
   <a href="#path">Timeline</a>
   <a href="#projects">Projects</a>
-  <a href="#journal">Work Journal</a>
+  <a href="#journal">Training Desk</a>
   <a href="#research">Research</a>
   <a href="#experience">Experience</a>
   <a href="#skills">Skills</a>
@@ -321,7 +321,7 @@
         <div class="p-date">Now</div><span class="p-dot"></span>
         <article class="p-card">
           <h3>Mock FP&amp;A Analyst Role</h3>
-          <p class="p-org">Work journal · Fictional company</p>
+          <p class="p-org">FP&amp;A Training Desk · Fictional company</p>
           <p class="p-why">A mock FP&amp;A role I designed and run with AI, so I keep training in finance while I job search.</p>
           <a class="p-go" href="#journal">Go to section →</a>
         </article>
@@ -448,23 +448,27 @@
   <div class="wrap">
     <div class="section-head">
       <div>
-        <p class="eyebrow">Work journal</p>
-        <h2 class="section-title" id="h-journal">Mock FP&amp;A work journal</h2>
+        <p class="eyebrow">Training desk</p>
+        <h2 class="section-title" id="h-journal">FP&amp;A Training Desk: Building Analyst Skills with AI</h2>
       </div>
       <p class="section-sub">A mock FP&amp;A role I came up with and built using AI, so I can keep training in finance while I job search.</p>
     </div>
 
+    <!-- FB_COMPANY.status 'paused': site.js turns #fbBody into a blurred "In progress" card (same look as the Coming soon cards) -->
+    <div id="fbBody">
+    <div class="soon" id="fbSoon" hidden><span class="soon-tag">In progress<span class="soon-dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></span><span class="sr-only">: FP&amp;A Training Desk</span></div>
+    <div id="fbInner">
     <div class="jr-intro">
       <div class="jr-lede">
         <p>I used AI to build my own finance training ground.</p>
-        <p><strong>This was my idea, and I built it myself.</strong> Two years of evaluating AI models taught me how to get real work out of them, so I put that to use training myself in FP&amp;A. With AI, I created <strong>Corvane Systems</strong>, a fictional B2B SaaS company with a complete set of mock books: monthly GL actuals, an operating plan, a headcount roster and an ARR bridge.</p>
+        <p><strong>This was my idea, and I built it myself.</strong> Years of using AI tools, and part-time work evaluating AI models, taught me how to get real work out of them, so I put that to use training myself in FP&amp;A. With AI, I created <strong>Quillmere Systems</strong>, a fictional B2B SaaS company with a complete set of mock books: monthly GL actuals, an operating plan, a headcount roster and an ARR bridge.</p>
         <p>An AI plays my VP of Finance. It hands out assignments that follow a real fiscal year (month-end variance, Q4 reforecast, next year's budget, the board deck) and reviews what I turn in. I take on the role of the FP&amp;A analyst, and the analysis, models and write-ups are mine. Each entry shows the ask, my approach, what I found, and the review it got.</p>
       </div>
       <article class="co-card" aria-labelledby="coName">
         <header class="co-head">
-          <span class="co-mark" aria-hidden="true">C</span>
+          <span class="co-mark" aria-hidden="true">Q</span>
           <div class="co-id">
-            <h3 class="co-name" id="coName">Corvane Systems</h3>
+            <h3 class="co-name" id="coName">Quillmere Systems</h3>
             <p class="co-sub">Mock B2B SaaS company</p>
           </div>
           <span class="chip chip-gold co-chip">Fictional</span>
@@ -508,6 +512,9 @@
 
     <ol class="cycle" id="fbCycle" aria-label="FP&amp;A calendar"></ol>
     <div class="jr-list" id="fbList"></div>
+    <p class="fine">Quillmere Systems is a fictional company created for training. Any resemblance to a real company is coincidental.</p>
+    </div>
+    </div>
   </div>
 </section>
 
@@ -838,7 +845,7 @@
         </div>
         <h3>FP&amp;A</h3>
         <ul><li>Budget vs. Actual Variance</li><li>Budgeting &amp; Forecasting</li><li>Cost Modeling</li><li>Executive Commentary</li><li>Pivot Analysis</li></ul>
-        <p class="proof"><span>Seen in</span> <a href="#proj-fpa">FP&amp;A Dashboard</a> <a href="#journal">Work Journal</a> <a href="#experience">SAE Roles</a> <a href="#about">Coursework</a></p>
+        <p class="proof"><span>Seen in</span> <a href="#proj-fpa">FP&amp;A Dashboard</a> <a href="#journal">Training Desk</a> <a href="#experience">SAE Roles</a> <a href="#about">Coursework</a></p>
       </article>
       <article class="skill-card" style="--tint: var(--teal)">
         <div class="sk-top">
@@ -856,7 +863,7 @@
         </div>
         <h3>Technical</h3>
         <ul><li>Excel</li><li>Python · R-Studio</li><li>Tableau · SAP HANA</li><li>LLM APIs &amp; Prompt Engineering</li><li>Git / GitHub</li></ul>
-        <p class="proof"><span>Seen in</span> <a href="#projects">All Three Live Tools</a> <a href="#experience">Romero Capital</a> <a href="#journal">Work Journal</a> <a href="#about">Coursework</a></p>
+        <p class="proof"><span>Seen in</span> <a href="#projects">All Three Live Tools</a> <a href="#experience">Romero Capital</a> <a href="#journal">Training Desk</a> <a href="#about">Coursework</a></p>
       </article>
     </div>
   </div>
@@ -1002,7 +1009,7 @@
 
 <script src="journal-data.js"></script>
 <script>
-  /* Corvane card: fill the Jan–Dec close strip through the month in FB_COMPANY.booksClosed,
+  /* Quillmere card: fill the Jan–Dec close strip through the month in FB_COMPANY.booksClosed,
      the same value site.js writes into #fbClosed. No month name to read: hide the strip rather than guess.
      A full month name is shortened first ("December 2026" -> "Dec 2026") so the value fits its cell. */
   (function () {

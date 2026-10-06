@@ -1,11 +1,12 @@
-/* FP&A Work Journal data. This is the only file to edit when an assignment is issued or completed.
+/* FP&A Training Desk data. This is the only file to edit when an assignment is issued or completed.
    FB_TASKS: one object per assignment, newest first. status: 'active' | 'done'.
      phase:    one of the FB_PHASES keys below.
      assigned, due: for your own tracking only; the site never displays them.
      approach, finding, feedback: plain text; empty string hides the block.
      score:    number out of 10 (manager review) or null.
      links:    [{ label: 'Variance workbook (.xlsx)', href: 'https://...' }]
-   FB_COMPANY.booksClosed: bump when a new month is closed. */
+   FB_COMPANY.booksClosed: bump when a new month is closed.
+   FB_COMPANY.status: 'paused' blurs the section behind an "In progress" label; 'active' shows it normally. */
 const FB_TASKS = [
   {
     id: 'fb-01', num: '01', phase: 'close', status: 'active',
@@ -25,6 +26,7 @@ const FB_PHASES = [
 ];
 
 const FB_COMPANY = {
+  status: 'paused',
   booksClosed: 'Sep 2026',
   onTheJobSince: "Oct '26"
 };
