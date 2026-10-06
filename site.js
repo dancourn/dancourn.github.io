@@ -472,7 +472,7 @@
   const SYMS = ['NBIS', 'SPY', 'QQQ', 'AAPL', 'MSFT', 'NVDA', 'TSLA', 'META', 'GOOG', 'AMZN', 'NFLX', 'JPM', 'GS', 'AMD', 'PLTR', 'COIN', 'BTC-USD'];
   const LABELS = { 'BTC-USD': 'BTC' };
   const Quotes = { data: {}, subs: [], on(f) { this.subs.push(f); }, emit() { this.subs.forEach(f => f(this.data)); } };
-  const fmtPx = p => (p == null || isNaN(p)) ? '—' : p >= 1000 ? p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : p.toFixed(2);
+  const fmtPx = p => (p == null || isNaN(p)) ? '-' : p >= 1000 ? p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : p.toFixed(2);
 
   (function tape() {
     const track = $('#tapeTrack');
@@ -540,7 +540,7 @@
       } else {
         const anyCached = Object.keys(Quotes.data).length;
         $('#tapeState').textContent = anyCached ? 'Delayed · feed offline' : 'Feed offline';
-        if (!anyCached) $$('.tk-px', track).forEach(x => { x.textContent = '—'; });
+        if (!anyCached) $$('.tk-px', track).forEach(x => { x.textContent = '-'; });
       }
       Quotes.emit();
       sizeTape();
