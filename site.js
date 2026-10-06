@@ -435,8 +435,9 @@
       bar.setAttribute('aria-valuenow', String(Math.round(max > 0 ? (x / max) * 100 : 0)));
     }
     function go(d) {
-      const n = Math.max(1, Math.floor(track.clientWidth / stepW()) - 1);
-      track.scrollBy({ left: d * n * stepW(), behavior: reduced ? 'auto' : 'smooth' });
+      // scrolling is free (no snap); the arrows still land on a card edge
+      const s = stepW(), n = Math.max(1, Math.floor(track.clientWidth / s) - 1);
+      track.scrollTo({ left: (Math.round(track.scrollLeft / s) + d * n) * s, behavior: reduced ? 'auto' : 'smooth' });
       Sound.play('slide');
     }
     prev.addEventListener('click', () => go(-1));
@@ -469,10 +470,7 @@
       if (!hold) return;
       hold = null;
       bar.classList.remove('is-held');
-      // let snapping settle from wherever the thumb was let go
-      const left = track.scrollLeft;
       track.classList.remove('is-dragging');
-      track.scrollLeft = left;
     };
     bar.addEventListener('pointerup', release);
     bar.addEventListener('pointercancel', release);
@@ -899,11 +897,17 @@
     const svg = body => `<svg viewBox="0 0 260 112">${body}</svg>`;
     // FP&A dashboard built-in demo, full year by department; costs are sign-flipped so + is favorable (dashboard's own rule)
     const VAR = [['Revenue', 4.8], ['COGS', -0.6], ['R&D', -8.8], ['S&M', -3.1], ['G&A', -1.0], ['CapEx', -1.9]];
-    // my NBIS model, slide 24: implied $/share by WACC (rows) and terminal growth (columns), perpetuity method
-    const WACC = [9, 9.5, 10, 11, 12], TGR = [2.8, 3.0, 3.3, 3.5];
-    const GRID = [[77.30, 80.34, 83.65, 87.26], [69.49, 71.99, 74.69, 77.62], [62.88, 64.96, 67.19, 69.60], [52.34, 53.83, 55.40, 57.08], [44.41, 45.49, 46.64, 47.86]];
-    // Lucite's engine on its Microsoft / Activision example ($M): all cash, 2% yield given up on cash, 13% tax, no synergies
-    const accretion = prem => ((72700 + 2700 - 65 * (1 + prem / 100) * 780 * 0.02 * (1 - 0.13)) / 72700 - 1) * 100;
+    // Valence's own assumption sliders at their defaults (dcf-calculator.html): [label, min, max, default %]
+    const SLIDERS = [['Rev growth, yr 1–5', 0, 60, 12], ['EBIT margin', 1, 50, 18], ['D&A, % of revenue', 0, 20, 4],
+      ['CapEx, % of revenue', 0, 30, 5], ['Terminal growth', 0, 5, 2.5], ['WACC', 4, 25, 9]];
+    // Lucite's engine on its default sample deal (accretion-dilution.html, $M): buyer 220M sh at $84 earning $760M, target 95M sh
+    // at $41 earning $180M; 30% premium, 70% stock, a third of the cash borrowed at 6.5%, 4% given up on cash, $60M synergies, 25% tax
+    const EPS = (() => {
+      const eq = 41 * 1.3 * 95, sh = 220, newSh = eq * 0.7 / 84, eps0 = 760 / sh;
+      const fund = (eq * 0.3 * 0.33 * 0.065 + eq * 0.3 * 0.67 * 0.04) * 0.75, syn = 60 * 0.75;
+      const ni = 760 + 180 - fund + syn, eps1 = ni / (sh + newSh);
+      return { eps0, eps1, steps: [['Buyer', eps0, 1], ['Target', 180 / sh], ['Funding', -fund / sh], ['Synergy', syn / sh], ['Shares', eps1 - ni / sh], ['Combined', eps1, 1]] };
+    })();
     const build = {
       fpa() {
         const cx = 150, k = 9;
@@ -917,31 +921,30 @@
         return head('Variance vs. plan', 'Dashboard demo, FY') + svg(b);
       },
       dcf() {
-        const x0 = 40, cw = 55, y0 = 16, rh = 19, lo = 44.41, hi = 87.26;
-        let b = TGR.map((g, j) => `<text class="hd" x="${x0 + j * cw + cw / 2}" y="10" text-anchor="middle">g ${g.toFixed(1)}%</text>`).join('');
-        GRID.forEach((row, i) => {
-          const y = y0 + i * rh;
-          b += `<text class="hd" x="${x0 - 6}" y="${y + 12.5}" text-anchor="end">${WACC[i].toFixed(1)}%</text>`;
-          row.forEach((v, j) => {
-            const n = i * 4 + j, a = (0.08 + 0.42 * (v - lo) / (hi - lo)).toFixed(2);
-            b += `<rect class="cell${i === 2 && j === 1 ? ' cell-base' : ''}" style="--i:${n};--a:${a}" x="${x0 + j * cw + 1}" y="${y}" width="${cw - 2}" height="${rh - 2}" rx="2"/>`
-              + `<text class="cell-t" style="--i:${n}" x="${x0 + j * cw + cw / 2}" y="${y + 12}" text-anchor="middle">$${v.toFixed(2)}</text>`;
-          });
-        });
-        return head('WACC × growth', 'My NBIS model, $/sh') + svg(b);
+        // a 2 × 3 panel of sliders, laid out like the tool's: label and value on top, track underneath
+        const cw = 120, b = SLIDERS.map(([label, lo, hi, v], i) => {
+          const x = (i % 2) * 140, y = Math.floor(i / 2) * 38, t = (v - lo) / (hi - lo) * cw;
+          return `<text x="${x}" y="${y + 9}">${esc(label)}</text><text class="val" x="${x + cw}" y="${y + 9}" text-anchor="end">${v}%</text>`
+            + `<rect class="track" x="${x}" y="${y + 19}" width="${cw}" height="3" rx="1.5"/>`
+            + `<rect class="fill" style="--i:${i}" x="${x}" y="${y + 19}" width="${t.toFixed(1)}" height="3" rx="1.5"/>`
+            + `<circle class="knob" style="--i:${i};--d:${(-t).toFixed(1)}px" cx="${(x + t).toFixed(1)}" cy="${y + 20.5}" r="4.5"/>`;
+        }).join('');
+        return head('Assumptions', 'Valence defaults') + svg(b);
       },
       ma() {
-        const X = p => 30 + (p + 20) / 100 * 220, Y = a => 8 + (2.9 - a) / 1.5 * 88;
-        let d = '';
-        for (let p = -20; p <= 80; p += 5) d += `${p === -20 ? 'M' : 'L'}${X(p).toFixed(1)} ${Y(accretion(p)).toFixed(1)}`;
-        const a45 = accretion(45), x = X(45).toFixed(1), y = Y(a45).toFixed(1);
-        return head('Accretion vs. premium', 'MSFT / ATVI') + svg(
-          `<line class="grid" x1="30" x2="250" y1="${Y(2.5)}" y2="${Y(2.5)}"/><line class="grid" x1="30" x2="250" y1="${Y(1.5)}" y2="${Y(1.5)}"/>`
-          + `<text class="hd" x="26" y="${Y(2.5) + 3}" text-anchor="end">+2.5%</text><text class="hd" x="26" y="${Y(1.5) + 3}" text-anchor="end">+1.5%</text>`
-          + `<line class="axis" x1="30" x2="250" y1="96" y2="96"/><path class="curve" pathLength="1" d="${d}"/>`
-          + `<line class="mark late" x1="${x}" x2="${x}" y1="${y}" y2="96"/><circle class="dot late" cx="${x}" cy="${y}" r="3.5"/>`
-          + `<text class="num pos late" x="${+x + 6}" y="${y - 6}">+${a45.toFixed(2)}% at 45%</text>`
-          + `<text class="hd" x="30" y="109">−20% premium</text><text class="hd" x="250" y="109" text-anchor="end">+80%</text>`);
+        // EPS bridge: buyer's EPS, what each piece of the deal adds or takes away, and the combined EPS
+        const cw = 260 / 6, bw = 24, Y = v => 94 - (v - 3) / 1.5 * 80;
+        let r = 0, b = '<line class="axis" x1="0" x2="260" y1="94" y2="94"/>';
+        EPS.steps.forEach(([label, v, base], i) => {
+          const a = base ? 3 : r, z = base ? v : r + v, x = i * cw + (cw - bw) / 2, top = Y(Math.max(a, z));
+          const kind = base ? 'base' : v >= 0 ? 'pos' : 'neg';
+          b += `<rect class="wf ${kind}" style="--i:${i}" x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${bw}" height="${Math.abs(Y(a) - Y(z)).toFixed(1)}" rx="2"/>`
+            + `<text class="wv ${kind === 'base' ? '' : 'num ' + kind}" style="--i:${i}" x="${(x + bw / 2).toFixed(1)}" y="${(top - 4).toFixed(1)}" text-anchor="middle">${base ? '$' + v.toFixed(2) : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2)}</text>`
+            + `<text class="hd" x="${(i * cw + cw / 2).toFixed(1)}" y="107" text-anchor="middle">${label}</text>`;
+          r = z;
+          if (i < 5) b += `<line class="grid wv" style="--i:${i}" x1="${(x + bw).toFixed(1)}" x2="${((i + 1) * cw + (cw - bw) / 2).toFixed(1)}" y1="${Y(r).toFixed(1)}" y2="${Y(r).toFixed(1)}"/>`;
+        });
+        return head('EPS bridge', `Sample deal, +${((EPS.eps1 / EPS.eps0 - 1) * 100).toFixed(1)}%`) + svg(b);
       }
     };
     $$('.mini', wrap).forEach(m => { if (build[m.dataset.mini]) m.innerHTML = build[m.dataset.mini](); });
