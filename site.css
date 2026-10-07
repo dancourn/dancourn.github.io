@@ -191,9 +191,10 @@ button { font: inherit; color: inherit; }
 .brand, .nav-tools { transition: opacity 0.3s, transform 0.35s var(--ease), visibility 0s; }
 .brand { justify-self: start; display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .brand-mark {
-  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 6px;
-  background: linear-gradient(140deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--blue)));
-  color: var(--accent-ink); font-family: var(--display); font-weight: 800; font-size: 17px; letter-spacing: 0.02em;
+  /* the logo keeps the same navy and gold in both themes (matches the tab icon in index.html) */
+  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 7px;
+  background: #0f1730; border: 1.5px solid #e8bf6a;
+  color: #e8bf6a; font-family: var(--display); font-weight: 800; font-size: 17px; letter-spacing: 0.02em;
 }
 .brand-name { font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: 0.04em; text-transform: uppercase; }
 .nav-links { display: flex; gap: 2px; list-style: none; margin: 0; padding: 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
