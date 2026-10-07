@@ -196,7 +196,6 @@ button { font: inherit; color: inherit; }
   background: #0f1730; border: 1.5px solid #e8bf6a;
   color: #e8bf6a; font-family: var(--display); font-weight: 800; font-size: 17px; letter-spacing: 0.02em;
 }
-.brand-name { font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: 0.04em; text-transform: uppercase; }
 .nav-links { display: flex; gap: 2px; list-style: none; margin: 0; padding: 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .nav-links a {
   display: block; padding: 7px 14px; border-radius: 999px; text-decoration: none; white-space: nowrap;
@@ -227,7 +226,6 @@ button { font: inherit; color: inherit; }
 
 .drawer-nav { display: none; }
 @media (max-width: 1180px) {
-  .brand-name { display: none; }
   .nav-links a { padding: 7px 11px; font-size: 13.5px; }
 }
 @media (max-width: 960px) {
@@ -439,7 +437,7 @@ button { font: inherit; color: inherit; }
 .browser-bar { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
 .browser-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); display: block; }
 /* decorative labels drawn by CSS, so voice-control users match each link by its real name, not by "DC" or a fake URL */
-.brand-mark::before { content: attr(data-mark); }
+.brand-mark::before { content: attr(data-mark); translate: 0.013em 0.031em; } /* the display font's ink sits a hair up and left of its box */
 .url[data-url]::before { content: attr(data-url); }
 .case-shot .open-tag::after { content: " \2197"; }
 .browser-bar .url { flex: 1; min-width: 0; margin-left: 6px; padding: 2px 10px; border-radius: 999px; background: var(--surface); font-family: var(--body); font-weight: 600; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
