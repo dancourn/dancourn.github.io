@@ -1,7 +1,10 @@
 /* Daniel Cournane · portfolio
    Everything here is progressive: the page reads fine before any of it runs. */
-(function () {
+(async function () {
   'use strict';
+  // setup runs in three slices (hero, then the middle sections, then the rest) with a painted frame between,
+  // so the phone never freezes on one long block of startup work
+  const breathe = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -243,7 +246,16 @@
     const n = $('#name');
     n.classList.remove('is-sweeping'); void n.offsetWidth; n.classList.add('is-sweeping');
   }
+  // printing mid-flip would put scrambled letters on paper, so beforeprint lands everything at once
+  const STATS = $$('.keystats dd').map(dd => dd.textContent);
+  let landed = false;
+  window.addEventListener('beforeprint', () => {
+    landed = true;
+    $$('#name .name-line').forEach(line => $$('.ch', line).forEach((c, i) => { c.textContent = line.dataset.text.toUpperCase()[i]; }));
+    $$('.keystats dd').forEach((dd, i) => { dd.textContent = STATS[i]; });
+  });
   function flapName() {
+    landed = false;
     const lines = $$('#name .name-line');
     let flapsQueued = 0, pending = 0;
     lines.forEach((line, li) => {
@@ -261,7 +273,7 @@
         pending++;
         cell.classList.add('is-flipping');
         (function step(now) {
-          if (now - start >= settle) {
+          if (landed || now - start >= settle) {
             cell.textContent = final;
             cell.classList.remove('is-flipping');
             hinge(cell, true);
@@ -284,7 +296,7 @@
       const final = dd.textContent, start = performance.now(), settle = 500 + r * 110;
       (function step(now) {
         const p = (now - start) / settle;
-        if (p >= 1) { dd.textContent = final; return; }
+        if (landed || p >= 1) { dd.textContent = final; return; }
         const keep = Math.floor(p * final.length);
         dd.textContent = final.split('').map((c, i) => i < keep || !/[a-z0-9]/i.test(c) ? c
           : /\d/.test(c) ? (Math.random() * 10) | 0 : GLYPHS[(Math.random() * 26) | 0].toLowerCase()).join('');
@@ -416,6 +428,8 @@
     start();
     return { recolor };
   })();
+
+  await breathe();
 
   /* ───────────────── TIMELINE ─────────────────
      Arrows step through the cards; the bar underneath is a real scrollbar (drag the thumb, click the track, or use arrow keys). */
@@ -642,7 +656,7 @@
     function build() {
       track.innerHTML = syms.map(s => item(s, false)).join('') + syms.map(s => item(s, true)).join('');
       syms.forEach(s => { if (Quotes.data[s]) paint(s, Quotes.data[s]); });
-      sizeTape();
+      requestAnimationFrame(sizeTape);   // measure once the frame has laid out, instead of forcing an early layout
     }
     window.addEventListener('resize', sizeTape);
 
@@ -730,6 +744,8 @@
     refresh();
     setInterval(() => { if (!document.hidden) refresh(); }, 5 * 60 * 1000);
   })();
+
+  await breathe();
 
   /* ───────────────── NBIS: call record + football field ───────────────── */
   const CALL = { px: 51.97, target: 60, bear: 49, bull: 70 };
@@ -872,7 +888,7 @@
     $$('#chapters button').forEach((b, i) => b.classList.toggle('is-on', slide >= ch[i] && (i === ch.length - 1 || slide < ch[i + 1])));
     if (sound) Sound.play('slide');
   }
-  showSlide(1);
+  requestAnimationFrame(() => showSlide(1));
   $('#slideSidePrev').addEventListener('click', () => showSlide(slide - 1, true));
   $('#slideSideNext').addEventListener('click', () => showSlide(slide + 1, true));
   $('#slidePrev').addEventListener('click', () => showSlide(slide - 1, true));
@@ -900,8 +916,8 @@
     // FP&A dashboard built-in demo, full year by department; costs are sign-flipped so + is favorable (dashboard's own rule)
     const VAR = [['Revenue', 4.8], ['COGS', -0.6], ['R&D', -8.8], ['S&M', -3.1], ['G&A', -1.0], ['CapEx', -1.9]];
     // Valence's own assumption sliders at their defaults (dcf-calculator.html): [label, min, max, default %]
-    const SLIDERS = [['Rev growth, yr 1–5', 0, 60, 12], ['EBIT margin', 1, 50, 18], ['D&A, % of revenue', 0, 20, 4],
-      ['CapEx, % of revenue', 0, 30, 5], ['Terminal growth', 0, 5, 2.5], ['WACC', 4, 25, 9]];
+    const SLIDERS = [['Rev Growth, Yr 1–5', 0, 60, 12], ['EBIT Margin', 1, 50, 18], ['D&A, % of Revenue', 0, 20, 4],
+      ['CapEx, % of Revenue', 0, 30, 5], ['Terminal Growth', 0, 5, 2.5], ['WACC', 4, 25, 9]];
     // Lucite's engine on its default sample deal (accretion-dilution.html, $M): buyer 220M sh at $84 earning $760M, target 95M sh
     // at $41 earning $180M; 30% premium, 70% stock, a third of the cash borrowed at 6.5%, 4% given up on cash, $60M synergies, 25% tax
     const EPS = (() => {
@@ -920,7 +936,7 @@
             + `<rect class="bar ${pos ? 'pos' : 'neg'}" style="--i:${i}" x="${pos ? cx : cx - w}" y="${y}" width="${w}" height="11" rx="2"/>`
             + `<text class="num ${pos ? 'pos' : 'neg'}" x="258" y="${y + 9}" text-anchor="end">${pos ? '+' : '−'}${Math.abs(v).toFixed(1)}%</text>`;
         });
-        return head('Variance vs. plan', 'Dashboard demo, FY') + svg(b);
+        return head('Variance vs. Plan', 'Dashboard Demo, FY') + svg(b);
       },
       dcf() {
         // a 2 × 3 panel of sliders, laid out like the tool's: label and value on top, track underneath
@@ -931,7 +947,7 @@
             + `<rect class="fill" style="--i:${i}" x="${x}" y="${y + 19}" width="${t.toFixed(1)}" height="3" rx="1.5"/>`
             + `<circle class="knob" style="--i:${i};--d:${(-t).toFixed(1)}px" cx="${(x + t).toFixed(1)}" cy="${y + 20.5}" r="4.5"/>`;
         }).join('');
-        return head('Assumptions', 'Valence defaults') + svg(b);
+        return head('Assumptions', 'Valence Defaults') + svg(b);
       },
       ma() {
         // EPS bridge: buyer's EPS, what each piece of the deal adds or takes away, and the combined EPS
@@ -946,7 +962,7 @@
           r = z;
           if (i < 5) b += `<line class="grid wv" style="--i:${i}" x1="${(x + bw).toFixed(1)}" x2="${((i + 1) * cw + (cw - bw) / 2).toFixed(1)}" y1="${Y(r).toFixed(1)}" y2="${Y(r).toFixed(1)}"/>`;
         });
-        return head('EPS bridge', `Sample deal, +${((EPS.eps1 / EPS.eps0 - 1) * 100).toFixed(1)}%`) + svg(b);
+        return head('EPS Bridge', `Sample Deal, +${((EPS.eps1 / EPS.eps0 - 1) * 100).toFixed(1)}%`) + svg(b);
       }
     };
     $$('.mini', wrap).forEach(m => { if (build[m.dataset.mini]) m.innerHTML = build[m.dataset.mini](); });
@@ -972,7 +988,7 @@
     }
     window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(stage); } }, { passive: true });
     window.addEventListener('resize', stage);
-    stage();
+    requestAnimationFrame(stage);
 
     // under the hood: the screen swings open like a door
     $$('[data-peel]').forEach(btn => {
@@ -982,7 +998,7 @@
         box.classList.toggle('is-peeled', open);
         hood.toggleAttribute('inert', !open);
         btn.setAttribute('aria-expanded', String(open));
-        btn.textContent = open ? 'Back to the tool' : 'Under the hood';
+        btn.textContent = open ? 'Back to the Tool' : 'Under the Hood';
         Sound.play(open ? 'open' : 'close');
       });
     });

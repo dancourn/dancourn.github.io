@@ -437,6 +437,10 @@ button { font: inherit; color: inherit; }
 .browser { border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; background: var(--surface-solid); box-shadow: var(--shadow); transition: transform 0.6s var(--ease); }
 .browser-bar { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
 .browser-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); display: block; }
+/* decorative labels drawn by CSS, so voice-control users match each link by its real name, not by "DC" or a fake URL */
+.brand-mark::before { content: attr(data-mark); }
+.url[data-url]::before { content: attr(data-url); }
+.case-shot .open-tag::after { content: " \2197"; }
 .browser-bar .url { flex: 1; min-width: 0; margin-left: 6px; padding: 2px 10px; border-radius: 999px; background: var(--surface); font-family: var(--body); font-weight: 600; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .browser img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top center; }
 .case-shot:hover .browser { transform: translateY(-5px); }
@@ -1084,12 +1088,14 @@ button { font: inherit; color: inherit; }
 
 /* print: a clean, ink-only summary for anyone who hits ⌘P */
 @media print {
-  :root { --bg: #fff; --surface: #fff; --surface-solid: #fff; --surface-2: #fff; --fg: #000; --fg-2: #222; --muted: #555; --line: #ccc; --line-2: #999; --accent: #000; --accent-ink: #fff; }
+  /* listed with the theme selectors so these win over the light/dark tokens (same specificity, later in the file) */
+  :root, :root[data-theme], :root:not([data-theme="dark"]) { --bg: #fff; --surface: #fff; --surface-solid: #fff; --surface-2: #fff; --fg: #000; --fg-2: #222; --muted: #555; --line: #ccc; --line-2: #999; --accent: #000; --accent-ink: #fff; }
   body { padding: 0; font-size: 11pt; }
   .bg, .nav, .tape, .path, .ctas, .case-stage, .deck, .ff, .reader, .scrim, .toast, .colophon, .skip, .case-actions, .workshop, .hero-grid-bg, .rays { display: none !important; }
   .name-line + .name-line { color: #000; background: none; filter: none; }
   .name-line:first-child { text-shadow: none; }
-  .id-card { transform: none; }
+  .id-card { transform: none; box-shadow: none; }
+  .id-card::before, .id-card::after, #fbBody.is-soon, .contact .btn { display: none !important; }   /* the spinning light, the blurred desk, on-screen buttons */
   .section { padding-top: 24pt; }
   .name { font-size: 48pt; }
   a { text-decoration: none; }
