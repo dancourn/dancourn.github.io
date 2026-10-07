@@ -660,7 +660,7 @@
         const up = q.pct >= 0;
         a.querySelector('.tk-px').textContent = fmtTape(sym, q.price);
         const ch = a.querySelector('.tk-ch');
-        ch.innerHTML = isNaN(q.pct) ? '' : `<span class="tk-arr">${up ? '▲' : '▼'}</span> ${up ? '+' : ''}${q.pct.toFixed(2)}%`;
+        ch.innerHTML = isNaN(q.pct) ? '' : `<span class="tk-arr ${up ? 'up' : 'down'}"></span>${up ? '+' : ''}${q.pct.toFixed(2)}%`;
         ch.className = 'tk-ch ' + (up ? 'up' : 'down');
         if (flash) { a.classList.remove('flash-up', 'flash-down'); void a.offsetWidth; a.classList.add(flash); }
       });
