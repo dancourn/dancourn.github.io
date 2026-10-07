@@ -152,6 +152,8 @@ button { font: inherit; color: inherit; }
 ::selection { background: var(--accent); color: var(--accent-ink); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 [hidden] { display: none !important; }
+/* theme switch: every color changes in the same frame, so nothing fades through a stray in-between color */
+.theme-swap, .theme-swap *, .theme-swap *::before, .theme-swap *::after { transition: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .up { color: var(--up); }
 .down { color: var(--down); }
@@ -286,9 +288,12 @@ button { font: inherit; color: inherit; }
   mask-image: radial-gradient(ellipse 70% 80% at 40% 30%, #000 20%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 70% 80% at 40% 30%, #000 20%, transparent 75%);
 }
+/* the light runs past the hero's edges and fades out, so it never stops on a hard line */
 .hero::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(520px circle at var(--mx, 30%) var(--my, 40%), var(--accent-soft), transparent 65%);
+  content: ""; position: absolute; inset: calc(-1 * var(--nav-h)) 0 -180px; pointer-events: none;
+  background: radial-gradient(520px circle at var(--mx, 30%) calc(var(--my, 40%) + var(--nav-h)), var(--accent-soft), transparent 65%);
+  -webkit-mask-image: linear-gradient(transparent, #000 var(--nav-h), #000 calc(100% - 260px), transparent);
+  mask-image: linear-gradient(transparent, #000 var(--nav-h), #000 calc(100% - 260px), transparent);
   opacity: 0; transition: opacity 0.5s;
 }
 .hero.is-lit::after { opacity: 1; }
@@ -495,8 +500,16 @@ button { font: inherit; color: inherit; }
 @keyframes sweep { 0% { transform: translateX(-100%); } 50%, 100% { transform: translateX(100%); } }
 
 /* ───────── journal ───────── */
-.jr-intro { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--sp-col); align-items: start; }
+/* the lede column stretches to the tiles; its button sits centered in the space left over, so the gap above it
+   (to the paragraph) always equals the gap below it (to the stats tiles) */
+.jr-intro { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--sp-col); align-items: stretch; }
+.jr-intro .co-card { align-self: start; margin-bottom: var(--sp-block); }
+.jr-lede { display: flex; flex-direction: column; }
 .jr-lede p { margin: 0 0 16px; color: var(--fg-2); max-width: 64ch; }
+.jr-lede p:last-of-type { margin-bottom: 0; }
+/* top padding is 8px less: the paragraph's line box carries ~8px of leading below its last baseline */
+.jr-cta { flex: 1; display: flex; align-items: center; padding-block: 24px 32px; }
+.jr-intro + .jr-stats { margin-top: 0; }
 .jr-lede p:first-child { font-family: var(--display); font-weight: 700; font-size: clamp(1.7rem, 2.6vw, 2.2rem); line-height: 1.1; color: var(--fg); text-transform: uppercase; max-width: 24ch; margin-bottom: 20px; }
 .jr-lede strong { color: var(--fg); font-weight: 600; }
 /* Quillmere card (.co-*) styles live in the <style> block in index.html's <head> */
@@ -530,6 +543,33 @@ button { font: inherit; color: inherit; }
 .entry-score { font-family: var(--display); font-weight: 800; font-size: 38px; line-height: 1; color: var(--fg); }
 .entry-score small { font-size: 16px; color: var(--muted); }
 .entry-open { color: var(--fg); border-bottom: 1px solid var(--accent); white-space: nowrap; }
+/* Latest assignment: the newest completed task, filled from journal-data.js (site.js renderJournal) */
+.latest {
+  position: relative; overflow: hidden; padding: clamp(22px, 3vw, 34px); border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--line));
+  background: radial-gradient(560px circle at 0% 0%, var(--accent-soft), transparent 65%), var(--surface);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: var(--shadow);
+}
+.latest::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--blue) 70%, transparent); }
+.latest-tag { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; font-family: var(--body); font-weight: 600; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+.latest-tag .live-dot { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); animation: pulse 2s ease-in-out infinite; }
+.latest-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 260px); gap: var(--sp-col); align-items: center; }
+.latest-title { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(28px, 3.2vw, 42px); line-height: 0.95; text-transform: uppercase; text-wrap: balance; }
+.latest-sum { margin: 14px 0 0; color: var(--fg-2); max-width: 64ch; }
+.latest-ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.latest-stats { margin: 0; border-left: 1px solid var(--line); }
+.latest-stats div { display: flex; flex-direction: column-reverse; justify-content: flex-end; padding: 12px 0 12px 24px; }
+.latest-stats div + div { border-top: 1px solid var(--line); }
+.latest-stats dt { margin-top: 6px; font-family: var(--body); font-weight: 600; font-size: 12px; color: var(--muted); }
+.latest-stats dd { margin: 0; font-family: var(--display); font-weight: 800; font-size: 40px; line-height: 0.9; font-variant-numeric: tabular-nums; }
+.latest-stats div:first-child dd { color: var(--accent); }
+@media (max-width: 860px) {
+  .latest-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .latest-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-left: 0; border-top: 1px solid var(--line); }
+  .latest-stats div { padding: 14px 10px 0 0; }
+  .latest-stats div + div { border-top: 0; border-left: 1px solid var(--line); padding-left: 14px; }
+  .latest-stats dd { font-size: 32px; }
+}
 
 /* ───────── research ───────── */
 /* the logo column mirrors .section-head's right column, so the wordmark lines up under the subtitle */
@@ -882,6 +922,7 @@ button { font: inherit; color: inherit; }
   .case:nth-child(even) .case-stage { order: 0; }
   .workshop-grid { grid-template-columns: minmax(0, 1fr); }
   .jr-intro { grid-template-columns: minmax(0, 1fr); }
+  .jr-cta { padding-block: calc(var(--sp-col) - 8px) 0; }   /* stacked: the grid gap below the button matches this gap above it */
   .entry { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .entry-num { font-size: 32px; display: flex; align-items: baseline; gap: 10px; }
   .entry-num small { display: inline; margin: 0; }

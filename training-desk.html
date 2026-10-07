@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FP&amp;A Training Desk - Daniel Cournane</title>
+<meta name="description" content="A mock FP&A analyst role at a fictional SaaS company, built for learning: month-end work off a raw general ledger, reviewed and scored. Each task shows the ask, the data, my approach, what I found and what I learned.">
+<meta name="theme-color" content="#060a17" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#edf0f6" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="FP&amp;A Training Desk · Daniel Cournane">
+<meta property="og:description" content="Month-end variance analysis built off a raw GL, with CFO commentary and Q4 reforecast flags. A fictional company, built for learning.">
+<meta property="og:url" content="https://dancourn.github.io/training-desk.html">
+<meta property="og:image" content="https://dancourn.github.io/og.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='7' fill='%230f1730' stroke='%23e8bf6a' stroke-width='2'/%3E%3Ctext x='16' y='22' font-family='Arial Narrow,Arial' font-weight='700' font-size='15' text-anchor='middle' fill='%23e8bf6a'%3EDC%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Libre+Franklin:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  /* Training Desk hub. Builds on site.css tokens (colors, type, spacing) so it reads as part of the portfolio.
+     One padding scale for every card: --pad inside tiles, --pad-lg inside the task sheet. */
+  :root { --pad: clamp(20px, 2.4vw, 28px); --pad-lg: clamp(20px, 3.4vw, 40px); }
+  body { padding-bottom: 0; }
+  .nav-inner { grid-template-columns: minmax(0, 1fr) auto; }
+  .td-back { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 600; font-size: 13px; color: var(--fg-2); transition: color 0.2s; }
+  .td-back:hover { color: var(--fg); }
+  .brand-mark::before { content: attr(data-mark); translate: 0.013em 0.031em; }
+
+  .card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+  .card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--blue) 70%, transparent); opacity: 0.7; border-radius: var(--radius) var(--radius) 0 0; }
+  .kicker { margin: 0 0 12px; font-weight: 600; font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+  .prose p { margin: 0 0 14px; color: var(--fg-2); line-height: 1.7; }
+  .prose strong { color: var(--fg); }
+  .lift { transition: transform 0.35s var(--ease), border-color 0.3s, background 0.3s; }
+  @media (hover: hover) { .lift:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 40%, transparent); } }
+
+  /* ───── hero ───── */
+  .td-hero { padding-block: clamp(40px, 6vw, 88px) 0; }
+  .td-hero-in { position: relative; z-index: 1; }
+  .td-title { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(3.4rem, 9vw, 7.5rem); line-height: 0.86; text-transform: uppercase; letter-spacing: 0.005em; }
+  /* a slow gold glint across "Desk" */
+  .td-title span {
+    color: var(--accent);
+    background: linear-gradient(105deg, var(--accent) 42%, color-mix(in srgb, var(--accent) 35%, #fff) 50%, var(--accent) 58%) 0 0 / 260% 100%;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    animation: glint 7s ease-in-out 1.2s infinite;
+  }
+  @keyframes glint { 0% { background-position: 100% 0; } 35%, 100% { background-position: 0% 0; } }
+  .td-lede { max-width: 720px; margin: 26px 0 0; font-size: clamp(17px, 1.6vw, 19px); line-height: 1.65; color: var(--fg-2); }
+  .td-lede strong { color: var(--fg); }
+  .td-ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .td-notice { margin: 28px 0 0; }
+  .td-notice a { color: var(--fg); }
+  .td-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: clamp(36px, 5vw, 56px); overflow: hidden; }
+  .td-stat { padding: var(--pad); min-width: 0; transition: background 0.3s; }
+  .td-stat + .td-stat { border-left: 1px solid var(--line); }
+  .td-stat b { display: block; font-family: var(--display); font-weight: 800; font-size: clamp(34px, 4.4vw, 52px); line-height: 0.9; font-variant-numeric: tabular-nums; }
+  .td-stat b small { font-size: 0.5em; color: var(--muted); }
+  .td-stat > span { display: block; margin-top: 10px; font-weight: 600; font-size: 12.5px; color: var(--muted); }
+  @media (hover: hover) { .td-stat:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); } }
+
+  /* ───── how it works: a process rail. Numbered nodes joined by a line that draws in on arrival ───── */
+  .steps { --g: clamp(20px, 3vw, 40px); --node: 46px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--g); margin: 0; padding: 0; list-style: none; }
+  .steps li { position: relative; }
+  .steps li:not(:last-child)::before {
+    content: ""; position: absolute; top: calc(var(--node) / 2); left: var(--node); width: calc(100% - var(--node) + var(--g)); height: 1px;
+    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--blue) 70%, transparent));
+    transform-origin: 0 50%; transition: transform 0.8s var(--ease);
+  }
+  .step-n {
+    position: relative; display: grid; place-items: center; width: var(--node); height: var(--node); border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+    font-family: var(--display); font-weight: 800; font-size: 20px; color: var(--accent);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.5s var(--ease), opacity 0.5s;
+  }
+  .steps h3 { margin: 20px 0 8px; font-family: var(--display); font-weight: 800; font-size: 24px; line-height: 1; text-transform: uppercase; }
+  .steps p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--fg-2); }
+  @media (hover: hover) { .steps li:hover .step-n { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 0 6px var(--accent-soft); } }
+  /* the stagger only applies while the rail arrives (desk.js sets .is-arriving), so hovering a node responds instantly */
+  .steps.is-arriving li:nth-child(2) .step-n, .steps.is-arriving li:nth-child(1)::before { transition-delay: 0.15s; }
+  .steps.is-arriving li:nth-child(3) .step-n, .steps.is-arriving li:nth-child(2)::before { transition-delay: 0.35s; }
+  .steps.is-arriving li:nth-child(4) .step-n, .steps.is-arriving li:nth-child(3)::before { transition-delay: 0.55s; }
+  .steps.rise.pre { transform: none; }
+  .steps.pre li::before { transform: scaleX(0); }
+  .steps.pre .step-n { transform: scale(0.6); opacity: 0; }
+
+  .cal { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: var(--sp-block) 0 0; padding: 0; list-style: none; }
+  .cal li { padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 60%, transparent); font-weight: 600; font-size: 13.5px; line-height: 1.3; color: var(--muted); }
+  .cal li small { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .cal li.is-done { color: var(--fg); border-color: color-mix(in srgb, var(--up) 45%, transparent); background: var(--up-soft); }
+  .cal li.is-done small { color: var(--up); }
+  .cal li.is-next { color: var(--fg); border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: var(--accent-soft); }
+  .cal li.is-next small { color: var(--accent); }
+  .cal li.is-next small::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 1.8s ease-in-out infinite; }
+
+  /* ───── company ───── */
+  /* intro beside the four facts, then the dataset full width: the section ends on one straight edge */
+  .co { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--sp-col); align-items: center; }
+  .co .prose p:last-child { margin-bottom: 0; }
+  .co-data { margin-top: var(--sp-block); }
+  .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; margin: 0; border-top: 1px solid var(--line); }
+  .facts div { padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .facts dt { font-weight: 600; font-size: 12px; color: var(--muted); }
+  .facts dd { margin: 6px 0 0; font-family: var(--display); font-weight: 800; font-size: 30px; line-height: 1; }
+  .tabs { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .tabs caption { text-align: left; padding: var(--pad) var(--pad) 0; }
+  .tabs th, .tabs td { padding: 12px var(--pad); text-align: left; vertical-align: top; border-top: 1px solid var(--line); }
+  .tabs th { position: relative; font-weight: 700; white-space: nowrap; color: var(--fg); transition: color 0.2s; }
+  .tabs th::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 2px; background: var(--accent); transform: scaleY(0); transition: transform 0.3s var(--ease); }
+  .tabs td { color: var(--fg-2); line-height: 1.5; }
+  .tabs td.n { white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .tabs tbody tr { transition: background 0.2s; }
+  @media (hover: hover) { .tabs tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); } .tabs tbody tr:hover th { color: var(--accent); } .tabs tbody tr:hover th::before { transform: scaleY(1); } }
+  .tabs + .tabs-note { margin: 0; padding: 12px var(--pad) var(--pad); border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+
+  /* ───── task sheet ───── */
+  .task { overflow: hidden; }
+  .task-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--pad); align-items: center; padding: var(--pad) var(--pad-lg); border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+  .task-num { font-family: var(--display); font-weight: 800; font-size: 64px; line-height: 0.8; color: var(--accent); }
+  .task-num small { display: block; margin-bottom: 6px; font-family: var(--body); font-weight: 600; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  .task-title { margin: 10px 0 0; font-family: var(--display); font-weight: 800; font-size: clamp(28px, 3.4vw, 42px); line-height: 0.95; text-transform: uppercase; text-wrap: balance; }
+  .task-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .score { text-align: right; }
+  .score b { display: block; font-family: var(--display); font-weight: 800; font-size: 60px; line-height: 0.85; }
+  .score b small { font-size: 0.42em; color: var(--muted); }
+  .score > span { font-weight: 600; font-size: 12px; color: var(--muted); }
+  .task-body { padding: var(--pad-lg); }
+  .blk + .blk { margin-top: clamp(40px, 5vw, 56px); }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-col); }
+  .ask { margin: 0; padding: 18px 22px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 var(--radius) var(--radius) 0; color: var(--fg); line-height: 1.65; }
+  .ask cite { display: block; margin-top: 10px; font-style: normal; font-weight: 600; font-size: 12.5px; color: var(--muted); }
+  .used { margin: 0; padding: 0; list-style: none; }
+  .used li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; padding: 11px 0; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.5; color: var(--fg-2); }
+  .used li:last-child { border-bottom: 1px solid var(--line); }
+  .used b { color: var(--fg); font-weight: 700; }
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .kpi { padding: var(--pad); min-width: 0; transition: background 0.3s; }
+  .kpi + .kpi { border-left: 1px solid var(--line); }
+  @media (hover: hover) { .kpi:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); } }
+  .kpi dt { font-weight: 600; font-size: 12px; color: var(--muted); }
+  .kpi dd { margin: 10px 0 0; }
+  .kpi .v { display: block; font-family: var(--display); font-weight: 800; font-size: clamp(30px, 3.4vw, 42px); line-height: 0.9; font-variant-numeric: tabular-nums; }
+  .kpi .d { display: block; margin-top: 10px; font-weight: 600; font-size: 13px; color: var(--muted); }
+  .kpi .d.bad { color: var(--down); } .kpi .d.good { color: var(--up); }
+  /* build steps: the guide line draws down and the numbers pop in as the block arrives */
+  .build { margin: 0; padding: 0; list-style: none; counter-reset: b; }
+  .build li { counter-increment: b; position: relative; padding: 0 0 20px 48px; color: var(--fg-2); line-height: 1.65; }
+  .build li::before { content: counter(b); position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 10%, var(--bg)); color: var(--accent); font-weight: 700; font-size: 13px; transition: transform 0.5s var(--ease), opacity 0.5s; }
+  .build li::after { content: ""; position: absolute; left: 15px; top: 34px; bottom: 4px; width: 1px; background: var(--line-2); transform-origin: 50% 0; transition: transform 0.6s var(--ease); }
+  .build li:last-child { padding-bottom: 0; }
+  .build li:last-child::after { display: none; }
+  .build strong { color: var(--fg); }
+  .build li:nth-child(2)::before, .build li:nth-child(1)::after { transition-delay: 0.12s; }
+  .build li:nth-child(3)::before, .build li:nth-child(2)::after { transition-delay: 0.24s; }
+  .build li:nth-child(4)::before, .build li:nth-child(3)::after { transition-delay: 0.36s; }
+  .build li:nth-child(5)::before, .build li:nth-child(4)::after { transition-delay: 0.48s; }
+  .pre .build li::before { transform: scale(0.5); opacity: 0; }
+  .pre .build li::after { transform: scaleY(0); }
+  .finds { display: grid; gap: var(--sp-tile); }
+  .find { padding: var(--pad); border: 1px solid var(--line); border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 45%, transparent); }
+  .find .big { display: block; font-family: var(--display); font-weight: 800; font-size: 46px; line-height: 0.9; color: var(--accent); }
+  .find h4 { margin: 12px 0 8px; font-size: 16px; line-height: 1.35; }
+  .find p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--fg-2); }
+  .drv { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .drv th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line-2); }
+  .drv td { padding: 14px; vertical-align: top; border-bottom: 1px solid var(--line); color: var(--fg-2); line-height: 1.55; }
+  .drv td:first-child { font-weight: 700; color: var(--fg); min-width: 170px; }
+  .drv td:first-child small { display: block; font-weight: 600; font-size: 12px; color: var(--muted); }
+  .drv .num { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--down); }
+  .drv tr.watch td { background: var(--accent-soft); }
+  .drv tbody tr { transition: opacity 0.3s, background 0.2s; }
+  @media (hover: hover) { .drv tbody tr:not(.watch):hover { background: color-mix(in srgb, var(--accent) 5%, transparent); } }
+  .drv tbody tr.is-dim { opacity: 0.25; }
+  .drv-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 12px; }
+  .drv-head .kicker { margin: 0; }
+  .drv-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .drv-filter > span { margin-right: 4px; font-weight: 600; font-size: 12px; color: var(--muted); }
+  .drv-filter button { background: transparent; cursor: pointer; padding: 4px 11px; transition: background 0.2s, color 0.2s; }
+  .drv-filter button:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+  .drv-filter button[aria-pressed="true"] { color: var(--bg); }
+  .drv-filter .t-timing[aria-pressed="true"] { background: var(--blue); } .drv-filter .t-vol[aria-pressed="true"] { background: var(--teal); }
+  .drv-filter .t-one[aria-pressed="true"] { background: var(--violet); } .drv-filter .t-mix[aria-pressed="true"] { background: var(--accent); }
+  .drv-filter .t-run[aria-pressed="true"] { background: var(--down); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-family: var(--body); font-weight: 700; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; border: 1px solid currentColor; }
+  .t-timing { color: var(--blue); } .t-one { color: var(--violet); } .t-run { color: var(--down); } .t-mix { color: var(--accent); } .t-vol { color: var(--teal); }
+  .flags { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .flags li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 16px 20px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--fg-2); line-height: 1.55; transition: transform 0.35s var(--ease), border-color 0.3s, background 0.3s; }
+  @media (hover: hover) { .flags li:hover { transform: translateX(4px); border-color: color-mix(in srgb, var(--accent) 40%, transparent); background: color-mix(in srgb, var(--accent) 5%, transparent); } }
+  .flags li::before { content: attr(data-n); font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1; color: var(--accent); }
+  .flags strong { color: var(--fg); }
+  .ticks { margin: 0; padding: 0; list-style: none; }
+  .ticks li { position: relative; padding: 0 0 12px 26px; color: var(--fg-2); line-height: 1.6; }
+  .ticks li:last-child { padding-bottom: 0; }
+  .ticks li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 10px; height: 6px; border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
+  .ticks strong { color: var(--fg); }
+  /* review: the score draws itself around a ring as the block arrives */
+  .review { margin: 0; padding: var(--pad-lg); border-radius: var(--radius); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); background: radial-gradient(420px circle at 0% 0%, var(--accent-soft), transparent 70%), color-mix(in srgb, var(--surface-2) 40%, transparent); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-col); align-items: center; }
+  .review p { margin: 0; font-style: normal; font-size: clamp(17px, 1.7vw, 20px); line-height: 1.6; color: var(--fg); }
+  .review cite { display: block; margin-top: 14px; font-style: normal; font-weight: 600; font-size: 13px; color: var(--muted); }
+  .tighten { margin: 18px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  .ring { position: relative; width: 156px; height: 156px; flex-shrink: 0; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 6; }
+  .ring-track { stroke: var(--line-2); }
+  .ring-val { stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 326.73; stroke-dashoffset: 65.35; transition: stroke-dashoffset 1.6s var(--ease) 0.2s; }
+  .pre .ring-val { stroke-dashoffset: 326.73; }
+  .ring-in { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+  .ring-in b { font-family: var(--display); font-weight: 800; font-size: 56px; line-height: 0.85; color: var(--fg); }
+  .ring-in b small { font-size: 0.4em; color: var(--muted); }
+  .ring-in > span { margin-top: 6px; font-weight: 600; font-size: 11.5px; color: var(--muted); }
+  .dl { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ai-note { margin: 18px 0 0; padding: 14px 18px; border: 1px dashed var(--line-2); border-radius: var(--radius); font-size: 14px; line-height: 1.6; color: var(--fg-2); }
+  .ai-note strong { color: var(--fg); }
+
+  .next { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--pad); align-items: center; padding: var(--pad) var(--pad-lg); margin-top: var(--sp-tile); }
+  .next h3 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1; text-transform: uppercase; }
+  .next p { margin: 8px 0 0; color: var(--fg-2); }
+
+  /* footer: the full fictional-company statement */
+  .td-foot { padding-block: var(--sp-section) 48px; }
+  .legal { padding: var(--pad); border: 1px solid var(--line); border-radius: var(--radius); background: color-mix(in srgb, var(--surface) 70%, transparent); }
+  .legal h2 { margin: 0 0 10px; font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg); }
+  .legal p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.65; color: var(--fg-2); }
+  .legal p:last-child { margin-bottom: 0; }
+  .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; margin-top: 24px; font-size: 13px; color: var(--muted); }
+
+  @media (max-width: 960px) {
+    .co, .two { grid-template-columns: minmax(0, 1fr); }
+    .kpis, .td-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .kpi:nth-child(3), .td-stat:nth-child(3) { border-left: 0; }
+    .kpi:nth-child(n + 3), .td-stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
+    .cal { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    /* the rail turns vertical: node on the left, line running down to the next one */
+    .steps { grid-template-columns: minmax(0, 1fr); --g: 28px; }
+    .steps li { display: grid; grid-template-columns: var(--node) minmax(0, 1fr); column-gap: 18px; }
+    .steps li .step-n { grid-row: 1 / span 2; }
+    .steps h3 { margin-top: 12px; }
+    .steps li:not(:last-child)::before { top: var(--node); left: calc(var(--node) / 2); width: 1px; height: calc(100% - var(--node) + var(--g)); transform-origin: 50% 0; background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--blue) 70%, transparent)); }
+    .steps.pre li::before { transform: scaleY(0); }
+  }
+  @media (max-width: 640px) {
+    .cal { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .task-head { grid-template-columns: auto minmax(0, 1fr); padding: var(--pad); }
+    .task-head .score { grid-column: 1 / -1; text-align: left; display: flex; align-items: baseline; gap: 10px; }
+    .review { grid-template-columns: minmax(0, 1fr); justify-items: start; }
+    .used li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    .facts dd { font-size: 26px; }
+    .tabs caption { display: block; }
+    .tabs, .tabs tbody { display: block; }
+    .tabs tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; padding: 12px var(--pad); border-top: 1px solid var(--line); }
+    .tabs th, .tabs td { padding: 0; border: 0; }
+    .tabs th::before { display: none; }
+    .tabs td:not(.n) { grid-column: 1 / -1; grid-row: 2; margin-top: 2px; font-size: 14px; }
+    .drv thead { display: none; }
+    .drv, .drv tbody, .drv tr, .drv td { display: block; }
+    .drv tr { padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .drv td { padding: 3px 0; border: 0; }
+    .drv td:nth-child(2), .drv td:nth-child(3) { display: inline-block; margin-right: 10px; vertical-align: middle; }
+    .drv tr.watch { padding-inline: 12px; background: var(--accent-soft); border-radius: var(--radius); }
+    .drv tr.watch td { background: none; }
+    .next { grid-template-columns: minmax(0, 1fr); padding: var(--pad); }
+  }
+  @media (prefers-reduced-motion: reduce) { .blob, .td-title span, .cal li.is-next small::before { animation: none; } }
+  @media print { .nav, .bg, .td-ctas, .drv-filter { display: none !important; } .card { box-shadow: none; backdrop-filter: none; } }
+</style>
+<script>
+  try { var t = localStorage.getItem('dc-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#task-01">Skip to Task 01</a>
+<div class="bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><canvas class="world" id="world"></canvas><span class="grain"></span></div>
+
+<nav class="nav" aria-label="Primary">
+  <div class="wrap nav-inner">
+    <a class="brand td-back" href="index.html#journal"><span class="brand-mark" aria-hidden="true" data-mark="DC"></span><span>← Back to Portfolio</span></a>
+    <div class="nav-tools">
+      <button class="icon-btn" id="soundBtn" type="button" aria-pressed="false" aria-label="Sound effects">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 6h2.5l3.5-3v10L5 10H2.5z"/><path class="snd-on" d="M11 5.5c.9.7 1.4 1.5 1.4 2.5s-.5 1.8-1.4 2.5M12.8 3.5C14.2 4.8 15 6.3 15 8s-.8 3.2-2.2 4.5" hidden/><path class="snd-off" d="M11 6l4 4M15 6l-4 4"/></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Switch color theme">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11A5.5 5.5 0 008 2.5z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="progress" id="progress"></div>
+</nav>
+
+<main>
+<!-- ═════════ HERO ═════════ -->
+<header class="hero td-hero">
+  <div class="hero-grid-bg" aria-hidden="true"></div>
+  <div class="rays" aria-hidden="true"></div>
+  <div class="wrap td-hero-in">
+    <p class="eyebrow">FP&amp;A Training Desk</p>
+    <h1 class="td-title">The Training <span>Desk</span></h1>
+    <p class="td-lede">A mock FP&amp;A analyst job I designed to keep my skills sharp while I job search. I work at <strong>Quillmere Systems</strong>, a fictional B2B SaaS company with a full set of books. An AI plays my VP of Finance: it hands out real analyst assignments on a fiscal calendar, then reviews and scores what I turn in. <strong>Every task below shows the ask, the data I used, how I built it, what I found, and what I learned.</strong></p>
+    <div class="td-ctas">
+      <a class="btn btn-primary" href="#task-01">Read Task 01 ↓</a>
+      <a class="btn" href="#company">Meet the Company</a>
+    </div>
+    <p class="notice td-notice"><span class="notice-ic" aria-hidden="true">i</span><span><strong>For learning purposes only.</strong> Quillmere Systems is a fictional company. Its people, customers, vendors, financial data and every event in its books are invented for training, and nothing here describes a real company or is financial advice. <a href="#legal">Full statement</a></span></p>
+    <div class="card td-stats rise">
+      <div class="td-stat"><b data-flip>1</b><span>Assignments completed</span></div>
+      <div class="td-stat"><b><span data-flip>8.0</span><small>/10</small></b><span>Avg. review score</span></div>
+      <div class="td-stat"><b data-flip>2</b><span>Deliverables shipped</span></div>
+      <div class="td-stat"><b>Sep '26</b><span>Books closed through</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ═════════ HOW IT WORKS ═════════ -->
+<section class="section" data-world="how" aria-labelledby="h-how">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">How it works</p>
+        <h2 class="section-title" id="h-how">A real analyst cycle</h2>
+      </div>
+      <p class="section-sub">Each assignment follows the FP&amp;A calendar, and each one builds on the last: the variance work feeds the reforecast, the reforecast feeds the budget.</p>
+    </div>
+    <ol class="steps rise">
+      <li><span class="step-n" aria-hidden="true">01</span><h3>The Ask</h3><p>My VP of Finance sends a brief with a deadline and a standard, the way a real manager would.</p></li>
+      <li><span class="step-n" aria-hidden="true">02</span><h3>The Build</h3><p>I build the model in Excel off the raw ledger, with formulas that trace back to the data and checks that tie.</p></li>
+      <li><span class="step-n" aria-hidden="true">03</span><h3>The Write-up</h3><p>I turn the numbers into commentary a CFO can act on: what happened, what fixes itself, what to watch.</p></li>
+      <li><span class="step-n" aria-hidden="true">04</span><h3>The Review</h3><p>The work is scored out of 10 with written feedback, and every mistake goes on a list I check before the next task.</p></li>
+    </ol>
+    <ol class="cal rise" aria-label="FP&amp;A calendar">
+      <li class="is-done">Month-End Close<small>Task 01 · Done</small></li>
+      <li class="is-next">Q4 Reforecast<small>Up next</small></li>
+      <li>Budget Build<small>FY27 plan</small></li>
+      <li>Board Deck<small>Q4 board</small></li>
+      <li>Ad Hoc Analysis<small>As needed</small></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═════════ COMPANY ═════════ -->
+<section class="section" id="company" data-world="company" aria-labelledby="h-company">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">The company</p>
+        <h2 class="section-title" id="h-company">Quillmere Systems</h2>
+      </div>
+      <p class="section-sub">An invented company, built for learning, with a complete and realistically messy set of books, so the work looks like the job rather than a textbook exercise.</p>
+    </div>
+    <div class="co rise">
+      <div class="prose">
+        <p>In this exercise, Quillmere sells supply-chain visibility software to mid-market distributors, grocers and manufacturers. Customers pay for <strong>annual subscriptions recognized monthly</strong>, plus implementation services billed when project milestones are hit. Fiscal year = calendar year.</p>
+        <p>I play the FP&amp;A analyst. A fictional VP of Finance assigns the work, and a fictional CFO is the audience for everything I write.</p>
+      </div>
+      <dl class="facts">
+        <div><dt>FY26 revenue plan</dt><dd data-flip>$121M</dd></div>
+        <div><dt>Opening ARR</dt><dd data-flip>$108M</dd></div>
+        <div><dt>Employees</dt><dd data-flip>~460</dd></div>
+        <div><dt>Books closed</dt><dd>Sep 2026</dd></div>
+      </dl>
+    </div>
+    <div class="card co-data rise">
+        <table class="tabs">
+          <caption><p class="kicker">The dataset</p></caption>
+          <tbody>
+            <tr><th scope="row">GL_Actuals</th><td>Closed monthly actuals by department and account, Jan–Sep</td><td class="n">432 rows</td></tr>
+            <tr><th scope="row">Budget</th><td>The FY26 operating plan, all 12 months</td><td class="n">576 rows</td></tr>
+            <tr><th scope="row">GL_Detail_Sep</th><td>September journal entries with vendor and description</td><td class="n">88 entries</td></tr>
+            <tr><th scope="row">Headcount</th><td>Employee roster plus open reqs and their planned start dates</td><td class="n">490 rows</td></tr>
+            <tr><th scope="row">ARR_Drivers</th><td>Monthly ARR bridge: opening, bookings, churn, closing</td><td class="n">12 months</td></tr>
+            <tr><th scope="row">PY_Summary</th><td>FY25 summary P&amp;L for year-over-year context</td><td class="n">12 months</td></tr>
+            <tr><th scope="row">Chart of Accounts</th><td>Accounts and the rules for rolling them up to the P&amp;L</td><td class="n">17 accounts</td></tr>
+          </tbody>
+        </table>
+        <p class="tabs-note">Every figure, customer, vendor transaction and employee in this dataset was generated for training.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ TASKS ═════════ -->
+<section class="section" id="tasks" data-world="tasks" aria-labelledby="h-tasks">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">The work</p>
+        <h2 class="section-title" id="h-tasks">Assignments</h2>
+      </div>
+      <p class="section-sub">Newest first. Downloads are the actual files I submitted, built on the fictional dataset.</p>
+    </div>
+
+    <article class="card task rise" id="task-01" aria-labelledby="t01">
+      <header class="task-head">
+        <div class="task-num"><small>Task</small>01</div>
+        <div>
+          <div class="task-chips"><span class="chip">Month-End Close</span><span class="chip chip-live">Completed</span><span class="chip">Oct 2026</span></div>
+          <h3 class="task-title" id="t01">September Close: Budget vs. Actual Variance</h3>
+        </div>
+        <div class="score"><b><span data-flip>8</span><small>/10</small></b><span>Review score</span></div>
+      </header>
+
+      <div class="task-body">
+        <div class="blk two">
+          <div>
+            <p class="kicker">The ask</p>
+            <blockquote class="ask">September operating income came in well below plan. Tell me <strong>why</strong>, <strong>how much of it fixes itself</strong>, and <strong>what to worry about for Q4</strong>. I need a budget-vs-actual P&amp;L built off the GL, one page of commentary for the CFO, and 3 to 5 flags for the Q4 reforecast.<cite>Rachel Okafor, VP of Finance (fictional, AI-simulated)</cite></blockquote>
+          </div>
+          <div>
+            <p class="kicker">Data I used</p>
+            <ul class="used">
+              <li><b>GL_Actuals + Budget</b><span>The P&amp;L, September and year-to-date, built with SUMIFS</span></li>
+              <li><b>GL_Detail_Sep</b><span>The 88 journal entries behind every variance I explained</span></li>
+              <li><b>ARR_Drivers</b><span>Bookings and churn, to explain commissions and a lost customer</span></li>
+              <li><b>Headcount</b><span>Open reqs vs. planned start dates, to explain R&amp;D spend</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="blk rise">
+          <p class="kicker">The numbers</p>
+          <dl class="kpis">
+            <div class="kpi"><dt>Sep operating income</dt><dd><span class="v" data-flip>$618K</span><span class="d bad">($1,011K) · (62%) vs. plan</span></dd></div>
+            <div class="kpi"><dt>YTD operating income</dt><dd><span class="v" data-flip>$13.89M</span><span class="d good">+$38K · 0.3% vs. plan</span></dd></div>
+            <div class="kpi"><dt>Material drivers</dt><dd><span class="v" data-flip>6</span><span class="d">of 48 dept/account lines</span></dd></div>
+            <div class="kpi"><dt>Tie-out check</dt><dd><span class="v" data-flip>$0</span><span class="d good">Every GL dollar accounted for</span></dd></div>
+          </dl>
+        </div>
+
+        <div class="blk two rise">
+          <div>
+            <p class="kicker">How I built it</p>
+            <ol class="build">
+              <li><strong>Built the P&amp;L off the raw ledger.</strong> SUMIFS on the GL and the budget for September and year-to-date, with a single month cell that rolls the whole table forward.</li>
+              <li><strong>Proved it ties.</strong> A check that subtracts every GL row from my P&amp;L lines and returns zero, so nothing is missed or double counted.</li>
+              <li><strong>Found what's material.</strong> Split the P&amp;L into 48 department/account lines and flagged the ones over $50K and 10%.</li>
+              <li><strong>Traced each one to the journal entries.</strong> Read the vendor and description behind every flagged line and tagged it timing, one-time or run-rate.</li>
+              <li><strong>Sized the Q4 impact.</strong> Put a dollar figure, and an owner where action was needed, on everything that carries forward.</li>
+            </ol>
+          </div>
+          <div>
+            <p class="kicker">What I found</p>
+            <div class="finds">
+              <div class="find lift"><span class="big" data-flip>82%</span><h4>of the September miss fixes itself</h4><p>An expo budgeted for October that ran in September, two implementation milestones that slipped a month or two, and one-time litigation fees.</p></div>
+              <div class="find lift"><span class="big" data-flip>$1.3M</span><h4>behind plan, hidden in a "flat" YTD</h4><p>Year-to-date looked on plan only because R&amp;D was $1.35M under budget on unfilled roles. As those roles fill, the cushion goes away.</p></div>
+              <div class="find lift"><span class="big" data-flip>$350K</span><h4>of Q4 revenue lost, below the threshold</h4><p>A customer worth $1.4M ARR left on 9/1. Subscription revenue only missed by 0.7%, so the materiality filter alone would have missed it.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="blk rise">
+          <div class="drv-head">
+            <p class="kicker">The drivers</p>
+            <div class="drv-filter" role="group" aria-label="Highlight one type of variance">
+              <span>Highlight:</span>
+              <button type="button" class="tag t-timing" data-type="timing" aria-pressed="false">Timing</button>
+              <button type="button" class="tag t-vol" data-type="vol" aria-pressed="false">Volume</button>
+              <button type="button" class="tag t-one" data-type="one" aria-pressed="false">One-time</button>
+              <button type="button" class="tag t-mix" data-type="mix" aria-pressed="false">Mixed</button>
+              <button type="button" class="tag t-run" data-type="run" aria-pressed="false">Run-rate</button>
+            </div>
+          </div>
+          <table class="drv">
+            <caption class="sr-only">September material variances, tagged</caption>
+            <thead><tr><th scope="col">Driver</th><th scope="col">Variance</th><th scope="col">Type</th><th scope="col">What happened</th></tr></thead>
+            <tbody>
+              <tr data-type="timing"><td>Events &amp; Conferences<small>Marketing</small></td><td class="num">+$338K U</td><td><span class="tag t-timing">Timing</span></td><td>A $318K expo budgeted for October was held in September. October will land about $365K under budget.</td></tr>
+              <tr data-type="vol"><td>Sales Commissions<small>Sales</small></td><td class="num">+$244K U</td><td><span class="tag t-vol">Volume</span></td><td>Bookings beat plan by $1.19M, plus a $114K Q3 accelerator. A cost of selling more, not overspend.</td></tr>
+              <tr data-type="timing"><td>Professional Services<small>Revenue</small></td><td class="num">($229K) U</td><td><span class="tag t-timing">Timing</span></td><td>Two customer-side delays pushed implementation milestones to October and November.</td></tr>
+              <tr data-type="one"><td>Legal Fees<small>G&amp;A</small></td><td class="num">+$168K U</td><td><span class="tag t-one">One-time</span></td><td>Litigation fees for a reseller contract dispute that settled 9/26.</td></tr>
+              <tr data-type="mix"><td>Hosting &amp; Infrastructure<small>Cost of Revenue</small></td><td class="num">+$165K U</td><td><span class="tag t-mix">Mixed</span></td><td>A temporary migration dual-run, lapsed cloud reserved instances (fixable with a renewal), and slow underlying cost creep.</td></tr>
+              <tr data-type="one"><td>Recruiting<small>R&amp;D</small></td><td class="num">+$58K U</td><td><span class="tag t-one">One-time</span></td><td>Agency fees for three senior engineer hires, a sign the R&amp;D hiring lag is ending.</td></tr>
+              <tr class="watch" data-type="run"><td>Subscription Churn<small>Watch item, below threshold</small></td><td class="num">($74K) U</td><td><span class="tag t-run">Run-rate</span></td><td>A $1.4M ARR customer terminated. Closing ARR finished below plan even though bookings beat.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="blk rise">
+          <p class="kicker">My Q4 reforecast flags</p>
+          <ol class="flags">
+            <li data-n="1"><span><strong>Cut October Events to ~$55K, not $420K.</strong> The expo is already paid for; budgeting it again double counts ~$365K.</span></li>
+            <li data-n="2"><span><strong>Lower Q4 subscription revenue by ~$350K</strong> for the lost customer, and lower the year-end ARR forecast with it.</span></li>
+            <li data-n="3"><span><strong>Renew the cloud reserved instances this month</strong> (Engineering and Procurement) to stop ~$45K a month of avoidable cost.</span></li>
+            <li data-n="4"><span><strong>Plan for ~$255K of extra Q4 commissions</strong> if bookings keep beating plan; the budget funds $0 for accelerators.</span></li>
+          </ol>
+        </div>
+
+        <div class="blk two rise">
+          <div>
+            <p class="kicker">What I learned</p>
+            <ul class="ticks">
+              <li><strong>A check should return zero.</strong> A total proves nothing; a difference of $0 proves every dollar is accounted for.</li>
+              <li><strong>Timing vs. one-time is one question:</strong> was it in the budget, just in another month?</li>
+              <li><strong>Look below the threshold.</strong> Big items can hide inside a line that nets out small.</li>
+              <li><strong>Hiring-lag savings don't come back.</strong> When roles fill, the cushion stops growing; it doesn't refill.</li>
+              <li><strong>Raise data conflicts early.</strong> I found two ARR targets in the source data and logged it as a question for my manager.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="kicker">Where this shows up on the job</p>
+            <ul class="ticks">
+              <li><strong>Monthly close and the flash report:</strong> the budget-vs-actual package every FP&amp;A team sends each month.</li>
+              <li><strong>Reforecasting:</strong> turning "what happened" into "what changes" for the rest of the year.</li>
+              <li><strong>Controls:</strong> building models that tie to the ledger so leadership can trust the numbers.</li>
+              <li><strong>Executive writing:</strong> leading with the bottom line and putting a dollar figure on every point.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="blk rise">
+          <p class="kicker">The review</p>
+          <figure class="review">
+            <div>
+              <p>“This is a package I would forward to [the CFO] after a light edit. The analysis is right, the structure is right, and the judgment calls (YTD masking, below-threshold churn) are what separate an analyst from a report-builder.”</p>
+              <cite>Rachel Okafor, VP of Finance (fictional, AI-simulated manager)</cite>
+              <ul class="tighten" aria-label="What to tighten"><li class="chip">Check cell returned a total, not zero</li><li class="chip">Typos in the working file</li><li class="chip">Present in $K</li><li class="chip">Flag data conflicts sooner</li></ul>
+            </div>
+            <div class="ring">
+              <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-track" cx="60" cy="60" r="52"/><circle class="ring-val" cx="60" cy="60" r="52"/></svg>
+              <div class="ring-in"><b><span data-flip>8</span><small>/10</small></b><span>Review score</span></div>
+            </div>
+          </figure>
+        </div>
+
+        <div class="blk rise">
+          <p class="kicker">Deliverables</p>
+          <div class="dl">
+            <a class="btn btn-primary" href="training-desk/Quillmere_Sep26_Variance.xlsx" download>Variance Workbook (.xlsx) ↓</a>
+            <a class="btn" href="training-desk/Quillmere_Sep26_Commentary.pdf" target="_blank" rel="noopener">CFO Commentary (PDF) ↗</a>
+          </div>
+          <p class="ai-note"><strong>How AI was used:</strong> an AI plays my manager and coached me through the Excel build, the way a senior analyst would. I built the workbook and found the drivers; the final commentary wording was edited with AI support. <strong>Both files contain fictional training data only.</strong></p>
+        </div>
+      </div>
+    </article>
+
+    <div class="card next rise">
+      <div><p class="kicker">Next on the desk</p><h3>Task 02 · Q4 Reforecast</h3><p>Builds directly on these findings: the timing reversals, the lost customer and the R&amp;D hiring plan.</p></div>
+      <span class="chip chip-wip">Up next</span>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="td-foot" id="legal">
+  <div class="wrap">
+    <div class="legal">
+      <h2>About this project</h2>
+      <p>The FP&amp;A Training Desk is a personal learning exercise. Quillmere Systems is a fictional company, and everything connected to it on this page and in the downloadable files is invented for training: its employees and managers (including Rachel Okafor and Marcus Bell), customers, vendors, contracts, disputes, financial statements, budgets, ARR, headcount and every event in its books.</p>
+      <p>Customer, vendor and firm names in the data are invented as well. If any of them matches a real company, that is coincidental, and nothing here describes a real transaction, relationship, price or performance. Any resemblance to real companies, people or events is coincidental.</p>
+      <p>Nothing here is financial, investment, accounting or legal advice, and none of it reflects work done for any employer.</p>
+    </div>
+    <div class="foot-row">
+      <span>© Daniel Cournane · Built with AI support</span>
+      <a class="td-back" href="index.html">← Back to Portfolio</a>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="common.js" defer></script>
+<script src="desk.js" defer></script>
+</body>
+</html>
