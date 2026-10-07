@@ -16,7 +16,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23f3a43b'/%3E%3Ctext x='16' y='23' font-family='Arial Narrow,Arial' font-weight='700' font-size='17' text-anchor='middle' fill='%231b1104'%3EDC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Libre+Franklin:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=JetBrains+Mono:wght@600;700&family=Libre+Franklin:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <link rel="stylesheet" href="site.css">
 <style>
   /* Quillmere tear sheet (Training Desk): header band, 2x2 KPI grid, role/build footer strip. Loads after site.css. */
@@ -36,14 +36,14 @@
   }
   .co-mark::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); transform: translate(5px, 5px); transition: transform 0.45s var(--ease); }
   .co-name { display: block; margin: 0; font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 0.95; letter-spacing: 0.01em; text-transform: uppercase; color: var(--fg); }
-  .co-sub { margin: 6px 0 0; font-family: var(--mono); font-size: 12px; line-height: 1.3; color: var(--muted); }
-  .co-chip { align-self: start; text-transform: none; font-weight: 500; color: color-mix(in srgb, var(--accent) 80%, var(--fg)); }
+  .co-sub { margin: 6px 0 0; font-family: var(--mono); font-weight: 600; font-size: 12px; line-height: 1.3; color: var(--muted); }
+  .co-chip { align-self: start; text-transform: none; font-weight: 600; color: color-mix(in srgb, var(--accent) 80%, var(--fg)); }
   .co-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
   /* label and value rows are shared across each row of cells (subgrid), so a label that wraps never knocks its numeral out of line */
   .co-kpi { --tint: var(--accent); display: grid; grid-row: span 2; grid-template-rows: subgrid; align-content: start; min-width: 0; padding: 13px 20px 15px; transition: background 0.3s; }
   .co-kpi:nth-child(even) { border-left: 1px solid var(--line); }
   .co-kpi:nth-child(n + 3) { border-top: 1px solid var(--line); }
-  .co-kpi dt { align-self: end; display: flex; align-items: flex-start; gap: 7px; font-family: var(--mono); font-size: 11.5px; line-height: 1.2; color: var(--muted); }
+  .co-kpi dt { align-self: end; display: flex; align-items: flex-start; gap: 7px; font-family: var(--mono); font-weight: 600; font-size: 11.5px; line-height: 1.2; color: var(--muted); }
   .co-kpi dt::before { content: ""; flex-shrink: 0; margin-top: 4px; width: 6px; height: 6px; border-radius: 1.5px; background: var(--tint); transition: transform 0.3s var(--ease); }
   .co-kpi dd { container-type: inline-size; display: flex; flex-direction: column; min-width: 0; margin: 10px 0 0; }
   /* sized to the cell so a "Mmm YYYY" Books Closed value fits on one line (the inline script below shortens full month names) */
@@ -73,7 +73,7 @@
   .co-foot > div { min-width: 0; padding: 12px 20px 14px; }
   .co-foot > div + div { border-left: 1px solid var(--line); }
   /* a touch stronger than --muted: these labels sit on the footer tint */
-  .co-foot dt { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11.5px; line-height: 1.2; color: color-mix(in srgb, var(--muted) 78%, var(--fg)); }
+  .co-foot dt { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-weight: 600; font-size: 11.5px; line-height: 1.2; color: color-mix(in srgb, var(--muted) 78%, var(--fg)); }
   .co-ico { display: grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 6px; color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
   .co-ico svg { width: 13px; height: 13px; }
   .co-foot dd { margin: 7px 0 0; font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--fg); }
@@ -234,11 +234,11 @@
   <div class="path-track" id="pathTrack" tabindex="0" aria-label="Career timeline">
     <ol class="path-list">
       <li class="pnode">
-        <div class="p-date">2021</div><span class="p-dot"></span>
+        <div class="p-date">Apr 2021</div><span class="p-dot"></span>
         <article class="p-card">
           <h3>First Jobs</h3>
           <p class="p-org">ParkShore Day Camp · Lamboy Family Chiropractic</p>
-          <p class="p-why">Maintenance at a local day camp, then a year at a chiropractor's front desk handling scheduling and insurance paperwork.</p>
+          <p class="p-why">Grounds and facility upkeep at a local day camp, then over a year at a chiropractor's front desk running the schedule and keeping patient insurance records accurate for billing.</p>
           <a class="p-go" href="#experience">Go to section →</a>
         </article>
       </li>
@@ -247,17 +247,17 @@
         <article class="p-card">
           <h3>Started at UD</h3>
           <p class="p-org">University of Delaware · Lerner College of Business &amp; Economics</p>
-          <p class="p-why">Started a B.S. in Finance with a minor in Fintech.</p>
+          <p class="p-why">Entered Lerner's business program undeclared, declared Finance in my second year, and added the Fintech minor as a senior.</p>
           <div class="p-ach"><span class="chip chip-gold">Dean's List · Fall 2022</span></div>
           <a class="p-go" href="#about">Go to section →</a>
         </article>
       </li>
       <li class="pnode">
-        <div class="p-date">Summers 2023 &amp; 2024</div><span class="p-dot"></span>
+        <div class="p-date">Jun 2023</div><span class="p-dot"></span>
         <article class="p-card">
-          <h3>Summer Jobs</h3>
+          <h3>Working Through School</h3>
           <p class="p-org">ShopRite · Classic Construction · Bucked Up</p>
-          <p class="p-why">The ShopRite deli counter one summer, construction sites the next, plus brand ambassador work for Bucked Up. Busy, hands-on jobs where showing up and keeping pace mattered.</p>
+          <p class="p-why">A summer on ShopRite's deli counter and a summer on construction sites, plus commission-based brand ambassador work for Bucked Up that I ran on my own schedule.</p>
           <a class="p-go" href="#experience">Go to section →</a>
         </article>
       </li>
@@ -266,7 +266,7 @@
         <article class="p-card">
           <h3>Head Housing Chair</h3>
           <p class="p-org">Sigma Alpha Epsilon</p>
-          <p class="p-why">Ran housing for a 40+ member chapter across 7+ off-campus houses. I built 12-month all-in cost estimates (rent plus utilities) so members could pick a house that fit their budget.</p>
+          <p class="p-why">Built 12-month all-in cost estimates in Excel (rent plus utilities, after confirming what each lease covered) for 7+ off-campus houses, so 40+ members could choose one that fit their budget.</p>
           <div class="p-ach"><span class="chip chip-gold">Dean's List · Fall 2023</span></div>
           <a class="p-go" href="#experience">Go to section →</a>
         </article>
@@ -276,7 +276,7 @@
         <article class="p-card">
           <h3>AI Writing Evaluator</h3>
           <p class="p-org">Outlier · Part-time</p>
-          <p class="p-why">Part-time work grading AI-written responses for accuracy and reasoning across 20+ evaluation projects. It keeps me close to how these tools actually work.</p>
+          <p class="p-why">Grade AI-written responses for accuracy, reasoning and whether they follow the brief, and write structured feedback on each. 20+ evaluation projects so far.</p>
           <a class="p-go" href="#experience">Go to section →</a>
         </article>
       </li>
@@ -285,16 +285,16 @@
         <article class="p-card">
           <h3>Head Apparel Chair</h3>
           <p class="p-org">Sigma Alpha Epsilon</p>
-          <p class="p-why">Ran the chapter's merch orders. A simple per-unit cost model showed which order sizes kept the price down for members.</p>
+          <p class="p-why">Mapped vendor price breaks against demand in Excel to pick order sizes that lowered the unit cost, and co-ran apparel for joint philanthropy events with other chapters.</p>
           <a class="p-go" href="#experience">Go to section →</a>
         </article>
       </li>
       <li class="pnode">
-        <div class="p-date">Summer 2025</div><span class="p-dot"></span>
+        <div class="p-date">May 2025</div><span class="p-dot"></span>
         <article class="p-card">
           <h3>Equity Research Intern</h3>
           <p class="p-org">Romero Capital</p>
-          <p class="p-why">Six weeks of investment banking training, then 10-year three-statement models on six companies. My NBIS Buy call hit its $60 target in 17 days.</p>
+          <p class="p-why">Six weeks of investment banking training, then 10-year three-statement models with DCF and comps for six companies. My NBIS Buy hit its $60 target in 17 days.</p>
           <div class="p-ach"><span class="chip chip-gold">NBIS Buy, $60 · Target hit</span><span class="chip chip-gold">Dean's List · Spring 2025</span></div>
           <a class="p-go" href="#research">Go to section →</a>
         </article>
@@ -304,8 +304,8 @@
         <article class="p-card">
           <h3>Graduated</h3>
           <p class="p-org">University of Delaware</p>
-          <p class="p-why">B.S. Finance with a minor in Fintech.</p>
-          <div class="p-ach"><span class="chip chip-gold">Dean's List 4×</span><span class="chip chip-gold">GPA 3.3</span></div>
+          <p class="p-why">B.S. in Finance with a minor in Fintech. Senior year added machine learning, programming and data science for finance alongside financial modeling and valuation.</p>
+          <div class="p-ach"><span class="chip chip-gold">Dean's List 4× <span>(Fall 2025 Not Listed)</span></span><span class="chip chip-gold">GPA 3.3</span></div>
           <a class="p-go" href="#about">Go to section →</a>
         </article>
       </li>
@@ -314,7 +314,7 @@
         <article class="p-card">
           <h3>Built Three Live Finance Tools</h3>
           <p class="p-org">Valence · Lucite · FP&amp;A dashboard</p>
-          <p class="p-why">A DCF calculator, an M&amp;A accretion/dilution model and a variance dashboard that anyone can use in the browser.</p>
+          <p class="p-why">A live DCF calculator, an M&amp;A accretion/dilution model and a plan-vs-actual variance dashboard. I set the finance logic and checks; Claude Code wrote the code.</p>
           <a class="p-go" href="#projects">Go to section →</a>
         </article>
       </li>
@@ -323,7 +323,7 @@
         <article class="p-card">
           <h3>Mock FP&amp;A Analyst Role</h3>
           <p class="p-org">FP&amp;A Training Desk · Fictional company</p>
-          <p class="p-why">A mock FP&amp;A role I designed and run with AI, so I keep training in finance while I job search.</p>
+          <p class="p-why">Assignments I design and run with AI at a fictional company, so I keep building analyst skills while I job search.</p>
           <a class="p-go" href="#journal">Go to section →</a>
         </article>
       </li>
@@ -370,7 +370,7 @@
           <ul class="spec">
             <li><span>Problem</span><span>Month-end means rebuilding the same plan-vs-actual table in Excel every close.</span></li>
             <li><span>Key call</span><span>Favorable/unfavorable logic that flips for revenue vs. cost lines.</span></li>
-            <li><span>Stack</span><span>HTML/CSS/JS · Chart.js · SheetJS · GitHub Pages</span></li>
+            <li><span>Stack</span><span>HTML/CSS/JS · Chart.js · SheetJS · GitHub&nbsp;Pages · Claude&nbsp;Code</span></li>
           </ul>
           <div class="case-actions">
             <button class="btn btn-primary btn-sm" type="button" data-case="case-fpa">Read case study</button>
@@ -407,7 +407,7 @@
           <ul class="spec">
             <li><span>Problem</span><span>Every DCF I built in school lived in a clunky Excel file.</span></li>
             <li><span>Key call</span><span>A "Why the Gap?" panel that explains when a DCF can't capture the market price.</span></li>
-            <li><span>Stack</span><span>HTML/CSS/JS · Cloudflare Workers · Yahoo Finance API</span></li>
+            <li><span>Stack</span><span>HTML/CSS/JS · Cloudflare&nbsp;Workers · Yahoo&nbsp;Finance&nbsp;API · GitHub&nbsp;Pages · Claude&nbsp;Code</span></li>
           </ul>
           <div class="case-actions">
             <button class="btn btn-primary btn-sm" type="button" data-case="case-dcf">Read case study</button>
@@ -442,7 +442,7 @@
           <ul class="spec">
             <li><span>Problem</span><span>Accretion/dilution is taught on paper; I wanted to watch the answer flip.</span></li>
             <li><span>Key call</span><span>Math stays correct across any stock/cash mix, including forgone interest on cash.</span></li>
-            <li><span>Stack</span><span>HTML/CSS/JS · Vanilla SVG · GitHub Pages</span></li>
+            <li><span>Stack</span><span>HTML/CSS/JS · Vanilla&nbsp;SVG · GitHub&nbsp;Pages · Claude&nbsp;Code</span></li>
           </ul>
           <div class="case-actions">
             <button class="btn btn-primary btn-sm" type="button" data-case="case-ma">Read case study</button>
@@ -1090,8 +1090,8 @@
   <h4>Biggest challenge</h4>
   <p>The hard part wasn't the code, it was the finance edge cases. Some cost lines are supposed to run over. Some numbers only make sense with a bit of context. I kept feeding it realistic data and adjusting until the read matched what I'd actually write up by hand.</p>
   <div class="reader-facts">
-    <div><h5>Stack</h5><div class="pills"><span class="chip">HTML/CSS/JS</span><span class="chip">Chart.js</span><span class="chip">SheetJS</span><span class="chip">GitHub Pages</span></div></div>
-    <div><h5>Links</h5><div class="links"><a href="https://dancourn.github.io/fpa-dashboard.html" target="_blank" rel="noopener">Live demo ↗</a><a href="https://github.com/dancourn/dancourn.github.io/blob/main/fpa-dashboard.html" target="_blank" rel="noopener">Source on GitHub ↗</a><a href="https://dancourn.github.io/fpa_sample_data.xlsx" target="_blank" rel="noopener">Sample data (.xlsx) ↓</a></div></div>
+    <div><h5>Stack</h5><div class="pills"><span class="chip">HTML/CSS/JS</span><span class="chip">Chart.js</span><span class="chip">SheetJS</span><span class="chip">GitHub Pages</span><span class="chip">Claude Code</span></div></div>
+    <div><h5>Links</h5><div class="links"><a href="https://dancourn.github.io/fpa-dashboard.html" target="_blank" rel="noopener">Live demo ↗</a><a href="https://dancourn.github.io/fpa_sample_data.xlsx" target="_blank" rel="noopener">Sample data (.xlsx) ↓</a></div></div>
   </div>
 </template>
 <template id="case-dcf" data-group="proj" data-label="Project · Case study 2 of 3">
@@ -1106,8 +1106,8 @@
   <h4>Biggest challenge</h4>
   <p>Getting the cost-of-capital math to behave for every company. Newly public ones don't have enough trading history to calculate it the usual way, and a few have negative earnings that break the formula entirely. I went through those cases one at a time and decided how the model should handle each, so it doesn't crash or print something that makes no sense.</p>
   <div class="reader-facts">
-    <div><h5>Stack</h5><div class="pills"><span class="chip">HTML/CSS/JS</span><span class="chip">Cloudflare Workers</span><span class="chip">Yahoo Finance API</span><span class="chip">GitHub Pages</span></div></div>
-    <div><h5>Links</h5><div class="links"><a href="https://dancourn.github.io/dcf-calculator.html" target="_blank" rel="noopener">Live demo ↗</a><a href="https://github.com/dancourn/dancourn.github.io/blob/main/dcf-calculator.html" target="_blank" rel="noopener">Source on GitHub ↗</a></div></div>
+    <div><h5>Stack</h5><div class="pills"><span class="chip">HTML/CSS/JS</span><span class="chip">Cloudflare Workers</span><span class="chip">Yahoo Finance API</span><span class="chip">GitHub Pages</span><span class="chip">Claude Code</span></div></div>
+    <div><h5>Links</h5><div class="links"><a href="https://dancourn.github.io/dcf-calculator.html" target="_blank" rel="noopener">Live demo ↗</a></div></div>
   </div>
 </template>
 <template id="case-ma" data-group="proj" data-label="Project · Case study 3 of 3">
@@ -1122,8 +1122,8 @@
   <h4>Biggest challenge</h4>
   <p>Keeping the math right no matter how the deal gets paid for. An all-stock deal waters down earnings by handing out new shares; an all-cash deal doesn't, but you give up the interest you were earning on that cash. I had to make sure it stayed correct as you slide between the two, and that it actually turned negative once the buyer overpays. I kept checking it against the way you'd do it on paper until it matched every time.</p>
   <div class="reader-facts">
-    <div><h5>Stack</h5><div class="pills"><span class="chip">HTML/CSS/JS</span><span class="chip">Vanilla SVG</span><span class="chip">GitHub Pages</span></div></div>
-    <div><h5>Links</h5><div class="links"><a href="https://dancourn.github.io/accretion-dilution.html" target="_blank" rel="noopener">Live demo ↗</a><a href="https://github.com/dancourn/dancourn.github.io/blob/main/accretion-dilution.html" target="_blank" rel="noopener">Source on GitHub ↗</a></div></div>
+    <div><h5>Stack</h5><div class="pills"><span class="chip">HTML/CSS/JS</span><span class="chip">Vanilla SVG</span><span class="chip">GitHub Pages</span><span class="chip">Claude Code</span></div></div>
+    <div><h5>Links</h5><div class="links"><a href="https://dancourn.github.io/accretion-dilution.html" target="_blank" rel="noopener">Live demo ↗</a></div></div>
   </div>
 </template>
 

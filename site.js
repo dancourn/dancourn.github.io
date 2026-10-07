@@ -171,17 +171,19 @@
   }
 
   // past the hero the header drops the logo, clock and buttons and keeps only the section links
-  const prog = $('#progress');
+  const prog = $('#progress'), bg = $('.bg');
   let scrollQueued = false, compact = false;
   function onScroll() {
     scrollQueued = false;
+    // read everything first (spy measures the sections), then write: reading after a write forces a full relayout
+    spy();
     const y = window.scrollY;
     const h = root.scrollHeight - window.innerHeight;
     const p = h > 0 ? Math.min(1, y / h) : 0;
     prog.style.transform = `scaleX(${p})`;
-    root.style.setProperty('--sp', p.toFixed(4));
+    // the blobs' parallax lives on their own layer, so a scroll frame restyles three elements instead of the whole page
+    bg.style.setProperty('--sp', p.toFixed(4));
     nav.classList.toggle('is-scrolled', y > 8);
-    spy();
     const c = compact ? y > 90 : y > 140;
     if (c !== compact) {
       compact = c;
@@ -207,12 +209,12 @@
     const weekend = p.weekday === 'Sat' || p.weekday === 'Sun';
     const close = EARLY.has(day) ? 13 * 60 : 16 * 60;
     const dur = m => (m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` : `${m}m`);
-    let state = 'closed', label = 'Closed', long = 'Market closed';
+    let state = 'closed', label = 'Closed', long = 'Market Closed';
     if (!weekend && !HOLIDAYS.has(day)) {
-      if (mins >= 570 && mins < close) { state = 'open'; label = 'Open'; long = `Open · closes in ${dur(close - mins)}`; }
-      else if (mins >= 240 && mins < 570) { state = 'pre'; label = 'Pre-market'; long = `Pre-market · opens in ${dur(570 - mins)}`; }
-      else if (mins >= close && mins < 1200) { state = 'after'; label = 'After hours'; long = 'After hours'; }
-    } else if (HOLIDAYS.has(day)) { label = 'Holiday'; long = 'Closed for holiday'; }
+      if (mins >= 570 && mins < close) { state = 'open'; label = 'Open'; long = `Open · Closes in ${dur(close - mins)}`; }
+      else if (mins >= 240 && mins < 570) { state = 'pre'; label = 'Pre-Market'; long = `Pre-Market · Opens in ${dur(570 - mins)}`; }
+      else if (mins >= close && mins < 1200) { state = 'after'; label = 'After Hours'; long = 'After Hours'; }
+    } else if (HOLIDAYS.has(day)) { label = 'Holiday'; long = 'Closed for Holiday'; }
     return { state, label, long };
   }
   function tickClock() {
@@ -355,7 +357,8 @@
       if (!running) draw(performance.now());
     }
     function size() {
-      const small = innerWidth < 700, dpr = Math.min(window.devicePixelRatio || 1, small ? 1.25 : 1.5);
+      // 1x is plenty: the canvas sits under a CSS blur, and every extra pixel is redrawn 60 times a second
+      const small = innerWidth < 700, dpr = Math.min(window.devicePixelRatio || 1, 1);
       cols = small ? 44 : 70; rows = small ? 22 : 30;
       W = cv.clientWidth; H = cv.clientHeight;
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
@@ -394,7 +397,7 @@
         ctx.globalCompositeOperation = 'source-atop';
         const g = ctx.createRadialGradient(mx, my, 0, mx, my, 220);
         g.addColorStop(0, `rgba(${near},0.95)`); g.addColorStop(1, `rgba(${near},0)`);
-        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = g; ctx.fillRect(mx - 220, my - 220, 440, 440);   // only the light's own square, not the whole canvas
       }
     }
     function loop(now) { draw(now); if (running) raf = requestAnimationFrame(loop); }
@@ -619,7 +622,7 @@
     'AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOG', 'META', 'JPM', 'GS', 'BAC', 'MS', 'BRK-B', 'V', 'MA',
     'JNJ', 'UNH', 'LLY', 'XOM', 'CVX', 'CAT', 'WMT', 'COST', 'TSLA', 'AMD', 'PLTR', 'NFLX'];
   const WINDOW = 13;
-  const LABELS = { '^GSPC': 'S&P 500', '^IXIC': 'Nasdaq', '^DJI': 'Dow', '^TNX': '10Y yield', 'CL=F': 'WTI crude', 'GC=F': 'Gold',
+  const LABELS = { '^GSPC': 'S&P 500', '^IXIC': 'Nasdaq', '^DJI': 'Dow', '^TNX': '10Y Yield', 'CL=F': 'WTI Crude', 'GC=F': 'Gold',
     'EURUSD=X': 'EUR/USD', 'BTC-USD': 'Bitcoin', 'IWM': 'Russell 2000', 'BRK-B': 'BRK.B' };
   const Quotes = { data: {}, subs: [], on(f) { this.subs.push(f); }, emit() { this.subs.forEach(f => f(this.data)); } };
   const fmtPx = p => (p == null || isNaN(p)) ? '-' : p >= 1000 ? p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : p.toFixed(2);
@@ -642,7 +645,6 @@
       sizeTape();
     }
     window.addEventListener('resize', sizeTape);
-    window.addEventListener('resize', sizeTape);
 
     const pauseBtn = $('#tapePause');
     pauseBtn.addEventListener('click', () => {
@@ -658,7 +660,7 @@
         const up = q.pct >= 0;
         a.querySelector('.tk-px').textContent = fmtTape(sym, q.price);
         const ch = a.querySelector('.tk-ch');
-        ch.textContent = isNaN(q.pct) ? '' : `${up ? '▲' : '▼'} ${up ? '+' : ''}${q.pct.toFixed(2)}%`;
+        ch.innerHTML = isNaN(q.pct) ? '' : `<span class="tk-arr">${up ? '▲' : '▼'}</span> ${up ? '+' : ''}${q.pct.toFixed(2)}%`;
         ch.className = 'tk-ch ' + (up ? 'up' : 'down');
         if (flash) { a.classList.remove('flash-up', 'flash-down'); void a.offsetWidth; a.classList.add(flash); }
       });
@@ -718,7 +720,7 @@
         if (moved) Sound.play(moved > 0 ? 'up' : 'down');
       } else {
         const anyCached = Object.keys(Quotes.data).length;
-        $('#tapeState').textContent = anyCached ? 'Delayed · feed offline' : 'Feed offline';
+        $('#tapeState').textContent = anyCached ? 'Delayed · Feed Offline' : 'Feed Offline';
         // names with no known price say so instead of looking like they're still loading
         $$('.tk', track).forEach(a => { if (!Quotes.data[a.dataset.sym]) a.querySelector('.tk-px').textContent = '-'; });
       }
