@@ -370,11 +370,14 @@ button { font: inherit; color: inherit; }
 
 /* ───────── sections ───────── */
 .section { padding-block: var(--sp-section) 0; }
-.section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 20px var(--sp-col); align-items: end; margin-bottom: var(--sp-block); padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: 20px var(--sp-col); align-items: end; margin-bottom: var(--sp-block); padding-bottom: 22px; border-bottom: 1px solid var(--line); }
 .eyebrow { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; font-family: var(--body); font-weight: 600; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); }
 .eyebrow::before { content: ""; width: 28px; height: 1px; background: currentColor; }
 .section-title { margin: 0; font-family: var(--display); font-weight: 800; font-size: var(--fs-2xl); line-height: 0.95; text-transform: uppercase; letter-spacing: 0.005em; text-wrap: balance; }
-.section-sub { margin: 0; color: var(--fg-2); font-size: 16px; line-height: 1.6; }
+/* One size for every description. It scales with the title (5.2vw vs 1.7vw, both topping out near 1235px wide), so
+   copy written to 2 lines beside a one-line title, or 4 beside a two-line title, spans the title's height. */
+.section-sub { margin: 0; color: var(--fg-2); font-size: clamp(18px, 1.7vw, 21px); line-height: 1.45; text-wrap: pretty; }
+.section-sub strong { color: var(--fg); font-weight: 600; }
 
 /* ───────── timeline ───────── */
 .path { padding-block: clamp(56px, 7vw, 96px) 0; }
@@ -573,7 +576,7 @@ button { font: inherit; color: inherit; }
 
 /* ───────── research ───────── */
 /* the logo column mirrors .section-head's right column, so the wordmark lines up under the subtitle */
-.rs-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: var(--sp-block) var(--sp-col); align-items: center; }
+.rs-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: var(--sp-block) var(--sp-col); align-items: center; }
 .rs-top p { margin: 0; max-width: 66ch; color: var(--fg-2); }
 .rs-top strong { color: var(--fg); font-weight: 600; }
 .nebius { width: 100%; justify-self: center; filter: var(--logo-filter); opacity: 0.9; }
