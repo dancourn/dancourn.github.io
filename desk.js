@@ -122,7 +122,7 @@
     hero.addEventListener('pointerleave', () => hero.classList.remove('is-lit'));
   }
 
-  /* ───── NUMBER FLIP: digits shuffle and land, like the homepage stats ───── */
+  /* ───── NUMBER FLIP: digits shuffle and land, like the homepage name board ───── */
   function flip(el) {
     if (reduced || el.dataset.flipped) return;   // once only: a second flip mid-shuffle would land on a random digit
     el.dataset.flipped = '1';

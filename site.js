@@ -112,7 +112,7 @@
   setInterval(tickClock, 15000);
 
   /* ───────────────── NAME BOARD ─────────────────
-     Clicking the name replays a split-flap settle (the page loads with a plain fade instead, see the head script).
+     Clicking the name runs a split-flap settle (the page loads with a plain fade instead, see the head script).
      Each cell is locked to its final glyph width so nothing jitters. */
   const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ$%0123456789';
   // every turn swings the letter on a hinge; .is-anim keeps a moving letter painted (see .name .ch in site.css)
@@ -277,7 +277,9 @@
         ctx.fillStyle = g; ctx.fillRect(mx - 220, my - 220, 440, 440);   // only the light's own square, not the whole canvas
       }
     }
-    function loop(now) { draw(now); if (running) raf = requestAnimationFrame(loop); }
+    // 30 fps on any screen: the surface rolls slowly, so it looks the same for about 40% less GPU work
+    let last = 0;
+    function loop(now) { if (now - last > 30) { last = now; draw(now); } if (running) raf = requestAnimationFrame(loop); }
     function start() { if (running || reduced || document.hidden) return; running = true; raf = requestAnimationFrame(loop); }
     function stop() { running = false; cancelAnimationFrame(raf); }
     size(); recolor(); draw(performance.now());
@@ -921,6 +923,14 @@
       e.preventDefault();
     }
   });
+
+  /* ───────────────── OFF-SCREEN PAUSE ─────────────────
+     Looping effects (the name's sheen, the light rays, the card edge, pulsing dots, bobbing cards) pause while their
+     section is out of view, so only what you can see costs any GPU work. */
+  if ('IntersectionObserver' in window) {
+    const off = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('is-offscreen', !e.isIntersecting)));
+    $$('main > header, main > section').forEach(s => off.observe(s));
+  }
 
   /* ───────────────── ENTRANCES ─────────────────
      Only things below the fold at load animate in; everything starts readable. */

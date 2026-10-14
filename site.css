@@ -150,6 +150,8 @@ body {
 /* load: the whole page fades in once, as one piece (the inline script in each page's head sets and clears
    .is-loading). Opacity only: one cheap composite, and fixed layers stay fixed. Without JS nothing is hidden. */
 .is-loading body { opacity: 0; }
+/* a section scrolled out of view pauses its looping animations (site.js OFF-SCREEN PAUSE) */
+.is-offscreen, .is-offscreen *, .is-offscreen *::before, .is-offscreen *::after { animation-play-state: paused !important; }
 img { max-width: 100%; height: auto; display: block; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
@@ -353,7 +355,7 @@ button { font: inherit; color: inherit; }
   content: ""; position: absolute; inset: -1px; border-radius: 15px; padding: 1px; pointer-events: none;
   background: conic-gradient(from var(--ang), color-mix(in srgb, var(--accent) 85%, transparent), transparent 22%, transparent 34%, color-mix(in srgb, var(--blue) 85%, transparent) 50%, transparent 66%, transparent 78%, color-mix(in srgb, var(--accent) 85%, transparent));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
-  animation: edge 9s linear infinite;
+  animation: edge 9s steps(180) infinite;   /* 20 repaints a second, not 60: the slow spin still reads as continuous */
 }
 @keyframes edge { to { --ang: 360deg; } }
 .id-card::after {
@@ -998,13 +1000,14 @@ button { font: inherit; color: inherit; }
 /* depth of field: the world sits slightly out of focus, and dims where the text column is so copy stays readable;
    once you're past the hero (.is-reading) it softens further */
 .world {
-  position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(0.8px);
-  transition: opacity 1.2s var(--ease), filter 1.2s var(--ease);
+  position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; filter: blur(0.8px);
+  transition: opacity 0.6s var(--ease), filter 1.2s var(--ease);   /* 0.6 s like the page fade, so a late site.js never pops it in */
   -webkit-mask-image: linear-gradient(180deg, transparent 6%, #000 38%, #000 88%, transparent), radial-gradient(ellipse 48% 62% at 50% 56%, rgba(0, 0, 0, 0.3), #000 100%);
   -webkit-mask-composite: source-in;
   mask-image: linear-gradient(180deg, transparent 6%, #000 38%, #000 88%, transparent), radial-gradient(ellipse 48% 62% at 50% 56%, rgba(0, 0, 0, 0.3), #000 100%);
   mask-composite: intersect;
 }
+.world.is-on { opacity: 1; }
 .world.is-on.is-reading { opacity: 0.75; filter: blur(2.2px); }
 /* light rays falling from the top left of the hero */
 .rays {
@@ -1136,7 +1139,7 @@ button { font: inherit; color: inherit; }
 @media print {
   /* listed with the theme selectors so these win over the light/dark tokens (same specificity, later in the file) */
   :root, :root[data-theme], :root:not([data-theme="dark"]) { --bg: #fff; --surface: #fff; --surface-solid: #fff; --surface-2: #fff; --fg: #000; --fg-2: #222; --muted: #555; --line: #ccc; --line-2: #999; --accent: #000; --accent-ink: #fff; }
-  body { padding: 0; font-size: 11pt; }
+  body { padding: 0; font-size: 11pt; opacity: 1 !important; transition: none !important; }   /* a print during the load fade still comes out whole */
   .bg, .nav, .tape, .path, .ctas, .case-stage, .deck, .ff, .reader, .scrim, .toast, .colophon, .skip, .case-actions, .workshop, .hero-grid-bg, .rays { display: none !important; }
   .name-line + .name-line { color: #000; background: none; filter: none; }
   .name-line:first-child { text-shadow: none; }

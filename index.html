@@ -127,11 +127,12 @@
 <script>
   /* apply a saved theme before first paint so there is no flash */
   try { var t = localStorage.getItem('dc-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
-  /* the whole page fades in once, as one piece, when both fonts are in (1 s at most), so nothing swaps font in view */
+  /* the whole page fades in once, as one piece, when both fonts are in. A slow connection waits 0.35 s at most:
+     showing the text sooner beats hiding a font swap */
   (function (d) {
     var done = false, show = function () { if (done) return; done = true; requestAnimationFrame(function () { requestAnimationFrame(function () { d.classList.remove('is-loading'); }); }); };
     d.classList.add('is-loading');
-    setTimeout(show, 1000);
+    setTimeout(show, 350);
     try { Promise.all([document.fonts.load('800 1em "Big Shoulders Display"'), document.fonts.load('1em "Libre Franklin"')]).then(show, show); } catch (e) { show(); }
   })(document.documentElement);
 </script>
@@ -193,7 +194,7 @@
         <span>B.S. Finance, University of Delaware</span><span class="dot"></span>
         <span>Dix Hills, NY</span>
       </p>
-      <h1 class="name" id="name" aria-label="Daniel Cournane" title="Click to replay">
+      <h1 class="name" id="name" aria-label="Daniel Cournane" title="Click to flip">
         <span class="name-line" data-text="Daniel" aria-hidden="true">Daniel</span>
         <span class="name-line" data-text="Cournane" aria-hidden="true">Cournane</span>
       </h1>
@@ -1052,9 +1053,9 @@
       <ul>
         <li class="hint-kbd"><span class="kbd">← →</span> step through the NBIS slides</li>
         <li class="hint-kbd"><span class="kbd">Esc</span> close any panel</li>
-        <li class="hint-hover">Click my name to replay the board</li>
+        <li class="hint-hover">Click my name to flip the board</li>
         <li class="hint-hover">Hover the market tape to pause it</li>
-        <li class="hint-touch">Tap my name to replay the board</li>
+        <li class="hint-touch">Tap my name to flip the board</li>
         <li class="hint-touch">Swipe the NBIS slides or tap the arrows</li>
         <li class="hint-touch">Tap the pause button to stop the market tape</li>
       </ul>
