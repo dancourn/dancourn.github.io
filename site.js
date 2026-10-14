@@ -112,7 +112,8 @@
   setInterval(tickClock, 15000);
 
   /* ───────────────── NAME BOARD ─────────────────
-     A split-flap settle on the name. Each cell is locked to its final glyph width so nothing jitters. */
+     Clicking the name replays a split-flap settle (the page loads with a plain fade instead, see the head script).
+     Each cell is locked to its final glyph width so nothing jitters. */
   const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ$%0123456789';
   // every turn swings the letter on a hinge; .is-anim keeps a moving letter painted (see .name .ch in site.css)
   function hinge(el, land) {
@@ -130,12 +131,10 @@
     n.classList.remove('is-sweeping'); void n.offsetWidth; n.classList.add('is-sweeping');
   }
   // printing mid-flip would put scrambled letters on paper, so beforeprint lands everything at once
-  const STATS = $$('.keystats dd').map(dd => dd.textContent);
   let landed = false;
   window.addEventListener('beforeprint', () => {
     landed = true;
     $$('#name .name-line').forEach(line => $$('.ch', line).forEach((c, i) => { c.textContent = line.dataset.text.toUpperCase()[i]; }));
-    $$('.keystats dd').forEach((dd, i) => { dd.textContent = STATS[i]; });
   });
   function flapName() {
     landed = false;
@@ -172,23 +171,6 @@
       });
     });
   }
-  // the six key stats flip into place left to right, the same way the name does
-  function flipStats() {
-    if (reduced) return;
-    $$('.keystats dd').forEach((dd, r) => {
-      const final = dd.textContent, start = performance.now(), settle = 500 + r * 110;
-      (function step(now) {
-        const p = (now - start) / settle;
-        if (landed || p >= 1) { dd.textContent = final; return; }
-        const keep = Math.floor(p * final.length);
-        dd.textContent = final.split('').map((c, i) => i < keep || !/[a-z0-9]/i.test(c) ? c
-          : /\d/.test(c) ? (Math.random() * 10) | 0 : GLYPHS[(Math.random() * 26) | 0].toLowerCase()).join('');
-        setTimeout(() => requestAnimationFrame(step), 45);
-      })(start);
-    });
-  }
-  function startName() { flapName(); flipStats(); }
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(startName); else startName();
   $('#name').addEventListener('click', flapName);
 
   /* ───────────────── HERO SPOTLIGHT ───────────────── */

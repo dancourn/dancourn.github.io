@@ -152,9 +152,8 @@
       flipIn(e.target);
       io.unobserve(e.target);
     }), { rootMargin: '0px 0px -8% 0px' });
-    $$('.rise').forEach(el => {
+    $$('.rise').forEach(el => {   // on screen at load: no flip, the page's one fade-in covers it
       if (el.getBoundingClientRect().top > innerHeight) { el.classList.add('pre'); io.observe(el); }
-      else flipIn(el);
     });
   }
 

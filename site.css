@@ -145,7 +145,11 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: clip;
+  transition: opacity 0.6s var(--ease);
 }
+/* load: the whole page fades in once, as one piece (the inline script in each page's head sets and clears
+   .is-loading). Opacity only: one cheap composite, and fixed layers stay fixed. Without JS nothing is hidden. */
+.is-loading body { opacity: 0; }
 img { max-width: 100%; height: auto; display: block; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
@@ -994,14 +998,13 @@ button { font: inherit; color: inherit; }
 /* depth of field: the world sits slightly out of focus, and dims where the text column is so copy stays readable;
    once you're past the hero (.is-reading) it softens further */
 .world {
-  position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; filter: blur(0.8px);
+  position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(0.8px);
   transition: opacity 1.2s var(--ease), filter 1.2s var(--ease);
   -webkit-mask-image: linear-gradient(180deg, transparent 6%, #000 38%, #000 88%, transparent), radial-gradient(ellipse 48% 62% at 50% 56%, rgba(0, 0, 0, 0.3), #000 100%);
   -webkit-mask-composite: source-in;
   mask-image: linear-gradient(180deg, transparent 6%, #000 38%, #000 88%, transparent), radial-gradient(ellipse 48% 62% at 50% 56%, rgba(0, 0, 0, 0.3), #000 100%);
   mask-composite: intersect;
 }
-.world.is-on { opacity: 1; }
 .world.is-on.is-reading { opacity: 0.75; filter: blur(2.2px); }
 /* light rays falling from the top left of the hero */
 .rays {
